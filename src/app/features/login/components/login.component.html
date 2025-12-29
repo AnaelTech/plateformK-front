@@ -1,0 +1,337 @@
+<div
+  class="min-h-screen bg-linear-to-br from-indigo-600 via-purple-600 to-purple-700 flex items-center justify-center p-4 sm:p-6 lg:p-8"
+>
+  <div class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+    <div class="grid md:grid-cols-2 min-h-[600px]">
+      <!-- Panneau gauche - Présentation -->
+      <div
+        class="relative bg-linear-to-br from-indigo-600 to-purple-700 p-12 flex flex-col justify-center items-center text-white overflow-hidden"
+      >
+        <!-- Cercles décoratifs -->
+        <div
+          class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24"
+        ></div>
+        <div
+          class="absolute bottom-0 left-0 w-36 h-36 bg-white/10 rounded-full -ml-18 -mb-18"
+        ></div>
+
+        <!-- Logo -->
+        <div
+          class="relative z-10 w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-lg"
+        >
+          <svg
+            class="w-12 h-12"
+            viewBox="0 0 50 50"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M 15 15 L 15 35 L 25 30 L 35 35 L 35 15 L 25 20 Z"
+              fill="#667eea"
+            />
+            <path
+              d="M 18 20 L 18 30 L 25 26 L 32 30 L 32 20"
+              stroke="#764ba2"
+              stroke-width="2"
+              fill="none"
+            />
+            <circle cx="25" cy="10" r="4" fill="#FFD700" />
+          </svg>
+        </div>
+
+        <!-- Titre -->
+        <h1 class="relative z-10 text-5xl font-bold mb-4 tracking-tight">
+          KLASSIO
+        </h1>
+        <p
+          class="relative z-10 text-center text-lg opacity-90 max-w-sm mb-12 leading-relaxed"
+        >
+          La plateforme complète pour gérer votre activité de soutien scolaire
+        </p>
+
+        <!-- Features -->
+        <div class="relative z-10 space-y-4 w-full max-w-sm">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shrink-0"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <span class="text-base">Gestion simplifiée des cours</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shrink-0"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <span class="text-base">Facturation automatique</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shrink-0"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <span class="text-base">Paiements sécurisés en ligne</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shrink-0"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+            <span class="text-base">Interface intuitive</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panneau droit - Formulaire -->
+      <div class="p-12 flex flex-col justify-center bg-white">
+        <div class="w-full max-w-md mx-auto">
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">Connexion</h2>
+          <p class="text-gray-600 mb-8 text-sm">
+            Accédez à votre espace personnel
+          </p>
+
+          <form
+            [formGroup]="loginForm"
+            (ngSubmit)="onSubmit()"
+            class="space-y-6"
+          >
+            <!-- Email -->
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Adresse e-mail
+              </label>
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <svg
+                    class="h-5 w-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  placeholder="votre@email.com"
+                  [class]="
+                    'w-full pl-12 pr-4 py-3.5 border-2 rounded-xl transition-all duration-200 bg-gray-50 focus:bg-white focus:outline-none ' +
+                    (loginForm.get('email')?.invalid &&
+                    loginForm.get('email')?.touched
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-gray-200 focus:border-indigo-500')
+                  "
+                />
+              </div>
+              <p *ngIf="emailError" class="mt-1.5 text-sm text-red-600">
+                {{ emailError }}
+              </p>
+            </div>
+
+            <!-- Mot de passe -->
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Mot de passe
+              </label>
+              <div class="relative">
+                <div
+                  class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+                >
+                  <svg
+                    class="h-5 w-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  id="password"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  [class]="
+                    'w-full pl-12 pr-12 py-3.5 border-2 rounded-xl transition-all duration-200 bg-gray-50 focus:bg-white focus:outline-none ' +
+                    (loginForm.get('password')?.invalid &&
+                    loginForm.get('password')?.touched
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-gray-200 focus:border-indigo-500')
+                  "
+                />
+                <button
+                  type="button"
+                  (click)="togglePasswordVisibility()"
+                  class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg
+                    *ngIf="!showPassword"
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="showPassword"
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <p *ngIf="passwordError" class="mt-1.5 text-sm text-red-600">
+                {{ passwordError }}
+              </p>
+            </div>
+
+            <!-- Options -->
+            <div class="flex items-center justify-between text-sm">
+              <label class="flex items-center cursor-pointer group">
+                <input
+                  type="checkbox"
+                  formControlName="rememberMe"
+                  class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
+                />
+                <span
+                  class="ml-2 text-gray-600 group-hover:text-gray-900 transition-colors"
+                >
+                  Se souvenir de moi
+                </span>
+              </label>
+              <a
+                href="#"
+                class="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                Mot de passe oublié ?
+              </a>
+            </div>
+
+            <!-- Bouton de connexion -->
+            <button
+              type="submit"
+              [disabled]="isLoading"
+              class="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              @if(!isLoading){
+              <span>Se connecter</span>
+              } @else{
+              <span class="flex items-center justify-center gap-2">
+                <svg
+                  class="animate-spin h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Connexion...
+              </span>
+              }
+            </button>
+
+            <!-- Divider -->
+            <div class="relative">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-200"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-4 bg-white text-gray-500">ou</span>
+              </div>
+            </div>
+
+            <!-- Lien inscription -->
+            <p class="text-center text-sm text-gray-600">
+              Pas encore de compte ?
+              <a
+                href="#"
+                class="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+              >
+                Créer un compte
+              </a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
