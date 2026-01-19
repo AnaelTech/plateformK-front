@@ -1,8 +1,9 @@
 // src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, concatMap, map } from 'rxjs';
 import { Router } from '@angular/router';
+import { UserService } from '../../../shared/services/user.service';
 import { environment } from '../../../../environments/environment.development';
 
 export interface LoginRequest {
@@ -23,26 +24,26 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  token: string;
-  type: string; // "Bearer"
+  accessToken: string;
+  tokenType: string; // "Bearer"
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = 'auth';
+  private readonly apiUrl = environment.apiUrl + '/auth';
   private readonly tokenKey = 'auth_token';
-  private readonly userKey = 'auth_user';
 
   constructor(
     private readonly http: HttpClient,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly userService: UserService
   ) {}
 
   // Inscription
   register(data: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/register`, data);
+    return this.http.post(`${this.apiUrl}/register`, data);
   }
 
   // Connexion
@@ -50,10 +51,12 @@ export class AuthService {
     return this.http
       .post<AuthResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
-        tap((response) => {
-          this.saveToken(response.token);
-          // Optionnel : tu peux récupérer les infos user ici ou via un endpoint /me
-        })
+        tap((response) => this.saveToken(response.accessToken)),
+        concatMap((response) =>
+          this.userService.getCurrentUser().pipe(
+            map(() => response)
+          )
+        )
       );
   }
 
@@ -84,19 +87,8 @@ export class AuthService {
   }
 
   // Déconnexion
-  logout(): void {
+  logout(path: string = '/'): void {
     localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
-    this.router.navigate(['/login']);
-  }
-
-  // Optionnel : sauvegarder des infos utilisateur
-  saveUser(user: any): void {
-    localStorage.setItem(this.userKey, JSON.stringify(user));
-  }
-
-  getUser(): any {
-    const user = localStorage.getItem(this.userKey);
-    return user ? JSON.parse(user) : null;
+    this.router.navigate([path]);
   }
 }

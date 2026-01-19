@@ -18,7 +18,7 @@ export const routes: Routes = [
     component: ParentDashboardComponent,
   },
   {
-    path: 'dashboard/student',
+    path: 'dashboard/eleve',
     component: StudentDashboardComponent,
   },
 ];

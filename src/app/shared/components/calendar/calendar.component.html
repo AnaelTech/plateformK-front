@@ -1,0 +1,78 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+  <!-- Header avec navigation mois -->
+  <div class="flex items-center justify-between mb-6">
+    <button
+      (click)="previousMonth()"
+      class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <h3 class="text-xl font-bold text-gray-900 capitalize">
+      {{ getMonthName() }}
+    </h3>
+
+    <button
+      (click)="nextMonth()"
+      class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Jours de la semaine -->
+  <div class="grid grid-cols-7 gap-2 mb-4">
+    @for (day of weekDays; track day) {
+    <div class="text-center font-semibold text-gray-700 py-2">
+      {{ day }}
+    </div>
+    }
+  </div>
+
+  <!-- Grille des dates -->
+  <div class="grid grid-cols-7 gap-2">
+    @for (dateInfo of calendarDates(); track dateInfo.dateString) {
+    <div
+      [class]="
+        'min-h-[80px] border rounded-lg p-2 cursor-pointer transition-all ' +
+        (dateInfo.isCurrentMonth ? 'border-gray-200 hover:border-indigo-300' : 'border-gray-100 bg-gray-50') +
+        (dateInfo.isSelected ? ' border-indigo-500 bg-indigo-50' : '') +
+        (dateInfo.isToday ? ' bg-blue-50 border-blue-300' : '')
+      "
+      (click)="onDateClick(dateInfo.dateString)"
+    >
+      <div
+        [class]="
+          'text-sm font-medium mb-1 ' +
+          (dateInfo.isToday ? 'text-blue-600 font-bold' : dateInfo.isCurrentMonth ? 'text-gray-900' : 'text-gray-400')
+        "
+      >
+        {{ dateInfo.day }}
+      </div>
+
+      <!-- Indicateurs de disponibilité -->
+      @if (dateInfo.hasAvailabilities) {
+      <div class="space-y-1">
+        @for (availability of dateInfo.availabilities.slice(0, 2); track availability.id) {
+        <div
+          class="text-xs bg-green-100 text-green-800 rounded px-1 py-0.5 truncate"
+          [title]="availability.subject + ' - ' + availability.startTime + ' avec ' + availability.teacherName"
+        >
+          {{ availability.startTime }}
+        </div>
+        }
+        @if (dateInfo.availabilities.length > 2) {
+        <div class="text-xs text-gray-500">
+          +{{ dateInfo.availabilities.length - 2 }} autres
+        </div>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>

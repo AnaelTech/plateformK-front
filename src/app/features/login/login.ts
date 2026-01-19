@@ -8,8 +8,9 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 
-// Import de ton AuthService
 import { AuthService } from '../../core/auth/services/auth.service';
+import { UserService } from '../../shared/services/user.service';
+import { TypeUser } from '../../shared/models/User';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +21,8 @@ import { AuthService } from '../../core/auth/services/auth.service';
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
-  private readonly authService = inject(AuthService); // Injection du service d'auth
+  private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
 
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -69,22 +71,21 @@ export class LoginComponent {
 
     this.authService.login({ email, password }).subscribe({
       next: (response) => {
-        // Token sauvegardé automatiquement dans le AuthService (via tap dans login())
         console.log('Connexion réussie ! Token reçu.');
 
-        // Optionnel : si tu veux persister "remember me" (ex: expiration token plus longue côté backend)
-        // Tu peux stocker une préférence ici si besoin
+        const user = this.userService.currentUser();
 
         this.isLoading = false;
 
-        // Redirection intelligente selon le rôle (si tu as un endpoint /me qui retourne le rôle)
-        // Pour l'instant, on redirige vers un dashboard générique
-        this.router.navigate(['/dashboard']);
+        let redirectPath = '/dashboard';
 
-        // Exemple futur si tu veux différencier :
-        // this.router.navigate(['/parent-dashboard']);
-        // this.router.navigate(['/student-dashboard']);
-        // this.router.navigate(['/teacher-dashboard']);
+        if (user?.typeUser === TypeUser.PARENT) {
+          redirectPath = '/dashboard/parent';
+        } else if (user?.typeUser === TypeUser.ELEVE) {
+          redirectPath = '/dashboard/eleve';
+        }
+
+        this.router.navigate([redirectPath]);
       },
       error: (err) => {
         this.isLoading = false;
