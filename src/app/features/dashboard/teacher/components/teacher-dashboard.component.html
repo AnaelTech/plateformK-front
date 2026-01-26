@@ -11,715 +11,888 @@
     (logout)="onLogout()"
   />
 
-  <!-- Navigation tabs -->
-  <div class="bg-white shadow">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex gap-1 overflow-x-auto">
-        <button
-          (click)="setActiveTab('overview')"
-          [class]="
-            'px-6 py-4 text-sm font-semibold transition-all duration-200 border-b-2 whitespace-nowrap' +
-            (activeTab === 'overview'
-              ? 'text-indigo-600 border-indigo-600'
-              : 'text-gray-600 border-transparent hover:text-gray-900')
-          "
-        >
-          <div class="flex items-center gap-2 cursor-pointer">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-              />
-            </svg>
-            <span>Tableau de bord</span>
-          </div>
-        </button>
-
-        <button
-          (click)="setActiveTab('courses')"
-          [class]="
-            'px-6 py-4 text-sm font-semibold transition-all duration-200 border-b-2 whitespace-nowrap ' +
-            (activeTab === 'courses'
-              ? 'text-indigo-600 border-indigo-600'
-              : 'text-gray-600 border-transparent hover:text-gray-900')
-          "
-        >
-          <div class="flex items-center gap-2 cursor-pointer">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-              />
-            </svg>
-            <span>Cours</span>
-          </div>
-        </button>
-
-        <button
-          (click)="setActiveTab('students')"
-          [class]="
-            'px-6 py-4 text-sm font-semibold transition-all duration-200 border-b-2 whitespace-nowrap ' +
-            (activeTab === 'students'
-              ? 'text-indigo-600 border-indigo-600'
-              : 'text-gray-600 border-transparent hover:text-gray-900')
-          "
-        >
-          <div class="flex items-center gap-2 cursor-pointer">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-            <span>Élèves</span>
-          </div>
-        </button>
-
-        <button
-          (click)="setActiveTab('invoices')"
-          [class]="
-            'px-6 py-4 text-sm font-semibold transition-all duration-200 border-b-2 whitespace-nowrap ' +
-            (activeTab === 'invoices'
-              ? 'text-indigo-600 border-indigo-600'
-              : 'text-gray-600 border-transparent hover:text-gray-900')
-          "
-        >
-          <div class="flex items-center gap-2 cursor-pointer">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <span>Factures</span>
-          </div>
-        </button>
-
-        <button
-          (click)="setActiveTab('calendar')"
-          [class]="
-            'px-6 py-4 text-sm font-semibold transition-all duration-200 border-b-2 whitespace-nowrap ' +
-            (activeTab === 'calendar'
-              ? 'text-indigo-600 border-indigo-600'
-              : 'text-gray-600 border-transparent hover:text-gray-900')
-          "
-        >
-          <div class="flex items-center gap-2 cursor-pointer">
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>Planning</span>
-          </div>
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-dashboard-tabs
+    [tabs]="tabs"
+    [activeTab]="activeTab()"
+    [color]="'purple'"
+    (tabChange)="onTabChange($event)"
+  />
 
   <!-- Contenu principal -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
     <!-- Vue Aperçu -->
-    @if (activeTab === 'overview') {
-    <div class="space-y-6">
-      <!-- Cartes statistiques -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    @if (activeTab() === "overview") {
+      <div class="space-y-6">
+        <!-- Cartes statistiques -->
         <div
-          class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
         >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Total Élèves</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">
-                {{ stats().totalStudents }}
-              </p>
-            </div>
-            <div
-              class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Revenu du mois</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">
-                {{ stats().monthlyRevenue }}€
-              </p>
-            </div>
-            <div
-              class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Cours en attente</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">
-                {{ stats().pendingCourses }}
-              </p>
-            </div>
-            <div
-              class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-yellow-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-gray-600">Cours terminés</p>
-              <p class="text-3xl font-bold text-gray-900 mt-2">
-                {{ stats().completedCourses }}
-              </p>
-            </div>
-            <div
-              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
-            >
-              <svg
-                class="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Cours à venir -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="p-6 border-b border-gray-100">
-          <h2 class="text-xl font-bold text-gray-900">Prochains cours</h2>
-        </div>
-        <div class="divide-y divide-gray-100">
-          @for (course of recentCourses(); track course.id) {
-          <div class="p-6 hover:bg-gray-50 transition-colors">
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
+          >
             <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="font-semibold text-gray-900">
-                    {{ course.student }}
-                  </h3>
-                  <span
-                    [class]="
-                      'px-3 py-1 rounded-full text-xs font-medium ' +
-                      getStatusColor(course.status)
-                    "
-                  >
-                    {{ getStatusLabel(course.status) }}
-                  </span>
-                </div>
-                <div
-                  class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
-                >
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    {{ formatDateTime(course.date) }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                      />
-                    </svg>
-                    {{ course.subject }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg
-                      class="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 8v4l3 3"
-                      />
-                    </svg>
-                    {{ course.duration }}h
-                  </span>
-                  <span class="font-semibold text-gray-900"
-                    >{{ course.price }}€</span
-                  >
-                </div>
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Élèves</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">
+                  {{ stats().totalStudents }}
+                </p>
               </div>
-               <div class="flex gap-2 ml-4">
-                 @if (course.status === 'pending') {
-                 <button
-                   (click)="validateCourse(course.id)"
-                   class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                 >
-                   Valider
-                 </button>
-                 <button
-                   (click)="cancelCourse(course.id)"
-                   class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                 >
-                   Annuler
-                 </button>
-                 } @if (course.status === 'confirmed') {
-                 <button
-                   (click)="completeCourse(course.id)"
-                   class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                 >
-                   Terminer
-                 </button>
-                 <button
-                   (click)="cancelCourse(course.id)"
-                   class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                 >
-                   Annuler
-                 </button>
-                 }
-               </div>
+              <div
+                class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              </div>
             </div>
           </div>
-          } @empty {
-          <div class="p-12 text-center text-gray-600">
-            Aucun cours programmé pour le moment
-          </div>
-          }
-        </div>
-      </div>
 
-      <!-- Factures en attente -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="p-6 border-b border-gray-100">
-          <h2 class="text-xl font-bold text-gray-900">Factures en attente</h2>
-        </div>
-        <div class="divide-y divide-gray-100">
-          @for (invoice of pendingInvoices(); track invoice.id) {
-          <div class="p-6 hover:bg-gray-50 transition-colors">
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
+          >
             <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="font-semibold text-gray-900">
-                    {{ invoice.student }}
-                  </h3>
-                  <span
-                    [class]="
-                      'px-3 py-1 rounded-full text-xs font-medium ' +
-                      getStatusColor(invoice.status)
-                    "
-                  >
-                    {{ getStatusLabel(invoice.status) }}
-                  </span>
-                </div>
-                <div
-                  class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
-                >
-                  <span>Facture #{{ invoice.id }}</span>
-                  <span>Émise le {{ formatDate(invoice.date) }}</span>
-                  <span>Échéance: {{ formatDate(invoice.dueDate) }}</span>
-                  <span class="font-semibold text-gray-900"
-                    >{{ invoice.amount }}€</span
-                  >
-                </div>
+              <div>
+                <p class="text-sm font-medium text-gray-600">Revenu du mois</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">
+                  {{ stats().monthlyRevenue }}€
+                </p>
               </div>
-              <div class="flex gap-2 ml-4">
-                <button
-                  (click)="sendInvoice(invoice.id)"
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              <div
+                class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Envoyer
-                </button>
-                <button
-                  (click)="downloadInvoice(invoice.id)"
-                  class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors"
-                >
-                  Télécharger
-                </button>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
               </div>
             </div>
           </div>
-          } @empty {
-          <div class="p-12 text-center text-gray-600">
-            Aucune facture en attente
+
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Cours en attente
+                </p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">
+                  {{ stats().pendingCourses }}
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
-          }
+
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Cours terminés</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">
+                  {{ stats().completedCourses }}
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cours à venir -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-6 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900">Prochains cours</h2>
+          </div>
+          <div class="divide-y divide-gray-100">
+            @for (course of recentCourses(); track course.id) {
+              <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <h3 class="font-semibold text-gray-900">
+                        {{ course.student }}
+                      </h3>
+                      <span
+                        [class]="
+                          'px-3 py-1 rounded-full text-xs font-medium ' +
+                          getStatusColor(course.status)
+                        "
+                      >
+                        {{ getStatusLabel(course.status) }}
+                      </span>
+                    </div>
+                    <div
+                      class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
+                    >
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {{ formatDateTime(course.date) }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                          />
+                        </svg>
+                        {{ course.subject }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3"
+                          />
+                        </svg>
+                        {{ course.duration }}h
+                      </span>
+                      <span class="font-semibold text-gray-900"
+                        >{{ course.price }}€</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex gap-2 ml-4">
+                    @if (course.status === "pending") {
+                      <button
+                        (click)="validateCourse(course.id)"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors cursor-pointer"
+                      >
+                        Valider
+                      </button>
+                      <button
+                        (click)="cancelCourse(course.id)"
+                        class="text-red-600 hover:text-red-800 font-medium cursor-pointer"
+                      >
+                        Annuler
+                      </button>
+                    }
+                    @if (course.status === "confirmed") {
+                      <button
+                        (click)="completeCourse(course.id)"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors cursor-pointer"
+                      >
+                        Terminer
+                      </button>
+                      <button
+                        (click)="cancelCourse(course.id)"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="p-12 text-center text-gray-600">
+                Aucun cours programmé pour le moment
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Factures en attente -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-6 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900">Factures en attente</h2>
+          </div>
+          <div class="divide-y divide-gray-100">
+            @for (invoice of pendingInvoices(); track invoice.id) {
+              <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <h3 class="font-semibold text-gray-900">
+                        {{ invoice.student }}
+                      </h3>
+                      <span
+                        [class]="
+                          'px-3 py-1 rounded-full text-xs font-medium ' +
+                          getStatusColor(invoice.status)
+                        "
+                      >
+                        {{ getStatusLabel(invoice.status) }}
+                      </span>
+                    </div>
+                    <div
+                      class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
+                    >
+                      <span>Facture #{{ invoice.id }}</span>
+                      <span>Émise le {{ formatDate(invoice.date) }}</span>
+                      <span>Échéance: {{ formatDate(invoice.dueDate) }}</span>
+                      <span class="font-semibold text-gray-900"
+                        >{{ invoice.amount }}€</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex gap-2 ml-4">
+                    <button
+                      (click)="sendInvoice(invoice.id)"
+                      class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer"
+                    >
+                      Envoyer
+                    </button>
+                    <button
+                      (click)="downloadInvoice(invoice.id)"
+                      class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors cursor-pointer"
+                    >
+                      Télécharger
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="p-12 text-center text-gray-600">
+                Aucune facture en attente
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Prochaines disponibilités -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div
+            class="p-6 border-b border-gray-100 flex items-center justify-between"
+          >
+            <h2 class="text-xl font-bold text-gray-900">
+              Prochaines disponibilités
+            </h2>
+            <button
+              (click)="setActiveTab(Tab.Calendar)"
+              class="text-indigo-600 hover:text-indigo-800 text-sm font-medium cursor-pointer"
+            >
+              Voir tout →
+            </button>
+          </div>
+          <div class="divide-y divide-gray-100">
+            @for (
+              availability of upcomingAvailabilities();
+              track availability.id
+            ) {
+              <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <h3 class="font-semibold text-gray-900">
+                        {{ availability.subject }}
+                      </h3>
+                      <span
+                        class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                      >
+                        Disponible
+                      </span>
+                    </div>
+                    <div
+                      class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
+                    >
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {{ formatDate(availability.date) }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {{ availability.startTime }} -
+                        {{ availability.endTime }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {{ availability.durationMinutes }} min
+                      </span>
+                      <span class="font-semibold text-gray-900"
+                        >{{ availability.price }}€</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex gap-2 ml-4">
+                    <button
+                      (click)="editAvailability(availability)"
+                      class="px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors"
+                    >
+                      Modifier
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="p-12 text-center text-gray-600">
+                <svg
+                  class="w-16 h-16 mx-auto text-gray-300 mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p class="mb-4">Aucune disponibilité programmée</p>
+                <button
+                  (click)="setActiveTab(Tab.Calendar)"
+                  class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Gérer mes disponibilités
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </div>
-    </div>
     }
 
     <!-- Vue Cours -->
-    @if (activeTab === 'courses') {
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div
-        class="p-6 border-b border-gray-100 flex items-center justify-between"
-      >
-        <h2 class="text-xl font-bold text-gray-900">Gestion des cours</h2>
-        <button
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+    @if (activeTab() === "courses") {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div
+          class="p-6 border-b border-gray-100 flex items-center justify-between"
         >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"e
-            viewBox="0 0 24 24"
+          <h2 class="text-xl font-bold text-gray-900">Gestion des cours</h2>
+          <button
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Nouveau cours
-        </button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Élève
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Date & Heure
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Matière
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Durée
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Prix
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Statut
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            @for (course of courses(); track course.id) {
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900">
-                  {{ course.student }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {{ formatDateTime(course.date) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {{ course.subject }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {{ course.duration }}h
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
-              >
-                {{ course.price }}€
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  [class]="
-                    'px-3 py-1 rounded-full text-xs font-medium ' +
-                    getStatusColor(course.status)
-                  "
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Nouveau cours
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
-                  {{ getStatusLabel(course.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                 <div class="flex gap-2">
-                   @if (course.status === 'pending') {
-                   <button
-                     (click)="validateCourse(course.id)"
-                     class="text-green-600 hover:text-green-800 font-medium"
-                   >
-                     Valider
-                   </button>
-                   <button
-                     (click)="cancelCourse(course.id)"
-                     class="text-red-600 hover:text-red-800 font-medium"
-                   >
-                     Annuler
-                   </button>
-                   } @if (course.status === 'confirmed') {
-                   <button
-                     (click)="completeCourse(course.id)"
-                     class="text-blue-600 hover:text-blue-800 font-medium"
-                   >
-                     Terminer
-                   </button>
-                   <button
-                     (click)="cancelCourse(course.id)"
-                     class="text-red-600 hover:text-red-800 font-medium"
-                   >
-                     Annuler
-                   </button>
-                   }
-                   <button class="text-gray-600 hover:text-gray-800">
-                     <svg
-                       class="w-5 h-5"
-                       fill="none"
-                       stroke="currentColor"
-                       viewBox="0 0 24 24"
-                     >
-                       <path
-                         stroke-linecap="round"
-                         stroke-linejoin="round"
-                         stroke-width="2"
-                         d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                       />
-                     </svg>
-                   </button>
-                 </div>
-              </td>
-            </tr>
-            } @empty {
-            <tr>
-              <td colspan="7" class="px-6 py-12 text-center text-gray-600">
-                Aucun cours enregistré
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+                  Élève
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Date & Heure
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Matière
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Durée
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Prix
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Statut
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (course of courses(); track course.id) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="font-medium text-gray-900">
+                      {{ course.student }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ formatDateTime(course.date) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ course.subject }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ course.duration }}h
+                  </td>
+                  <td
+                    class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
+                  >
+                    {{ course.price }}€
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span
+                      [class]="
+                        'px-3 py-1 rounded-full text-xs font-medium ' +
+                        getStatusColor(course.status)
+                      "
+                    >
+                      {{ getStatusLabel(course.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex gap-2">
+                      @if (course.status === "pending") {
+                        <button
+                          (click)="validateCourse(course.id)"
+                          class="text-green-600 hover:text-green-800 font-medium cursor-pointer"
+                        >
+                          Valider
+                        </button>
+                        <button
+                          (click)="cancelCourse(course.id)"
+                          class="text-red-600 hover:text-red-800 font-medium"
+                        >
+                          Annuler
+                        </button>
+                      }
+                      @if (course.status === "confirmed") {
+                        <button
+                          (click)="completeCourse(course.id)"
+                          class="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                        >
+                          Terminer
+                        </button>
+                        <button
+                          (click)="cancelCourse(course.id)"
+                          class="text-red-600 hover:text-red-800 font-medium"
+                        >
+                          Annuler
+                        </button>
+                      }
+                      <button class="text-gray-600 hover:text-gray-800">
+                        <svg
+                          class="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-gray-600">
+                    Aucun cours enregistré
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     }
 
     <!-- Vue Élèves -->
-    @if (activeTab === 'students') {
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div
-        class="p-6 border-b border-gray-100 flex items-center justify-between"
-      >
-        <h2 class="text-xl font-bold text-gray-900">Mes élèves</h2>
-        <button
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Ajouter un élève
-        </button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-        @for (student of students(); track student.id) {
+    @if (activeTab() === "students") {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
         <div
-          class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
+          class="p-6 border-b border-gray-100 flex items-center justify-between"
         >
-          <div class="flex items-center gap-4 mb-4">
+          <h2 class="text-xl font-bold text-gray-900">Mes élèves</h2>
+          <button
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Ajouter un élève
+          </button>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6"
+        >
+          @for (student of students(); track student.id) {
             <div
-              class="w-12 h-12 bg-linear-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold"
+              class="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
             >
-              {{ getInitials(student.name) }}
+              <div class="flex items-center gap-4 mb-4">
+                <div
+                  class="w-12 h-12 bg-linear-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold"
+                >
+                  {{ getInitials(student.name) }}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900">
+                    {{ student.name }}
+                  </h3>
+                  <p class="text-sm text-gray-600">{{ student.level }}</p>
+                </div>
+              </div>
+              <div class="space-y-2 text-sm text-gray-600">
+                <div class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {{ student.email }}
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  Parent: {{ student.parent }}
+                </div>
+                @if (student.nextSession) {
+                  <div
+                    class="flex items-center gap-2 text-indigo-600 font-medium"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Prochain cours: {{ formatDate(student.nextSession) }}
+                  </div>
+                }
+              </div>
+              <div class="mt-4 flex gap-2">
+                <button
+                  class="flex-1 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Voir détails
+                </button>
+                <button
+                  class="px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div>
-              <h3 class="font-semibold text-gray-900">{{ student.name }}</h3>
-              <p class="text-sm text-gray-600">{{ student.level }}</p>
+          } @empty {
+            <div class="col-span-full text-center py-12 text-gray-600">
+              Aucun élève inscrit pour le moment
             </div>
-          </div>
-          <div class="space-y-2 text-sm text-gray-600">
-            <div class="flex items-center gap-2">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-              {{ student.email }}
-            </div>
-            <div class="flex items-center gap-2">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-              Parent: {{ student.parent }}
-            </div>
-            @if (student.nextSession) {
-            <div class="flex items-center gap-2 text-indigo-600 font-medium">
-              <svg
-                class="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              Prochain cours: {{ formatDate(student.nextSession) }}
-            </div>
-            }
-          </div>
-          <div class="mt-4 flex gap-2">
-            <button
-              class="flex-1 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Vue Factures -->
+    @if (activeTab() === "invoices") {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div
+          class="p-6 border-b border-gray-100 flex items-center justify-between"
+        >
+          <h2 class="text-xl font-bold text-gray-900">Gestion des factures</h2>
+          <button
+            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Voir détails
-            </button>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Nouvelle facture
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  N° Facture
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Élève
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Date émission
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Échéance
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Montant
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Statut
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (invoice of invoices(); track invoice.id) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="font-medium text-gray-900">
+                      #{{ invoice.id }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ invoice.student }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ formatDate(invoice.date) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {{ formatDate(invoice.dueDate) }}
+                  </td>
+                  <td
+                    class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
+                  >
+                    {{ invoice.amount }}€
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span
+                      [class]="
+                        'px-3 py-1 rounded-full text-xs font-medium ' +
+                        getStatusColor(invoice.status)
+                      "
+                    >
+                      {{ getStatusLabel(invoice.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex gap-2">
+                      <button
+                        (click)="downloadInvoice(invoice.id)"
+                        class="text-indigo-600 hover:text-indigo-800 font-medium cursor-pointer"
+                      >
+                        Télécharger
+                      </button>
+                      @if (invoice.status !== "paid") {
+                        <button
+                          (click)="sendInvoice(invoice.id)"
+                          class="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+                        >
+                          Envoyer
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-gray-600">
+                    Aucune facture enregistrée
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- Vue Planning -->
+    @if (activeTab() === "calendar") {
+      <div class="space-y-6">
+        <!-- Gestion des disponibilités -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div
+            class="p-6 border-b border-gray-100 flex items-center justify-between"
+          >
+            <h2 class="text-xl font-bold text-gray-900">Mes disponibilités</h2>
             <button
-              class="px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors"
+              (click)="openAvailabilityModal()"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
             >
               <svg
                 class="w-5 h-5"
@@ -731,400 +904,372 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  d="M12 4v16m8-8H4"
                 />
               </svg>
+              Ajouter une disponibilité
             </button>
           </div>
-        </div>
-        } @empty {
-        <div class="col-span-full text-center py-12 text-gray-600">
-          Aucun élève inscrit pour le moment
-        </div>
-        }
-      </div>
-    </div>
-    }
 
-    <!-- Vue Factures -->
-    @if (activeTab === 'invoices') {
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div
-        class="p-6 border-b border-gray-100 flex items-center justify-between"
-      >
-        <h2 class="text-xl font-bold text-gray-900">Gestion des factures</h2>
-        <button
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
-        >
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Nouvelle facture
-        </button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                N° Facture
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Élève
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Date émission
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Échéance
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Montant
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Statut
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            @for (invoice of invoices(); track invoice.id) {
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900">#{{ invoice.id }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {{ invoice.student }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {{ formatDate(invoice.date) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {{ formatDate(invoice.dueDate) }}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
-              >
-                {{ invoice.amount }}€
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  [class]="
-                    'px-3 py-1 rounded-full text-xs font-medium ' +
-                    getStatusColor(invoice.status)
-                  "
-                >
-                  {{ getStatusLabel(invoice.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <div class="flex gap-2">
-                  <button
-                    (click)="downloadInvoice(invoice.id)"
-                    class="text-indigo-600 hover:text-indigo-800 font-medium"
-                  >
-                    Télécharger
-                  </button>
-                  @if (invoice.status !== 'paid') {
-                  <button
-                    (click)="sendInvoice(invoice.id)"
-                    class="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Envoyer
-                  </button>
-                  }
+          <!-- Calendrier des disponibilités -->
+          <div class="p-4 sm:p-6">
+            <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-4">
+              @for (day of weekDays; track day) {
+                <div class="text-center font-semibold text-gray-700 py-2">
+                  {{ day }}
                 </div>
-              </td>
-            </tr>
-            } @empty {
-            <tr>
-              <td colspan="7" class="px-6 py-12 text-center text-gray-600">
-                Aucune facture enregistrée
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-    }
-
-    <!-- Vue Planning -->
-    @if (activeTab === 'calendar') {
-    <div class="space-y-6">
-      <!-- Gestion des disponibilités -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 class="text-xl font-bold text-gray-900">Mes disponibilités</h2>
-          <button
-            (click)="openAvailabilityModal()"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center gap-2"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Ajouter une disponibilité
-          </button>
-        </div>
-
-        <!-- Calendrier des disponibilités -->
-        <div class="p-6">
-          <div class="grid grid-cols-7 gap-2 mb-4">
-            @for (day of weekDays; track day) {
-            <div class="text-center font-semibold text-gray-700 py-2">
-              {{ day }}
+              }
             </div>
-            }
-          </div>
 
-          <div class="grid grid-cols-7 gap-2">
-            @for (date of calendarDates(); track date.dateString) {
-            <div
-              [class]="
-                'min-h-[80px] border rounded-lg p-2 cursor-pointer transition-all ' +
-                (date.isCurrentMonth ? 'border-gray-200 hover:border-indigo-300' : 'border-gray-100 bg-gray-50')
-              "
-              (click)="selectDate(date)"
-            >
-              <div class="text-sm font-medium mb-1">
-                {{ date.day }}
-              </div>
-              <div class="space-y-1">
-                @for (availability of getAvailabilitiesForDate(date.dateString); track availability.id) {
+            <div class="grid grid-cols-7 gap-1 sm:gap-2">
+              @for (date of calendarDates(); track date.dateString) {
                 <div
-                  class="text-xs bg-indigo-100 text-indigo-800 rounded px-1 py-0.5 truncate"
-                  [title]="availability.subject + ' - ' + availability.startTime + ' à ' + availability.endTime"
+                  [class]="
+                    'min-h-[60px] sm:min-h-[80px] border rounded-lg p-1 sm:p-2 transition-all ' +
+                    (date.isPast
+                      ? 'cursor-not-allowed opacity-50 bg-gray-100 border-gray-300'
+                      : 'cursor-pointer ' +
+                        (date.isCurrentMonth
+                          ? 'border-gray-200 hover:border-indigo-300'
+                          : 'border-gray-100 bg-gray-50'))
+                  "
+                  [title]="
+                    date.isPast
+                      ? 'Date passée - non modifiable'
+                      : 'Cliquez pour ajouter une disponibilité'
+                  "
+                  (click)="date.isPast ? null : selectDate(date)"
                 >
-                  {{ availability.startTime }}
+                  <div class="text-sm font-medium mb-1">
+                    {{ date.day }}
+                  </div>
+                  <div class="space-y-1">
+                    @for (
+                      availability of getAvailabilitiesForDate(date.dateString);
+                      track availability.id
+                    ) {
+                      <div
+                        class="text-xs rounded px-1 py-0.5 truncate"
+                        [class]="
+                          availability.isAvailable
+                            ? 'bg-indigo-100 text-indigo-800'
+                            : 'bg-red-100 text-red-800'
+                        "
+                        [title]="
+                          availability.subject +
+                          ' - ' +
+                          availability.startTime +
+                          ' à ' +
+                          availability.endTime +
+                          (availability.isAvailable ? '' : ' (Réservée)')
+                        "
+                      >
+                        {{ availability.startTime }}
+                      </div>
+                    }
+                  </div>
                 </div>
-                }
-              </div>
+              }
             </div>
+          </div>
+        </div>
+
+        <!-- Liste détaillée des disponibilités -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-6 border-b border-gray-100">
+            <h3 class="text-xl font-bold text-gray-900">
+              Liste des disponibilités
+            </h3>
+          </div>
+          <div class="divide-y divide-gray-100">
+            @for (availability of availabilities(); track availability.id) {
+              <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <h4 class="font-semibold text-gray-900">
+                        {{ availability.subject }}
+                      </h4>
+                      <span
+                        class="px-3 py-1 rounded-full text-xs font-medium"
+                        [ngClass]="
+                          availability.isAvailable
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        "
+                      >
+                        {{
+                          availability.isAvailable ? "Disponible" : "Réservée"
+                        }}
+                      </span>
+                    </div>
+                    <div
+                      class="flex flex-wrap items-center gap-4 text-sm text-gray-600"
+                    >
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {{ availability.date }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {{ availability.startTime }} -
+                        {{ availability.endTime }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        {{ availability.durationMinutes }} min
+                      </span>
+                      <span class="font-semibold text-gray-900"
+                        >{{ availability.price }}€</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex gap-2 ml-4">
+                    <button
+                      (click)="editAvailability(availability)"
+                      class="px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors cursor-pointer"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      (click)="deleteAvailability(availability.id)"
+                      class="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="p-12 text-center text-gray-600">
+                <svg
+                  class="w-16 h-16 mx-auto text-gray-300 mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p class="mb-4">Aucune disponibilité définie</p>
+                <button
+                  (click)="openAvailabilityModal()"
+                  class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                >
+                  Créer ma première disponibilité
+                </button>
+              </div>
             }
           </div>
         </div>
       </div>
-
-      <!-- Liste détaillée des disponibilités -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="p-6 border-b border-gray-100">
-          <h3 class="text-xl font-bold text-gray-900">Liste des disponibilités</h3>
-        </div>
-        <div class="divide-y divide-gray-100">
-          @for (availability of availabilities(); track availability.id) {
-          <div class="p-6 hover:bg-gray-50 transition-colors">
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
-                  <h4 class="font-semibold text-gray-900">
-                    {{ availability.subject }}
-                  </h4>
-                  <span class="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    Disponible
-                  </span>
-                </div>
-                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                  <span class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {{ availability.date }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {{ availability.startTime }} - {{ availability.endTime }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {{ availability.durationMinutes }} min
-                  </span>
-                  <span class="font-semibold text-gray-900">{{ availability.price }}€</span>
-                </div>
-              </div>
-              <div class="flex gap-2 ml-4">
-                <button
-                  (click)="editAvailability(availability)"
-                  class="px-3 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:border-gray-400 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </button>
-                <button
-                  (click)="deleteAvailability(availability.id)"
-                  class="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-          } @empty {
-          <div class="p-12 text-center text-gray-600">
-            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p class="mb-4">Aucune disponibilité définie</p>
-            <button
-              (click)="openAvailabilityModal()"
-              class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-            >
-              Créer ma première disponibilité
-            </button>
-          </div>
-          }
-        </div>
-      </div>
-    </div>
     }
 
     <!-- Modal d'ajout/modification de disponibilité -->
     @if (showAvailabilityModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-bold text-gray-900">
-              {{ editingAvailability() ? 'Modifier la disponibilité' : 'Nouvelle disponibilité' }}
-            </h3>
-            <button
-              (click)="closeAvailabilityModal()"
-              class="text-gray-400 hover:text-gray-600"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <form (ngSubmit)="saveAvailability()" #availabilityForm="ngForm">
-            <div class="space-y-4">
-              <!-- Date -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                <input
-                  type="date"
-                  [(ngModel)]="availabilityFormData().date"
-                  name="date"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              <!-- Heure de début -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Heure de début</label>
-                <input
-                  type="time"
-                  [(ngModel)]="availabilityFormData().startTime"
-                  name="startTime"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              <!-- Heure de fin -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Heure de fin</label>
-                <input
-                  type="time"
-                  [(ngModel)]="availabilityFormData().endTime"
-                  name="endTime"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-
-              <!-- Matière -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Matière</label>
-                <select
-                  [(ngModel)]="availabilityFormData().subject"
-                  name="subject"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="">Sélectionner une matière</option>
-                  <option value="Mathématiques">Mathématiques</option>
-                  <option value="Français">Français</option>
-                  <option value="Anglais">Anglais</option>
-                  <option value="Histoire-Géographie">Histoire-Géographie</option>
-                  <option value="Sciences">Sciences</option>
-                  <option value="Physique-Chimie">Physique-Chimie</option>
-                  <option value="SVT">SVT</option>
-                  <option value="Espagnol">Espagnol</option>
-                  <option value="Allemand">Allemand</option>
-                  <option value="Italien">Italien</option>
-                </select>
-              </div>
-
-              <!-- Prix -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Prix (€)</label>
-                <input
-                  type="number"
-                  [(ngModel)]="availabilityFormData().price"
-                  name="price"
-                  required
-                  min="0"
-                  step="0.01"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            </div>
-
-            <div class="flex gap-3 mt-6">
+      <div class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+          <div class="p-4 sm:p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-xl font-bold text-gray-900">
+                {{
+                  editingAvailability()
+                    ? "Modifier la disponibilité"
+                    : "Nouvelle disponibilité"
+                }}
+              </h3>
               <button
-                type="button"
                 (click)="closeAvailabilityModal()"
-                class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-gray-400 transition-colors"
+                class="text-gray-400 hover:text-gray-600"
               >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                [disabled]="!availabilityForm.valid"
-                class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {{ editingAvailability() ? 'Modifier' : 'Créer' }}
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
-          </form>
+
+            <form (ngSubmit)="saveAvailability()" #availabilityForm="ngForm">
+              <div class="space-y-4">
+                <!-- Date -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Date</label
+                  >
+                  <input
+                    type="date"
+                    [(ngModel)]="availabilityFormData().date"
+                    name="date"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <!-- Heure de début -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Heure de début</label
+                  >
+                  <input
+                    type="time"
+                    [(ngModel)]="availabilityFormData().startTime"
+                    name="startTime"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <!-- Heure de fin -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Heure de fin</label
+                  >
+                  <input
+                    type="time"
+                    [(ngModel)]="availabilityFormData().endTime"
+                    name="endTime"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+
+                <!-- Matière -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Matière</label
+                  >
+                  <select
+                    [(ngModel)]="availabilityFormData().subject"
+                    name="subject"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Sélectionner une matière</option>
+                    <option value="Mathématiques">Mathématiques</option>
+                    <option value="Français">Français</option>
+                    <option value="Anglais">Anglais</option>
+                    <option value="Histoire-Géographie">
+                      Histoire-Géographie
+                    </option>
+                    <option value="Sciences">Sciences</option>
+                    <option value="Physique-Chimie">Physique-Chimie</option>
+                    <option value="SVT">SVT</option>
+                    <option value="Espagnol">Espagnol</option>
+                    <option value="Allemand">Allemand</option>
+                    <option value="Italien">Italien</option>
+                  </select>
+                </div>
+
+                <!-- Prix -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Prix (€)</label
+                  >
+                  <input
+                    type="number"
+                    [(ngModel)]="availabilityFormData().price"
+                    name="price"
+                    required
+                    min="0"
+                    step="0.01"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div class="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  (click)="closeAvailabilityModal()"
+                  class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-gray-400 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="!availabilityForm.valid"
+                  class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  {{ editingAvailability() ? "Modifier" : "Créer" }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
     }
   </main>
 </div>

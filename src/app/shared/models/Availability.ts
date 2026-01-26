@@ -14,6 +14,15 @@ export interface Availability {
 }
 
 export interface CreateAvailabilityRequest {
+  teacherId: number;
+  date: string; // ISO date string
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
+  subject: string;
+  price: number;
+}
+
+export interface AvailabilityFormData {
   date: string; // ISO date string
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format

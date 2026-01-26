@@ -3,18 +3,28 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../../shared/services/user.service';
 import { CoursService } from '../../../shared/services/cours.service';
+import { InvoiceService } from '../../../shared/services/invoice.service';
 import {
-  InvoiceService,
-  Invoice,
-} from '../../../shared/services/invoice.service';
-import { Cours, CoursStatus } from '../../../shared/models/Cours';
-import { BookingStatus } from '../../../shared/models/Booking';
+  Cours,
+  CoursStatus,
+  CreateCoursRequest,
+} from '../../../shared/models/Cours';
+import { Booking, BookingStatus } from '../../../shared/models/Booking';
 import { User } from '../../../shared/models/User';
 import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
 import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
 import { AvailabilityService } from '../../../shared/services/availability.service';
 import { AvailabilitySlot } from '../../../shared/models/Availability';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { BookingService } from '../../../shared/services/booking.service';
+import {
+  Child,
+  BookingDisplay,
+  SlotDisplay,
+  Payment,
+} from '../../../shared/models/Parent';
+import { TabItem } from '../../../shared/models/TabItem';
+import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
 
 export enum Tab {
   Overview = 'overview',
@@ -22,53 +32,19 @@ export enum Tab {
   Children = 'children',
   Invoices = 'invoices',
   Payments = 'payments',
-}
-
-interface Child {
-  id: number;
-  name: string;
-  level?: string;
-  email?: string;
-  parent?: string;
-  nextSession?: Date;
-  teacher?: string;
-}
-
-interface BookingDisplay {
-  id: number;
-  coursId: number;
-  eleveId: number | undefined;
-  child: string;
-  date: Date;
-  subject: string;
-  teacher: string;
-  price: number;
-  duration: number;
-  status: BookingStatus;
-}
-
-interface SlotDisplay {
-  id: number;
-  date: Date;
-  duration: number;
-  subject: string;
-  price: number;
-  teacher: string;
-}
-
-interface Payment {
-  id: number;
-  date: string;
-  invoiceId: number;
-  amount: number;
-  method: string;
-  status: string;
+  Calendar = 'calendar',
 }
 
 @Component({
   selector: 'app-parent-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, DashboardNavbarComponent, CalendarComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DashboardNavbarComponent,
+    CalendarComponent,
+    DashboardTabsComponent,
+  ],
   templateUrl: './components/parent-dashboard.component.html',
 })
 export class ParentDashboardComponent {
@@ -77,10 +53,41 @@ export class ParentDashboardComponent {
   private readonly invoiceService = inject(InvoiceService);
   private readonly availabilityService = inject(AvailabilityService);
   private readonly authService = inject(AuthService);
+  private readonly bookingService = inject(BookingService);
 
   readonly Tab = Tab;
 
   readonly activeTab = signal<Tab>(Tab.Overview);
+
+  readonly tabs: TabItem[] = [
+    {
+      id: 'overview',
+      label: 'Tableau de bord',
+      mobileLabel: 'Accueil',
+      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+    },
+    {
+      id: 'booking',
+      label: 'Réservation',
+      icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+    },
+    {
+      id: 'children',
+      label: 'Mes enfants',
+      mobileLabel: 'Enfants',
+      icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    },
+    {
+      id: 'invoices',
+      label: 'Factures',
+      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    },
+    {
+      id: 'payments',
+      label: 'Paiements',
+      icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+    },
+  ];
 
   private readonly _children = signal<Child[]>([]);
   private readonly _availableSlots = signal<SlotDisplay[]>([]);
@@ -107,7 +114,9 @@ export class ParentDashboardComponent {
     const selectedDate = this.selectedDate();
     if (!selectedDate) return [];
 
-    return this.availabilities().filter(availability => availability.date === selectedDate);
+    return this.availabilities().filter(
+      (availability) => availability.date === selectedDate,
+    );
   });
 
   readonly children = this._children.asReadonly();
@@ -140,14 +149,14 @@ export class ParentDashboardComponent {
     ).length,
   }));
 
-   constructor() {
-     effect(() => {
-       this.loadUserData();
-       this.loadCoursData();
-       this.loadInvoicesData();
-       this.loadAvailabilities();
-     });
-   }
+  constructor() {
+    effect(() => {
+      this.loadUserData();
+      this.loadCoursData();
+      this.loadInvoicesData();
+      this.loadAvailabilities();
+    });
+  }
 
   setActiveTab(tab: Tab): void {
     this.activeTab.set(tab);
@@ -172,29 +181,85 @@ export class ParentDashboardComponent {
       return;
     }
 
+    const currentUser = this.currentUser();
+    if (!currentUser) {
+      alert('Utilisateur non connecté');
+      return;
+    }
+
     // Trouver la disponibilité correspondante
-    const availability = this.availabilities().find(a => a.id === slotId);
+    const availability = this.availabilities().find((a) => a.id === slotId);
     if (!availability) {
       alert('Créneau non trouvé');
       return;
     }
 
-    // Créer une réservation basée sur la disponibilité
-    const bookingRequest = {
-      coursId: slotId, // Pour l'instant, on utilise slotId comme coursId temporairement
+    // Créer un cours basé sur la disponibilité
+    const courseRequest: CreateCoursRequest = {
+      titre: `Cours de ${availability.subject}`,
+      matiere: availability.subject,
+      dureeMinutes: availability.duration * 60,
+      dateCours: `${availability.date}T${availability.startTime}`,
+      notionsAbordees: `Cours particulier de ${availability.subject}`,
+      tarif: availability.price,
+      parentId: currentUser.id,
       eleveId: childId,
-      notes: `Réservation pour ${availability.subject} avec ${availability.teacherName}`
+      statut: CoursStatus.PENDING,
     };
 
-    // TODO: Une fois l'API de réservation implémentée côté backend,
-    // remplacer par l'appel au service de réservation
-    // this.bookingService.createBooking(bookingRequest).subscribe({...})
+    // Créer le cours
+    this.coursService.createCours(courseRequest).subscribe({
+      next: (course) => {
+        // Créer la réservation pour le cours créé
+        const bookingRequest = {
+          coursId: course.id,
+          eleveId: childId,
+          notes: `Réservation pour ${availability.subject} avec ${availability.teacherName}`,
+        };
 
-    // Pour l'instant, simuler une réservation réussie
-    alert(`Réservation effectuée pour ${availability.subject} le ${this.formatDate(availability.date)} à ${availability.startTime} avec ${availability.teacherName}`);
+        this.bookingService.createBooking(bookingRequest).subscribe({
+          next: (booking) => {
+            this._bookings.update((bookings) =>
+              bookings.map((b) =>
+                b.id === booking.id
+                  ? { ...b, status: BookingStatus.CONFIRMED }
+                  : b,
+              ),
+            );
 
-    // Recharger les disponibilités pour refléter les changements
-    this.loadAvailabilities();
+            // Marquer la disponibilité comme non disponible
+            this.availabilityService
+              .updateAvailability(slotId, { isAvailable: false })
+              .subscribe({
+                next: () => {
+                  alert(
+                    `Réservation effectuée pour ${availability.subject} le ${this.formatDate(availability.date)} à ${availability.startTime} avec ${availability.teacherName}`,
+                  );
+                  // Recharger les disponibilités et les cours pour refléter les changements
+                  this.loadAvailabilities();
+                  this.loadCoursData();
+                },
+                error: (error) => {
+                  //console.error('Erreur lors de la mise à jour de la disponibilité:', error);
+                  alert(
+                    'Réservation créée mais erreur lors de la mise à jour de la disponibilité',
+                  );
+                  // Recharger quand même les cours en cas d'erreur
+                  this.loadCoursData();
+                },
+              });
+          },
+          error: (error) => {
+            //console.error('Erreur lors de la réservation:', error);
+            alert('Erreur lors de la création de la réservation');
+          },
+        });
+      },
+      error: (error) => {
+        //console.error('Erreur lors de la création du cours:', error);
+        alert('Erreur lors de la création du cours');
+      },
+    });
   }
 
   cancelBooking(bookingId: number): void {
@@ -217,7 +282,7 @@ export class ParentDashboardComponent {
           this.loadCoursData();
         },
         error: (error) => {
-          console.error('Erreur lors de la validation:', error);
+          //console.error('Erreur lors de la validation:', error);
         },
       });
   }
@@ -230,7 +295,7 @@ export class ParentDashboardComponent {
           this.loadCoursData();
         },
         error: (error) => {
-          console.error('Erreur lors de la finalisation:', error);
+          //console.error('Erreur lors de la finalisation:', error);
         },
       });
   }
@@ -244,7 +309,7 @@ export class ParentDashboardComponent {
             this.loadCoursData();
           },
           error: (error) => {
-            console.error("Erreur lors de l'annulation:", error);
+            //console.error("Erreur lors de l'annulation:", error);
           },
         });
     }
@@ -257,7 +322,7 @@ export class ParentDashboardComponent {
         this.loadInvoicesData();
       },
       error: (error) => {
-        console.error('Failed to send invoice:', error);
+        //console.error('Failed to send invoice:', error);
       },
     });
   }
@@ -273,7 +338,7 @@ export class ParentDashboardComponent {
         globalThis.URL.revokeObjectURL(url);
       },
       error: (error) => {
-        console.error('Failed to download invoice:', error);
+        //console.error('Failed to download invoice:', error);
       },
     });
   }
@@ -283,8 +348,10 @@ export class ParentDashboardComponent {
   }
 
   getStatusColor(status: string): string {
+    const normalizedStatus = status?.toLowerCase();
     const colors: Record<string, string> = {
       upcoming: 'bg-blue-100 text-blue-800',
+      confirmed: 'bg-green-100 text-green-800',
       completed: 'bg-green-100 text-green-800',
       cancelled: 'bg-gray-100 text-gray-800',
       paid: 'bg-green-100 text-green-800',
@@ -292,12 +359,14 @@ export class ParentDashboardComponent {
       overdue: 'bg-red-100 text-red-800',
       failed: 'bg-red-100 text-red-800',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[normalizedStatus] || 'bg-gray-100 text-gray-800';
   }
 
   getStatusLabel(status: string): string {
+    const normalizedStatus = status?.toLowerCase();
     const labels: Record<string, string> = {
       upcoming: 'À venir',
+      confirmed: 'Confirmé',
       completed: 'Terminé',
       cancelled: 'Annulé',
       paid: 'Payée',
@@ -305,7 +374,7 @@ export class ParentDashboardComponent {
       overdue: 'En retard',
       failed: 'Échoué',
     };
-    return labels[status] || status;
+    return labels[normalizedStatus] || status;
   }
 
   formatDate(date: Date | string): string {
@@ -371,22 +440,26 @@ export class ParentDashboardComponent {
   }
 
   private loadCoursData(): void {
-    this.coursService.getAllCours().subscribe((response) => {
-      const currentParentId = this.currentUser()?.id;
-      const childIds = this._children().map((c) => c.id);
-      const bookingsMap = new Map<number, BookingDisplay>();
-      const bookings = response.content
-        .filter(
-          (c) =>
-            (c.statut !== CoursStatus.PENDING || c.eleveId) &&
-            c.eleveId &&
-            childIds.includes(c.eleveId) &&
-            c.parentId === currentParentId,
-        )
-        .map((c) => this.coursToBookingDisplay(c));
-      bookings.forEach((b) => bookingsMap.set(b.id, b));
-      this._bookings.set(Array.from(bookingsMap.values()));
+    const currentParentId = this.currentUser()?.id;
+    if (!currentParentId) return;
 
+    // Charger les réservations du parent
+    this.bookingService.getBookingsByParent(currentParentId).subscribe({
+      next: (bookings) => {
+        const childIds = this._children().map((c) => c.id);
+        const bookingDisplays = bookings
+          .filter((b) => b.eleveId && childIds.includes(b.eleveId))
+          .map((b) => this.bookingToBookingDisplay(b));
+        this._bookings.set(bookingDisplays);
+      },
+      error: (error) => {
+        console.error('Failed to load bookings:', error);
+        this._bookings.set([]);
+      },
+    });
+
+    // Charger les cours pour les slots disponibles (cours sans élève assigné)
+    this.coursService.getAllCours().subscribe((response) => {
       const slotsMap = new Map<number, SlotDisplay>();
       const slots = response.content
         .filter(
@@ -405,7 +478,7 @@ export class ParentDashboardComponent {
     this.invoiceService.getMyInvoices().subscribe((invoices) => {
       const formattedInvoices = invoices.map((invoice) => ({
         id: invoice.id,
-        student: 'Élève',
+        student: invoice.studentName || 'Élève',
         date: invoice.creationDate,
         dueDate: invoice.dueDate,
         amount: invoice.totalAmount,
@@ -441,6 +514,22 @@ export class ParentDashboardComponent {
       price: cours.tarif,
       duration: cours.dureeMinutes / 60,
       status: this.mapCoursStatusToBookingStatus(cours.statut),
+    };
+  }
+
+  private bookingToBookingDisplay(booking: Booking): BookingDisplay {
+    const child = this._children().find((c) => c.id === booking.eleveId);
+    return {
+      id: booking.id,
+      coursId: booking.coursId,
+      eleveId: booking.eleveId,
+      child: child ? child.name : 'Élève',
+      date: new Date(booking.coursDate),
+      subject: booking.coursMatiere,
+      teacher: booking.parentName, // Ou trouver le nom du professeur
+      price: booking.coursTarif,
+      duration: booking.coursDureeMinutes / 60,
+      status: booking.status,
     };
   }
 
@@ -503,20 +592,37 @@ export class ParentDashboardComponent {
   private loadAvailabilities(): void {
     // Charger les disponibilités pour les prochains 30 jours
     const startDate = new Date().toISOString().split('T')[0];
-    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
 
-    this.availabilityService.getAvailabilitiesByDateRange(startDate, endDate).subscribe({
-      next: (availabilities) => {
-        this.availabilities.set(availabilities);
-      },
-      error: (error) => {
-        console.error('Failed to load availabilities:', error);
-        this.availabilities.set([]);
-      }
-    });
+    this.availabilityService
+      .getAvailabilitiesByDateRange(startDate, endDate)
+      .subscribe({
+        next: (availabilities) => {
+          this.availabilities.set(availabilities);
+        },
+        error: (error) => {
+          //console.error('Failed to load availabilities:', error);
+          this.availabilities.set([]);
+        },
+      });
   }
 
   onDateSelected(dateString: string): void {
     this.selectedDate.set(dateString);
+  }
+
+  showMobileMenu = signal(false);
+
+  toggleMobileMenu() {
+    this.showMobileMenu.update((value) => !value);
+  }
+
+  onTabChange(tabId: string) {
+    const tab = Object.values(Tab).find((t) => t === tabId);
+    if (tab) {
+      this.activeTab.set(tab);
+    }
   }
 }

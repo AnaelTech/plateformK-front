@@ -1,6 +1,10 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
+import {
+  HttpClient,
+  HttpParams,
+  HttpErrorResponse,
+} from '@angular/common/http';
+import { Observable, tap, catchError, throwError, finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Availability,
@@ -36,6 +40,9 @@ export class AvailabilityService {
     this._availabilities().filter((availability) => !availability.isAvailable),
   );
 
+  /**
+   * Crée une nouvelle disponibilité
+   */
   createAvailability(
     availabilityRequest: CreateAvailabilityRequest,
   ): Observable<Availability> {
@@ -48,16 +55,24 @@ export class AvailabilityService {
           availability,
           ...availabilities,
         ]);
-        this._loading.set(false);
       }),
-      catchError((error) => {
-        this._error.set(error.message || 'Failed to create availability');
+      catchError((error: HttpErrorResponse) => {
+        const errorMessage = this.extractErrorMessage(
+          error,
+          'Failed to create availability',
+        );
+        this._error.set(errorMessage);
+        return throwError(() => new Error(errorMessage));
+      }),
+      finalize(() => {
         this._loading.set(false);
-        throw error;
       }),
     );
   }
 
+  /**
+   * Récupère les disponibilités d'un professeur
+   */
   getAvailabilitiesByTeacher(teacherId: number): Observable<Availability[]> {
     this._loading.set(true);
     this._error.set(null);
@@ -67,18 +82,24 @@ export class AvailabilityService {
       .pipe(
         tap((availabilities) => {
           this._availabilities.set(availabilities);
-          this._loading.set(false);
         }),
-        catchError((error) => {
-          this._error.set(
-            error.message || 'Failed to load teacher availabilities',
+        catchError((error: HttpErrorResponse) => {
+          const errorMessage = this.extractErrorMessage(
+            error,
+            'Failed to load teacher availabilities',
           );
+          this._error.set(errorMessage);
+          return throwError(() => new Error(errorMessage));
+        }),
+        finalize(() => {
           this._loading.set(false);
-          return of([]);
         }),
       );
   }
 
+  /**
+   * Récupère les disponibilités par période
+   */
   getAvailabilitiesByDateRange(
     startDate: string,
     endDate: string,
@@ -93,19 +114,23 @@ export class AvailabilityService {
     return this.http
       .get<AvailabilitySlot[]>(`${this.apiUrl}/range`, { params })
       .pipe(
-        tap(() => {
-          this._loading.set(false);
-        }),
-        catchError((error) => {
-          this._error.set(
-            error.message || 'Failed to load availabilities by date range',
+        catchError((error: HttpErrorResponse) => {
+          const errorMessage = this.extractErrorMessage(
+            error,
+            'Failed to load availabilities by date range',
           );
+          this._error.set(errorMessage);
+          return throwError(() => new Error(errorMessage));
+        }),
+        finalize(() => {
           this._loading.set(false);
-          return of([]);
         }),
       );
   }
 
+  /**
+   * Met à jour une disponibilité existante
+   */
   updateAvailability(
     id: number,
     updateRequest: UpdateAvailabilityRequest,
@@ -125,16 +150,24 @@ export class AvailabilityService {
           if (this._selectedAvailability()?.id === id) {
             this._selectedAvailability.set(updatedAvailability);
           }
-          this._loading.set(false);
         }),
-        catchError((error) => {
-          this._error.set(error.message || 'Failed to update availability');
+        catchError((error: HttpErrorResponse) => {
+          const errorMessage = this.extractErrorMessage(
+            error,
+            'Failed to update availability',
+          );
+          this._error.set(errorMessage);
+          return throwError(() => new Error(errorMessage));
+        }),
+        finalize(() => {
           this._loading.set(false);
-          throw error;
         }),
       );
   }
 
+  /**
+   * Supprime une disponibilité
+   */
   deleteAvailability(id: number): Observable<void> {
     this._loading.set(true);
     this._error.set(null);
@@ -147,17 +180,24 @@ export class AvailabilityService {
         if (this._selectedAvailability()?.id === id) {
           this._selectedAvailability.set(null);
         }
-        this._loading.set(false);
       }),
-      catchError((error) => {
-        this._error.set(error.message || 'Failed to delete availability');
+      catchError((error: HttpErrorResponse) => {
+        const errorMessage = this.extractErrorMessage(
+          error,
+          'Failed to delete availability',
+        );
+        this._error.set(errorMessage);
+        return throwError(() => new Error(errorMessage));
+      }),
+      finalize(() => {
         this._loading.set(false);
-        throw error;
       }),
     );
   }
 
-  // Bulk operations for managing multiple availabilities
+  /**
+   * Crée plusieurs disponibilités en une seule requête
+   */
   createMultipleAvailabilities(
     availabilityRequests: CreateAvailabilityRequest[],
   ): Observable<Availability[]> {
@@ -172,31 +212,96 @@ export class AvailabilityService {
             ...availabilities,
             ...current,
           ]);
-          this._loading.set(false);
         }),
-        catchError((error) => {
-          this._error.set(
-            error.message || 'Failed to create multiple availabilities',
+        catchError((error: HttpErrorResponse) => {
+          const errorMessage = this.extractErrorMessage(
+            error,
+            'Failed to create multiple availabilities',
           );
+          this._error.set(errorMessage);
+          return throwError(() => new Error(errorMessage));
+        }),
+        finalize(() => {
           this._loading.set(false);
-          throw error;
         }),
       );
   }
 
+  /**
+   * Sélectionne une disponibilité
+   */
   selectAvailability(availability: Availability | null): void {
     this._selectedAvailability.set(availability);
   }
 
+  /**
+   * Vide le cache du service
+   */
   clearCache(): void {
     this._availabilities.set([]);
     this._selectedAvailability.set(null);
     this._error.set(null);
   }
 
-  refreshAvailabilities(): void {
-    // This would typically be called with a teacherId
-    // For now, just clear the error state
+  /**
+   * Réinitialise l'état d'erreur
+   */
+  clearError(): void {
     this._error.set(null);
+  }
+
+  /**
+   * Rafraîchit les disponibilités pour un professeur donné
+   */
+  refreshAvailabilities(teacherId?: number): Observable<Availability[]> | void {
+    if (teacherId) {
+      return this.getAvailabilitiesByTeacher(teacherId);
+    }
+    this._error.set(null);
+  }
+
+  /**
+   * Extrait le message d'erreur d'une HttpErrorResponse
+   */
+  private extractErrorMessage(
+    error: HttpErrorResponse,
+    defaultMessage: string,
+  ): string {
+    // Erreur côté client (réseau, etc.)
+    if (error.error instanceof ErrorEvent) {
+      return `Client error: ${error.error.message}`;
+    }
+
+    // Erreur côté serveur
+    let message = defaultMessage;
+
+    // Cas 1: Le backend renvoie un objet avec une propriété 'message'
+    if (error.error?.message) {
+      message = error.error.message;
+    }
+    // Cas 2: Le backend renvoie directement une chaîne
+    else if (typeof error.error === 'string') {
+      message = error.error;
+    }
+    // Cas 3: Utiliser le message HTTP par défaut
+    else if (error.message) {
+      message = error.message;
+    }
+
+    // Ajouter le contexte du code de statut
+    switch (error.status) {
+      case 400:
+        return `Validation error: ${message}`;
+      case 404:
+        return `Resource not found: ${message}`;
+      case 409:
+        return `Conflict: ${message}`;
+      case 500:
+        return `Server error: ${message}`;
+      case 0:
+        return 'Network error: Unable to connect to server';
+      default:
+        return message;
+    }
   }
 }

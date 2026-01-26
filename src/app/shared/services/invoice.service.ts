@@ -12,6 +12,7 @@ export interface Invoice {
   statut: string;
   description?: string;
   notes?: string;
+  studentName?: string;
 }
 
 @Injectable({

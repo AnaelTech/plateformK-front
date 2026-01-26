@@ -31,7 +31,7 @@ export class CalendarComponent {
     const currentDate = new Date(startDate);
 
     while (currentDate <= lastDay || dates.length % 7 !== 0) {
-      const dateString = currentDate.toISOString().split('T')[0];
+      const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
       const dayAvailabilities = this.availabilities.filter(a => a.date === dateString);
 
       dates.push({

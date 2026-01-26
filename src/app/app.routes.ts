@@ -3,6 +3,7 @@ import { LoginComponent } from './features/login/login';
 import { TeacherDashboardComponent } from './features/dashboard/teacher/teacher-dasboard';
 import { ParentDashboardComponent } from './features/dashboard/parent/parent-dashboard';
 import { StudentDashboardComponent } from './features/dashboard/student/student-dashboard';
+import { PageNotFoundComponent } from './features/page-not-found/page-not-found';
 
 export const routes: Routes = [
   {
@@ -20,5 +21,9 @@ export const routes: Routes = [
   {
     path: 'dashboard/eleve',
     component: StudentDashboardComponent,
+  },
+  {
+    path: '**',
+    component: PageNotFoundComponent,
   },
 ];

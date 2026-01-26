@@ -1,7 +1,18 @@
 // student-dashboard.component.ts
 
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  UpcomingCourse,
+  PastCourse,
+  Teacher,
+  Grade,
+} from '../../../shared/models/Student';
+import { TabItem } from '../../../shared/models/TabItem';
+import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
+import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
+import { UserService } from '../../../shared/services/user.service';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 enum Tab {
   Overview = 'overview',
@@ -10,47 +21,51 @@ enum Tab {
   Progress = 'progress',
 }
 
-interface UpcomingCourse {
-  id: number;
-  subject: string;
-  teacher: string;
-  date: Date;
-  status: 'confirmed' | 'pending' | 'cancelled';
-}
-
-interface PastCourse {
-  id: number;
-  subject: string;
-  teacher: string;
-  date: Date;
-  duration: number;
-  status: 'completed' | 'missed';
-}
-
-interface Teacher {
-  id: number;
-  name: string;
-  subject: string;
-  email: string;
-}
-
-interface Grade {
-  id: number;
-  subject: string;
-  value: number;
-  date: Date;
-}
-
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DashboardTabsComponent, DashboardNavbarComponent],
   templateUrl: './components/student-dashboard.component.html',
 })
 export class StudentDashboardComponent {
+
   // Onglet actif
-  activeTab: Tab = Tab.Overview;
-  Tab = Tab; // Pour l'utiliser dans le template avec Tab.Overview etc.
+
+  readonly Tab = Tab;
+
+  readonly activeTab = signal<Tab>(Tab.Overview);
+
+  readonly authService = inject(AuthService);
+
+  readonly tabs: TabItem[] = [
+    {
+      id: 'overview',
+      label: 'Tableau de bord',
+      mobileLabel: 'Accueil',
+      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+    },
+    {
+      id: 'courses',
+      label: 'Mes cours',
+      icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+    },
+    {
+      id: 'teachers',
+      label: 'Mes professeurs',
+      mobileLabel: 'Professeurs',
+      icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    },
+    {
+      id: 'progress',
+      label: 'Mes progrès',
+      mobileLabel: 'Progrès',
+      icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    },
+  ];
+
+  readonly userService = inject(UserService);
+
+  readonly currentUser = this.userService.currentUser;
 
   // Données statistiques du tableau de bord
   stats = {
@@ -156,7 +171,7 @@ export class StudentDashboardComponent {
 
   // Changer d'onglet
   setActiveTab(tab: Tab): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
   }
 
   // Récupérer les initiales du nom
@@ -220,6 +235,22 @@ export class StudentDashboardComponent {
         return 'Manqué';
       default:
         return status;
+    }
+  }
+
+  onNavbarSettings(): void {
+    alert('Redirection vers les paramètres...');
+  }
+
+  onNavbarLogout(): void {
+    this.userService.clearCache();
+    this.authService.logout('/');
+  }
+
+  onTabChange(tabId: string) {
+    const tab = Object.values(Tab).find((t) => t === tabId);
+    if (tab) {
+      this.activeTab.set(tab);
     }
   }
 }
