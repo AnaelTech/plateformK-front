@@ -1,29 +1,95 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './features/login/login';
-import { TeacherDashboardComponent } from './features/dashboard/teacher/teacher-dasboard';
-import { ParentDashboardComponent } from './features/dashboard/parent/parent-dashboard';
-import { StudentDashboardComponent } from './features/dashboard/student/student-dashboard';
-import { PageNotFoundComponent } from './features/page-not-found/page-not-found';
+import {
+  authGuard,
+  roleGuard,
+  loginGuard,
+} from './core/auth/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    component: LoginComponent,
+    loadComponent: () =>
+      import('./features/login/login').then((m) => m.LoginComponent),
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/login/login').then((m) => m.LoginComponent),
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'register/invitation/:token',
+    loadComponent: () =>
+      import('./features/register-invitation/register-invitation.component').then(
+        (m) => m.RegisterInvitationComponent,
+      ),
   },
   {
     path: 'dashboard',
-    component: TeacherDashboardComponent,
+    loadComponent: () =>
+      import('./features/dashboard/teacher/teacher-dashboard').then(
+        (m) => m.TeacherDashboardComponent,
+      ),
+    canActivate: [roleGuard(['PROFESSEUR'])],
+  },
+  {
+    path: 'parent-dashboard',
+    loadComponent: () =>
+      import('./features/dashboard/parent/parent-dashboard').then(
+        (m) => m.ParentDashboardComponent,
+      ),
+    canActivate: [roleGuard(['PARENT'])],
+  },
+  {
+    path: 'student-dashboard',
+    loadComponent: () =>
+      import('./features/dashboard/student/student-dashboard').then(
+        (m) => m.StudentDashboardComponent,
+      ),
+    canActivate: [roleGuard(['ELEVE'])],
   },
   {
     path: 'dashboard/parent',
-    component: ParentDashboardComponent,
+    loadComponent: () =>
+      import('./features/dashboard/parent/parent-dashboard').then(
+        (m) => m.ParentDashboardComponent,
+      ),
+    canActivate: [roleGuard(['PARENT'])],
   },
   {
     path: 'dashboard/eleve',
-    component: StudentDashboardComponent,
+    loadComponent: () =>
+      import('./features/dashboard/student/student-dashboard').then(
+        (m) => m.StudentDashboardComponent,
+      ),
+    canActivate: [roleGuard(['ELEVE'])],
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./features/forgot-password/forgot-password').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/reset-password/reset-password').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile').then((m) => m.ProfileComponent),
+    canActivate: [authGuard],
   },
   {
     path: '**',
-    component: PageNotFoundComponent,
+    loadComponent: () =>
+      import('./features/page-not-found/page-not-found').then(
+        (m) => m.PageNotFoundComponent,
+      ),
   },
 ];

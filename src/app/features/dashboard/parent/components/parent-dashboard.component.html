@@ -252,6 +252,12 @@
                   </div>
                   <div class="flex gap-2 ml-4">
                     <button
+                      (click)="viewBookingDetails(booking.id)"
+                      class="px-4 py-2 border-2 border-purple-300 text-purple-700 rounded-lg text-sm font-medium hover:border-purple-400 hover:bg-purple-50 transition-colors cursor-pointer"
+                    >
+                      Voir détails
+                    </button>
+                    <button
                       (click)="cancelBooking(booking.id)"
                       class="px-4 py-2 border-2 border-red-300 text-red-700 rounded-lg text-sm font-medium hover:border-red-400 hover:bg-red-50 transition-colors cursor-pointer"
                     >
@@ -324,6 +330,18 @@
                     >
                       <span>Émise le {{ formatDate(invoice.date) }}</span>
                       <span>Échéance : {{ formatDate(invoice.dueDate) }}</span>
+                      @if (invoice.teacher) {
+                        <span
+                          >Professeur :
+                          {{ invoice.teacher.firstName }}
+                          {{ invoice.teacher.lastName }}</span
+                        >
+                      }
+                      @if (invoice.isPaid && invoice.paidAt) {
+                        <span class="text-green-600 font-medium"
+                          >Payée le {{ formatDate(invoice.paidAt) }}</span
+                        >
+                      }
                       <span class="font-semibold text-gray-900"
                         >{{ invoice.amount }}€</span
                       >
@@ -583,29 +601,399 @@
 
     <!-- Vue Mes enfants -->
     @if (activeTab() === Tab.Children) {
+      <!-- Section Ajouter un enfant -->
+      @if (children().length === 0 || showAddChildOptions()) {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+          <div class="p-6 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900">Ajouter mon enfant</h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Choisissez comment vous souhaitez ajouter votre enfant
+            </p>
+          </div>
+          <div class="p-6">
+            <div class="space-y-4">
+              <!-- Option 1 : Je remplis moi-même -->
+              <label
+                class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-purple-300"
+                [class.border-purple-600]="addChildMethod() === 'manual'"
+                [class.bg-purple-50]="addChildMethod() === 'manual'"
+                [class.border-gray-200]="addChildMethod() !== 'manual'"
+              >
+                <input
+                  type="radio"
+                  name="addChildMethod"
+                  value="manual"
+                  [checked]="addChildMethod() === 'manual'"
+                  (change)="addChildMethod.set('manual')"
+                  class="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500"
+                />
+                <div class="ml-3 flex-1">
+                  <div class="flex items-center gap-2">
+                    <svg
+                      class="w-5 h-5 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <span class="font-semibold text-gray-900"
+                      >Je remplis moi-même les informations</span
+                    >
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Créez directement le compte de votre enfant avec ses
+                    informations
+                  </p>
+                </div>
+              </label>
+
+              <!-- Option 2 : J'envoie un lien -->
+              <label
+                class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-purple-300"
+                [class.border-purple-600]="addChildMethod() === 'invitation'"
+                [class.bg-purple-50]="addChildMethod() === 'invitation'"
+                [class.border-gray-200]="addChildMethod() !== 'invitation'"
+              >
+                <input
+                  type="radio"
+                  name="addChildMethod"
+                  value="invitation"
+                  [checked]="addChildMethod() === 'invitation'"
+                  (change)="addChildMethod.set('invitation')"
+                  class="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500"
+                />
+                <div class="ml-3 flex-1">
+                  <div class="flex items-center gap-2">
+                    <svg
+                      class="w-5 h-5 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span class="font-semibold text-gray-900"
+                      >J'envoie un lien d'invitation à mon enfant</span
+                    >
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Votre enfant recevra un email pour créer son propre compte
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Bouton pour continuer -->
+            <div class="mt-6 flex gap-3">
+              <button
+                (click)="proceedWithAddChild()"
+                [disabled]="!addChildMethod()"
+                class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                Continuer
+              </button>
+              @if (children().length > 0) {
+                <button
+                  (click)="showAddChildOptions.set(false)"
+                  class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-gray-400 transition-colors"
+                >
+                  Annuler
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Formulaire manuel d'ajout d'enfant -->
+      @if (showManualChildForm()) {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+          <div class="p-6 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-gray-900">
+              Créer le compte de mon enfant
+            </h2>
+            <p class="text-sm text-gray-600 mt-1">
+              Remplissez les informations pour créer le compte élève
+            </p>
+          </div>
+          <div class="p-6">
+            <!-- Messages de succès/erreur -->
+            @if (childFormSuccess()) {
+              <div
+                class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3"
+              >
+                <svg
+                  class="w-5 h-5 text-green-600 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span class="text-sm text-green-800">{{
+                  childFormSuccess()
+                }}</span>
+              </div>
+            }
+
+            @if (childFormError()) {
+              <div
+                class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"
+              >
+                <svg
+                  class="w-5 h-5 text-red-600 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span class="text-sm text-red-800">{{ childFormError() }}</span>
+              </div>
+            }
+
+            <form
+              [formGroup]="childForm"
+              (ngSubmit)="submitChildForm()"
+              class="space-y-4"
+            >
+              <!-- Nom -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Nom <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="lastName"
+                  placeholder="Nom de l'enfant"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  [class.border-red-500]="
+                    childForm.get('lastName')?.invalid &&
+                    childForm.get('lastName')?.touched
+                  "
+                />
+                @if (
+                  childForm.get("lastName")?.invalid &&
+                  childForm.get("lastName")?.touched
+                ) {
+                  <p class="text-xs text-red-500 mt-1">
+                    Le nom doit contenir entre 2 et 50 caractères
+                  </p>
+                }
+              </div>
+
+              <!-- Prénom -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Prénom <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  formControlName="firstName"
+                  placeholder="Prénom de l'enfant"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  [class.border-red-500]="
+                    childForm.get('firstName')?.invalid &&
+                    childForm.get('firstName')?.touched
+                  "
+                />
+                @if (
+                  childForm.get("firstName")?.invalid &&
+                  childForm.get("firstName")?.touched
+                ) {
+                  <p class="text-xs text-red-500 mt-1">
+                    Le prénom doit contenir entre 2 et 50 caractères
+                  </p>
+                }
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Email <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  formControlName="email"
+                  placeholder="email@exemple.com"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  [class.border-red-500]="
+                    childForm.get('email')?.invalid &&
+                    childForm.get('email')?.touched
+                  "
+                />
+                @if (
+                  childForm.get("email")?.invalid &&
+                  childForm.get("email")?.touched
+                ) {
+                  <p class="text-xs text-red-500 mt-1">Email invalide</p>
+                }
+                <p class="text-xs text-gray-500 mt-1">
+                  Cet email sera utilisé pour la connexion de l'enfant
+                </p>
+              </div>
+
+              <!-- Date de naissance -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Date de naissance <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  formControlName="birthDate"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  [class.border-red-500]="
+                    childForm.get('birthDate')?.invalid &&
+                    childForm.get('birthDate')?.touched
+                  "
+                />
+              </div>
+
+              <!-- Mot de passe -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Mot de passe <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  formControlName="password"
+                  placeholder="Créer un mot de passe"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  [class.border-red-500]="
+                    childForm.get('password')?.invalid &&
+                    childForm.get('password')?.touched
+                  "
+                />
+                @if (
+                  childForm.get("password")?.invalid &&
+                  childForm.get("password")?.touched
+                ) {
+                  <p class="text-xs text-red-500 mt-1">
+                    Le mot de passe doit contenir au moins 8 caractères
+                  </p>
+                }
+              </div>
+
+              <!-- Téléphone (optionnel) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Téléphone (optionnel)
+                </label>
+                <input
+                  type="tel"
+                  formControlName="phoneNumber"
+                  placeholder="+33 6 12 34 56 78"
+                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  [class.border-red-500]="
+                    childForm.get('phoneNumber')?.invalid &&
+                    childForm.get('phoneNumber')?.touched
+                  "
+                />
+                @if (
+                  childForm.get("phoneNumber")?.invalid &&
+                  childForm.get("phoneNumber")?.touched
+                ) {
+                  <p class="text-xs text-red-500 mt-1">
+                    Format invalide (ex: +33612345678 ou 0612345678)
+                  </p>
+                }
+              </div>
+
+              <!-- Boutons -->
+              <div class="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  [disabled]="childFormLoading()"
+                  class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  @if (childFormLoading()) {
+                    <svg
+                      class="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Création...</span>
+                  } @else {
+                    <span>Créer le compte</span>
+                  }
+                </button>
+                <button
+                  type="button"
+                  (click)="cancelAddChild()"
+                  [disabled]="childFormLoading()"
+                  class="px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:border-gray-400 transition-colors disabled:opacity-50"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- Liste des enfants -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-100">
         <div
           class="p-6 border-b border-gray-100 flex items-center justify-between"
         >
           <h2 class="text-xl font-bold text-gray-900">Mes enfants</h2>
-          <button
-            class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
-          >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          @if (children().length > 0 && !showAddChildOptions()) {
+            <button
+              (click)="showAddChildOptions.set(true)"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Ajouter un enfant
-          </button>
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Ajouter un enfant
+            </button>
+          }
         </div>
         <div
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6"
@@ -703,6 +1091,11 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
+                  Professeur
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                >
                   Date émission
                 </th>
                 <th
@@ -739,10 +1132,23 @@
                     {{ invoice.student }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    @if (invoice.teacher) {
+                      {{ invoice.teacher.firstName }}
+                      {{ invoice.teacher.lastName }}
+                    } @else {
+                      <span class="text-gray-400">-</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {{ formatDate(invoice.date) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {{ formatDate(invoice.dueDate) }}
+                    @if (invoice.isPaid && invoice.paidAt) {
+                      <div class="text-xs text-green-600 mt-1">
+                        Payée le {{ formatDate(invoice.paidAt) }}
+                      </div>
+                    }
                   </td>
                   <td
                     class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
@@ -807,6 +1213,15 @@
               </div>
 
               <div class="space-y-1.5 text-xs text-gray-600 mb-3">
+                @if (invoice.teacher) {
+                  <div class="flex justify-between">
+                    <span>Professeur</span>
+                    <span class="font-medium text-gray-900"
+                      >{{ invoice.teacher.firstName }}
+                      {{ invoice.teacher.lastName }}</span
+                    >
+                  </div>
+                }
                 <div class="flex justify-between">
                   <span>Émise le</span>
                   <span class="font-medium text-gray-900">{{
@@ -819,6 +1234,14 @@
                     formatDate(invoice.dueDate)
                   }}</span>
                 </div>
+                @if (invoice.isPaid && invoice.paidAt) {
+                  <div class="flex justify-between">
+                    <span>Payée le</span>
+                    <span class="font-medium text-green-600">{{
+                      formatDate(invoice.paidAt)
+                    }}</span>
+                  </div>
+                }
                 <div class="flex justify-between">
                   <span>Montant</span>
                   <span class="font-bold text-gray-900 text-sm"
@@ -995,5 +1418,161 @@
         </div>
       </div>
     }
+
+    <!-- Modal d'invitation enfant -->
+    @if (showInvitationModal()) {
+      <div
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        (click)="closeInvitationModal()"
+      >
+        <div
+          class="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900">Inviter mon enfant</h3>
+            <button
+              type="button"
+              (click)="closeInvitationModal()"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          @if (invitationSuccess()) {
+            <div
+              class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg"
+            >
+              <div class="flex items-center gap-2 text-green-800">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span class="font-medium">{{ invitationSuccess() }}</span>
+              </div>
+            </div>
+          }
+
+          @if (invitationError()) {
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div class="flex items-center gap-2 text-red-800">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                <span class="font-medium">{{ invitationError() }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="space-y-4">
+            <p class="text-sm text-gray-600">
+              Envoyez une invitation par email à votre enfant pour qu'il puisse
+              créer son compte élève.
+            </p>
+
+            <div>
+              <label
+                for="invitationEmail"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email de l'enfant
+              </label>
+              <input
+                type="email"
+                id="invitationEmail"
+                [value]="invitationEmail()"
+                (input)="invitationEmail.set($any($event.target).value)"
+                placeholder="exemple@email.com"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                [disabled]="invitationLoading()"
+              />
+            </div>
+
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                (click)="closeInvitationModal()"
+                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                [disabled]="invitationLoading()"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                (click)="sendChildInvitation()"
+                class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                [disabled]="invitationLoading() || !invitationEmail()"
+              >
+                @if (invitationLoading()) {
+                  <svg
+                    class="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <span>Envoi...</span>
+                } @else {
+                  <span>Envoyer l'invitation</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </main>
+
+  <!-- Booking Details Modal -->
+  @if (showBookingDetails() && selectedBookingForDetails()) {
+    <app-booking-details-modal
+      [booking]="selectedBookingForDetails()!"
+      (close)="closeBookingDetails()"
+    ></app-booking-details-modal>
+  }
 </div>

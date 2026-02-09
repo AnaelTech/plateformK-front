@@ -1,18 +1,18 @@
 // student-dashboard.component.ts
 
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  UpcomingCourse,
-  PastCourse,
-  Teacher,
-  Grade,
-} from '../../../shared/models/Student';
 import { TabItem } from '../../../shared/models/TabItem';
 import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
 import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
 import { UserService } from '../../../shared/services/user.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { StudentDashboardService } from './services/student-dashboard.service';
+import { Subject, combineLatest } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
+import { Booking } from '../../../shared/models/Booking';
+import { BookingService } from '../../../shared/services/booking.service';
 
 enum Tab {
   Overview = 'overview',
@@ -24,18 +24,21 @@ enum Tab {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, DashboardTabsComponent, DashboardNavbarComponent],
+  imports: [CommonModule, DashboardTabsComponent, DashboardNavbarComponent, BookingDetailsModalComponent],
   templateUrl: './components/student-dashboard.component.html',
 })
-export class StudentDashboardComponent {
-
-  // Onglet actif
+export class StudentDashboardComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private readonly studentDashboardService = inject(StudentDashboardService);
+  private readonly bookingService = inject(BookingService);
 
   readonly Tab = Tab;
-
   readonly activeTab = signal<Tab>(Tab.Overview);
-
   readonly authService = inject(AuthService);
+
+  // Booking details modal
+  showBookingDetails = signal(false);
+  selectedBookingForDetails = signal<Booking | null>(null);
 
   readonly tabs: TabItem[] = [
     {
@@ -64,117 +67,92 @@ export class StudentDashboardComponent {
   ];
 
   readonly userService = inject(UserService);
-
   readonly currentUser = this.userService.currentUser;
 
-  // Données statistiques du tableau de bord
-  stats = {
-    upcomingCourses: 5,
-    averageGrade: 15.8,
-    pendingHomework: 2,
-    completedCourses: 42,
-  };
+  readonly upcomingCourses = signal<any[]>([]);
+  readonly pastCourses = signal<any[]>([]);
+  readonly teachers = signal<any[]>([]);
+  readonly recentGrades = signal<any[]>([]);
+  readonly stats = signal<any>({
+    upcomingCourses: 0,
+    completedCourses: 0,
+    averageGrade: 0,
+    pendingHomework: 0,
+  });
+  readonly loading = signal<boolean>(true);
 
-  // Prochains cours
-  upcomingCourses: UpcomingCourse[] = [
-    {
-      id: 1,
-      subject: 'Mathématiques',
-      teacher: 'Mme. Leclerc',
-      date: new Date('2025-12-30T14:00:00'),
-      status: 'confirmed',
-    },
-    {
-      id: 2,
-      subject: 'Physique-Chimie',
-      teacher: 'M. Bertrand',
-      date: new Date('2025-12-31T10:00:00'),
-      status: 'confirmed',
-    },
-    {
-      id: 3,
-      subject: 'Anglais',
-      teacher: 'Ms. Johnson',
-      date: new Date('2026-01-02T16:00:00'),
-      status: 'pending',
-    },
-  ];
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
 
-  // Historique des cours
-  pastCourses: PastCourse[] = [
-    {
-      id: 101,
-      subject: 'Français',
-      teacher: 'Mme. Dubois',
-      date: new Date('2025-12-20'),
-      duration: 1,
-      status: 'completed',
-    },
-    {
-      id: 102,
-      subject: 'Histoire-Géo',
-      teacher: 'M. Martin',
-      date: new Date('2025-12-18'),
-      duration: 1.5,
-      status: 'completed',
-    },
-    {
-      id: 103,
-      subject: 'Mathématiques',
-      teacher: 'Mme. Leclerc',
-      date: new Date('2025-12-15'),
-      duration: 1,
-      status: 'missed',
-    },
-  ];
+  private loadDashboardData(): void {
+    const currentUserId = this.currentUser()?.id;
+    if (!currentUserId) {
+      this.loading.set(false);
+      return;
+    }
 
-  // Liste des professeurs
-  teachers: Teacher[] = [
-    {
-      id: 1,
-      name: 'Mme. Leclerc',
-      subject: 'Mathématiques',
-      email: 'leclerc@klassio.fr',
-    },
-    {
-      id: 2,
-      name: 'M. Bertrand',
-      subject: 'Physique-Chimie',
-      email: 'bertrand@klassio.fr',
-    },
-    {
-      id: 3,
-      name: 'Ms. Johnson',
-      subject: 'Anglais',
-      email: 'johnson@klassio.fr',
-    },
-    {
-      id: 4,
-      name: 'Mme. Dubois',
-      subject: 'Français',
-      email: 'dubois@klassio.fr',
-    },
-  ];
+    combineLatest({
+      bookings: this.studentDashboardService.getStudentBookings(currentUserId),
+      bookingStats: this.studentDashboardService.getBookingStats(),
+      teachers: this.studentDashboardService.getTeachers(),
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ bookings, bookingStats, teachers }) => {
+          // Séparer les cours à venir et passés
+          const now = new Date();
+          const upcoming = bookings
+            .filter((b) => new Date(b.coursDate) > now)
+            .map((b) => ({
+              id: b.id,
+              subject: b.coursMatiere,
+              teacher: `Professeur - ${b.coursTitre}`,
+              date: b.coursDate,
+              status: b.status,
+            }));
 
-  // Dernières notes
-  recentGrades: Grade[] = [
-    {
-      id: 1,
-      subject: 'Mathématiques',
-      value: 17,
-      date: new Date('2025-12-20'),
-    },
-    { id: 2, subject: 'Physique', value: 14.5, date: new Date('2025-12-15') },
-    { id: 3, subject: 'Anglais', value: 18, date: new Date('2025-12-10') },
-    { id: 4, subject: 'Français', value: 15, date: new Date('2025-12-05') },
-  ];
+          const past = bookings
+            .filter((b) => new Date(b.coursDate) <= now)
+            .map((b) => ({
+              id: b.id,
+              subject: b.coursMatiere,
+              teacher: `Professeur - ${b.coursTitre}`,
+              date: b.coursDate,
+              duration: b.coursDureeMinutes / 60,
+              status: b.status,
+            }));
 
-  // Changer d'onglet
+          this.upcomingCourses.set(upcoming);
+          this.pastCourses.set(past);
+          this.teachers.set(teachers);
+
+          // Mettre à jour les statistiques
+          this.stats.set({
+            upcomingCourses: upcoming.length,
+            completedCourses: bookingStats.completedBookings,
+            averageGrade: 0, // À implémenter plus tard
+            pendingHomework: 0, // À implémenter plus tard
+          });
+
+          this.loading.set(false);
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement des données', error);
+          this.loading.set(false);
+        },
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   setActiveTab(tab: Tab): void {
     this.activeTab.set(tab);
   }
 
-  // Récupérer les initiales du nom
   getInitials(name: string): string {
     return name
       .split(' ')
@@ -184,10 +162,9 @@ export class StudentDashboardComponent {
       .substring(0, 2);
   }
 
-  // Formater une date (utilisé avec DatePipe dans le template)
-  // Mais on garde une méthode pour les cas spécifiques si besoin
-  formatDateTime(date: Date): string {
-    return date.toLocaleString('fr-FR', {
+  formatDateTime(date: Date | string): string {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleString('fr-FR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -196,46 +173,67 @@ export class StudentDashboardComponent {
     });
   }
 
-  formatDate(date: Date): string {
-    return date.toLocaleDateString('fr-FR', {
+  formatDate(date: Date | string): string {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
   }
 
-  // Couleur du badge selon le statut
   getStatusColor(status: string): string {
     switch (status) {
       case 'confirmed':
       case 'completed':
+      case 'CONFIRMED':
+      case 'COMPLETED':
         return 'bg-green-100 text-green-800';
       case 'pending':
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-800';
       case 'cancelled':
       case 'missed':
+      case 'CANCELLED':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   }
 
-  // Libellé du statut
   getStatusLabel(status: string): string {
-    switch (status) {
-      case 'confirmed':
+    const upperStatus = status.toUpperCase();
+    switch (upperStatus) {
+      case 'CONFIRMED':
         return 'Confirmé';
-      case 'pending':
+      case 'PENDING':
         return 'En attente';
-      case 'cancelled':
+      case 'CANCELLED':
         return 'Annulé';
-      case 'completed':
+      case 'COMPLETED':
         return 'Terminé';
-      case 'missed':
+      case 'MISSED':
         return 'Manqué';
       default:
         return status;
     }
+  }
+
+  viewBookingDetails(bookingId: number): void {
+    this.bookingService.getBookingById(bookingId).subscribe({
+      next: (booking: Booking) => {
+        this.selectedBookingForDetails.set(booking);
+        this.showBookingDetails.set(true);
+      },
+      error: (error: Error) => {
+        console.error('Failed to load booking details:', error);
+      }
+    });
+  }
+
+  closeBookingDetails(): void {
+    this.showBookingDetails.set(false);
+    this.selectedBookingForDetails.set(null);
   }
 
   onNavbarSettings(): void {
@@ -247,7 +245,7 @@ export class StudentDashboardComponent {
     this.authService.logout('/');
   }
 
-  onTabChange(tabId: string) {
+  onTabChange(tabId: string): void {
     const tab = Object.values(Tab).find((t) => t === tabId);
     if (tab) {
       this.activeTab.set(tab);

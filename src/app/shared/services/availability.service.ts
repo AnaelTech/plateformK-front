@@ -17,7 +17,7 @@ import {
   providedIn: 'root',
 })
 export class AvailabilityService {
-  private readonly apiUrl = `${environment.apiUrl}/api/availabilities`;
+  private readonly apiUrl = `${environment.apiUrl}availabilities`;
 
   constructor(private readonly http: HttpClient) {}
 

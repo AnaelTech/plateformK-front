@@ -89,6 +89,22 @@
             "styles": ["src/styles.css"],
             "scripts": []
           }
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "plateformK:serve",
+            "ui": false
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "plateformK:serve:production"
+            },
+            "development": {
+              "devServerTarget": "plateformK:serve:development"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }

@@ -11,20 +11,33 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, map, catchError, of, Observable, interval } from 'rxjs';
 import { UserService } from '../../../shared/services/user.service';
 import { BookingService } from '../../../shared/services/booking.service';
-import { InvoiceService } from '../../../shared/services/invoice.service';
-import { CoursService } from '../../../shared/services/cours.service';
+import {
+  InvoiceService,
+  Invoice,
+  CreateInvoiceRequest,
+} from '../../../shared/services/invoice.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { AvailabilityService } from '../../../shared/services/availability.service';
+import { InvitationService } from '../../../shared/services/invitation.service';
+import { CoursService } from '../../../shared/services/cours.service';
+import { TypeUser } from '../../../shared/models/User';
 import {
   Availability,
   CreateAvailabilityRequest,
   UpdateAvailabilityRequest,
   AvailabilityFormData,
 } from '../../../shared/models/Availability';
+import { CompletedUnbilledCours } from '../../../shared/models/Cours';
 import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
 import { TabItem } from '../../../shared/models/TabItem';
 import { Tab } from '../parent/parent-dashboard';
 import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
+import {
+  FeedbackModalComponent,
+  FeedbackModalData,
+} from '../../../shared/components/feedback-modal/feedback-modal.component';
+import { BookingStatus } from '../../../shared/models/Booking';
+import { BookingDisplay } from '../../../shared/models/Parent';
 
 @Component({
   selector: 'app-teacher-dashboard',
@@ -34,6 +47,7 @@ import { DashboardTabsComponent } from '../../../shared/components/dashboard-tab
     FormsModule,
     DashboardNavbarComponent,
     DashboardTabsComponent,
+    FeedbackModalComponent,
   ],
   templateUrl: './components/teacher-dashboard.component.html',
 })
@@ -41,9 +55,20 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly bookingService = inject(BookingService);
   private readonly invoiceService = inject(InvoiceService);
-  private readonly coursService = inject(CoursService);
   private readonly authService = inject(AuthService);
   private readonly availabilityService = inject(AvailabilityService);
+  private readonly invitationService = inject(InvitationService);
+  private readonly coursService = inject(CoursService);
+
+  private readonly _bookings = signal<BookingDisplay[]>([]);
+
+  readonly upcomingBookings = computed(() =>
+    this._bookings().filter(
+      (b) =>
+        b.status === BookingStatus.CONFIRMED ||
+        b.status === BookingStatus.PENDING,
+    ),
+  );
 
   readonly Tab = Tab;
 
@@ -102,6 +127,80 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     price: 25,
   });
 
+  // Invitation management
+  showInvitationModal = signal(false);
+  invitationEmail = signal('');
+  invitationLoading = signal(false);
+  invitationSuccess = signal<string | null>(null);
+  invitationError = signal<string | null>(null);
+
+  // Feedback modal management
+  showFeedbackModal = signal(false);
+  selectedBookingId = signal<number | null>(null);
+
+  // Completed unbilled courses management
+  completedUnbilledCours = signal<CompletedUnbilledCours[]>([]);
+  selectedCoursForInvoice = signal<Set<number>>(new Set());
+  showCreateInvoiceModal = signal(false);
+  invoiceCreationLoading = signal(false);
+  invoiceCreationError = signal<string | null>(null);
+  invoiceDescription = signal('');
+  invoiceNotes = signal('');
+  invoicePaymentDelayDays = signal(30);
+
+  // Computed: group completed unbilled courses by parent
+  completedCoursByParent = computed(() => {
+    const courses = this.completedUnbilledCours();
+    const grouped = new Map<number, {
+      parentId: number;
+      parentName: string;
+      parentEmail: string;
+      courses: CompletedUnbilledCours[];
+      totalAmount: number;
+    }>();
+
+    for (const cours of courses) {
+      const existing = grouped.get(cours.parentId);
+      if (existing) {
+        existing.courses.push(cours);
+        existing.totalAmount += cours.tarif;
+      } else {
+        grouped.set(cours.parentId, {
+          parentId: cours.parentId,
+          parentName: cours.parentName,
+          parentEmail: cours.parentEmail,
+          courses: [cours],
+          totalAmount: cours.tarif,
+        });
+      }
+    }
+
+    return Array.from(grouped.values());
+  });
+
+  // Computed: selected courses details for invoice modal
+  selectedCoursDetails = computed(() => {
+    const selectedIds = this.selectedCoursForInvoice();
+    const allCourses = this.completedUnbilledCours();
+    return allCourses.filter(c => selectedIds.has(c.coursId));
+  });
+
+  // Computed: total amount for selected courses
+  selectedCoursTotal = computed(() => {
+    return this.selectedCoursDetails().reduce((sum, c) => sum + c.tarif, 0);
+  });
+
+  // Computed: parent info for selected courses (assumes all selected courses are for the same parent)
+  selectedCoursParent = computed(() => {
+    const details = this.selectedCoursDetails();
+    if (details.length === 0) return null;
+    return {
+      parentId: details[0].parentId,
+      parentName: details[0].parentName,
+      parentEmail: details[0].parentEmail,
+    };
+  });
+
   // Computed calendar dates
   calendarDates = computed(() => {
     const month = this.currentMonth();
@@ -143,18 +242,16 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   stats = signal({
     totalStudents: 0,
     monthlyRevenue: 0,
-    pendingCourses: 0,
-    completedCourses: 0,
+    pendingBookings: 0,
+    completedBookings: 0,
   });
 
   students = signal<any[]>([]);
   parents = signal<any[]>([]);
-  courses = signal<any[]>([]);
-  invoices = signal<any[]>([]);
+  invoices = signal<Invoice[]>([]);
 
   // Computed properties for template
-  recentCourses = signal<any[]>([]);
-  pendingInvoices = signal<any[]>([]);
+  pendingInvoices = signal<Invoice[]>([]);
   upcomingAvailabilities = computed<Availability[]>(() => {
     const allAvailabilities = this.availabilities();
     const today = new Date();
@@ -166,15 +263,15 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
           new Date(availability.date) >= today && availability.isAvailable,
       )
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(0, 3); // Show next 3 upcoming availabilities
+      .slice(0, 3);
 
-    //console.log('Upcoming availabilities:', upcoming);
     return upcoming;
   });
 
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadDashboardData();
+    this.loadCompletedUnbilledCours();
 
     // Rafraîchir les disponibilités toutes les 30 secondes
     this.availabilityRefreshSubscription = interval(30000).subscribe(() => {
@@ -218,7 +315,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
             // Une fois parents et élèves chargés, charger les autres données en parallèle
             forkJoin({
               stats: this.loadStats(),
-              courses: this.loadCourses(),
+              bookings: this.loadBookings(),
               invoices: this.loadInvoices(),
             }).subscribe({
               next: () => {
@@ -237,7 +334,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
             // Continue without parents
             forkJoin({
               stats: this.loadStats(),
-              courses: this.loadCourses(),
+              bookings: this.loadBookings(),
               invoices: this.loadInvoices(),
             }).subscribe({
               next: () => {
@@ -270,11 +367,11 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         // Calculate stats from booking data
         this.stats.set({
           totalStudents:
-            studentsCount?.content.filter((u: any) => u.typeUser === 'ELEVE')
+            studentsCount?.data.filter((u: any) => u.typeUser === 'ELEVE')
               .length || 0,
-          monthlyRevenue: 0, // Will be calculated after courses are loaded
-          pendingCourses: bookingStats?.pendingBookings || 0,
-          completedCourses: bookingStats?.completedBookings || 0,
+          monthlyRevenue: 0, // Will be calculated after bookings are loaded
+          pendingBookings: bookingStats?.pendingBookings || 0,
+          completedBookings: bookingStats?.completedBookings || 0,
         });
         return bookingStats;
       }),
@@ -284,8 +381,8 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         this.stats.set({
           totalStudents: 0,
           monthlyRevenue: 0,
-          pendingCourses: 0,
-          completedCourses: 0,
+          pendingBookings: 0,
+          completedBookings: 0,
         });
         return of(null);
       }),
@@ -296,7 +393,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     return this.userService.getUsers(0, 1000).pipe(
       map((response) => {
         const parents =
-          response?.content.filter((u: any) => u.typeUser === 'PARENT') || [];
+          response?.data.filter((u: any) => u.typeUser === 'PARENT') || [];
         this.parents.set(parents);
         return parents;
       }),
@@ -312,14 +409,14 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     return this.userService.getUsers(0, 100).pipe(
       map((response) => {
         const eleves =
-          response?.content
+          response?.data
             .filter((u: any) => u.typeUser === 'ELEVE')
             .map((eleve: any) => ({
               ...eleve,
-              name: `${eleve.firstName} ${eleve.lastName}`, // Combiner prénom et nom
-              level: this.getStudentLevel(eleve), // Ajouter le niveau de l'élève
-              parent: [], // Will be loaded separately
-              nextSession: null, // Sera mis à jour après le chargement des courses
+              name: `${eleve.firstName} ${eleve.lastName}`,
+              level: this.getStudentLevel(eleve),
+              parent: [],
+              nextSession: null,
             })) || [];
         this.students.set(eleves);
         return eleves;
@@ -332,38 +429,43 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadCourses(): Observable<any[]> {
-    //console.log('Loading courses/bookings');
+  private loadBookings(): Observable<BookingDisplay[]> {
     return this.bookingService.getBookings(0, 50).pipe(
       map((response) => {
-        //console.log('Loaded bookings response:', response);
-        const transformedCourses =
-          response?.content.map((booking: any) => ({
-            id: booking.id, // Use booking.id
-            student: booking.eleveName, // Use booking.eleveName
+        const transformedBookings: BookingDisplay[] =
+          response?.data.map((booking: any) => ({
+            id: booking.id,
+            coursId: booking.coursId,
+            eleveId: booking.eleveId,
+            child: booking.eleveName,
             date: new Date(booking.coursDate),
             duration: booking.coursDureeMinutes / 60,
             subject: booking.coursMatiere || booking.coursTitre,
-            status: this.mapBookingStatus(booking.status),
+            teacher: '', // Sera rempli si nécessaire
+            status: booking.status as BookingStatus,
             price: booking.coursTarif || 0,
           })) || [];
-        //console.log('Transformed courses:', transformedCourses);
-        this.courses.set(transformedCourses);
-        return transformedCourses;
+
+        this._bookings.set(transformedBookings);
+        return transformedBookings;
       }),
       catchError((error) => {
-        console.error('Failed to load courses:', error);
-        this.courses.set([]);
+        console.error('Failed to load bookings:', error);
+        this._bookings.set([]);
         return of([]);
       }),
     );
   }
 
-  private loadInvoices(): Observable<any[]> {
+  private loadInvoices(): Observable<Invoice[]> {
     return this.invoiceService.getMyInvoices().pipe(
       map((invoices) => {
-        this.invoices.set(invoices || []);
-        return invoices || [];
+        // Filtrer uniquement les factures de type TEACHER_INVOICE
+        const teacherInvoices = invoices.filter(
+          (inv) => inv.invoiceType === 'TEACHER_INVOICE',
+        );
+        this.invoices.set(teacherInvoices || []);
+        return teacherInvoices || [];
       }),
       catchError((error) => {
         console.error('Failed to load invoices:', error);
@@ -375,16 +477,13 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   private loadAvailabilities(): void {
     if (!this.currentUser()) {
-      //console.log('No current user, skipping availability load');
       return;
     }
 
-    //console.log('Loading availabilities for teacher:', this.currentUser().id);
     this.availabilityService
       .getAvailabilitiesByTeacher(this.currentUser().id)
       .subscribe({
         next: (availabilities) => {
-          //console.log('Loaded availabilities:', availabilities);
           this.availabilities.set(availabilities);
         },
         error: (error) => {
@@ -398,40 +497,33 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     // Update nextSession for all students
     this.updateStudentsNextSession();
 
-    // Update recent courses (last 3)
-    this.recentCourses.set(this.courses().slice(0, 3));
-
     // Update pending invoices
     this.pendingInvoices.set(
-      this.invoices().filter(
-        (inv: any) => inv.statut === 'pending' || inv.statut === 'overdue',
-      ),
+      this.invoices().filter((inv: Invoice) => !inv.isPaid),
     );
 
-    // Calculate monthly revenue from all completed courses
-    const monthlyRevenue = this.courses()
-      .filter((course) => course.status === 'completed')
-      .reduce((total, course) => total + (course.price || 0), 0);
+    // Calculate monthly revenue from all completed bookings
+    const monthlyRevenue = this._bookings()
+      .filter((booking) => booking.status === BookingStatus.COMPLETED)
+      .reduce((total, booking) => total + (booking.price || 0), 0);
 
-    // Update stats to reflect actual pending courses count and monthly revenue
+    // Update stats to reflect actual pending bookings count and monthly revenue
     this.stats.update((stats) => ({
       ...stats,
-      pendingCourses: this.courses().filter(
-        (course) => course.status === 'pending',
+      pendingBookings: this._bookings().filter(
+        (booking) => booking.status === BookingStatus.PENDING,
       ).length,
       monthlyRevenue: monthlyRevenue,
     }));
   }
 
   private getStudentLevel(eleve: any): string {
-    // Logique pour déterminer le niveau de l'élève basé sur l'âge
     if (!eleve.birthDate) return 'Niveau non défini';
 
     const birthYear = new Date(eleve.birthDate).getFullYear();
     const currentYear = new Date().getFullYear();
     const age = currentYear - birthYear;
 
-    // Tableau des niveaux scolaires avec leurs seuils d'âge minimum
     const levelThresholds = [
       { minAge: 18, level: 'Terminale ou +' },
       { minAge: 17, level: 'Terminale' },
@@ -443,7 +535,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
       { minAge: 11, level: '6ème' },
     ];
 
-    // Trouver le premier seuil que l'âge atteint
     const matchingLevel = levelThresholds.find(
       (threshold) => age >= threshold.minAge,
     );
@@ -487,7 +578,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   private updateStudentsNextSession(): void {
-    // Mettre à jour la prochaine session pour tous les élèves
     const updatedStudents = this.students().map((eleve: any) => ({
       ...eleve,
       nextSession: this.getNextSession(eleve),
@@ -496,26 +586,26 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   private getNextSession(eleve: any): Date | null {
-    // Chercher la prochaine session confirmée ou en attente pour cet élève
     const now = new Date();
 
-    // Filtrer les réservations pour cet élève avec ce professeur
-    const studentBookings = this.courses().filter((course: any) => {
-      return (
-        course.student === `${eleve.firstName} ${eleve.lastName}` &&
-        (course.status === 'confirmed' || course.status === 'pending')
-      );
-    });
+    const studentBookings = this._bookings().filter(
+      (booking: BookingDisplay) => {
+        return (
+          booking.child === `${eleve.firstName} ${eleve.lastName}` &&
+          (booking.status === BookingStatus.CONFIRMED ||
+            booking.status === BookingStatus.PENDING)
+        );
+      },
+    );
 
     if (studentBookings.length === 0) {
-      return null; // Aucune session future trouvée
+      return null;
     }
 
-    // Trier par date et prendre la plus proche dans le futur
     const futureBookings = studentBookings
-      .filter((booking: any) => new Date(booking.date) > now)
+      .filter((booking: BookingDisplay) => new Date(booking.date) > now)
       .sort(
-        (a: any, b: any) =>
+        (a: BookingDisplay, b: BookingDisplay) =>
           new Date(a.date).getTime() - new Date(b.date).getTime(),
       );
 
@@ -523,73 +613,72 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
       return new Date(futureBookings[0].date);
     }
 
-    // Si aucune session future, retourner null
     return null;
-  }
-
-  private getStudentNameById(eleveId: number): string {
-    // Chercher le nom de l'élève dans la liste des élèves chargés
-    const eleve = this.students().find((s: any) => s.id === eleveId);
-    return eleve ? eleve.name : `Élève ${eleveId}`;
-  }
-
-  private mapBookingStatus(status: string): string {
-    const statusMap: { [key: string]: string } = {
-      PENDING: 'pending',
-      CONFIRMED: 'confirmed',
-      COMPLETED: 'completed',
-      CANCELLED: 'cancelled',
-    };
-    return statusMap[status] || 'pending';
   }
 
   setActiveTab(tab: Tab): void {
     this.activeTab.set(tab);
   }
 
-  validateCourse(courseId: number): void {
+  validateBooking(bookingId: number): void {
     this.bookingService
-      .confirmBooking(courseId, { statut: 'CONFIRMED' })
+      .confirmBooking(bookingId, { statut: 'CONFIRMED' })
       .subscribe({
         next: () => {
-          // Refresh dashboard data to reflect changes
           this.loadDashboardData();
         },
         error: (error) => {
-          console.error('Failed to validate course:', error);
+          console.error('Failed to validate booking:', error);
         },
       });
   }
 
-  completeCourse(courseId: number): void {
-    this.bookingService.completeBooking(courseId).subscribe({
+  completeBooking(bookingId: number): void {
+    this.selectedBookingId.set(bookingId);
+    this.showFeedbackModal.set(true);
+  }
+
+  onFeedbackSubmit(data: FeedbackModalData): void {
+    const bookingId = this.selectedBookingId();
+    if (!bookingId) return;
+
+    this.bookingService.completeBooking(bookingId, data).subscribe({
       next: () => {
-        // Refresh dashboard data to reflect changes
+        this.showFeedbackModal.set(false);
+        this.selectedBookingId.set(null);
         this.loadDashboardData();
       },
       error: (error) => {
-        console.error('Failed to complete course:', error);
+        console.error('Failed to complete booking:', error);
       },
     });
   }
 
-  cancelCourse(courseId: number): void {
-    this.bookingService.cancelBooking(courseId).subscribe({
+  onFeedbackCancel(): void {
+    this.showFeedbackModal.set(false);
+    this.selectedBookingId.set(null);
+  }
+
+  cancelBooking(bookingId: number): void {
+    this.bookingService.cancelBooking(bookingId).subscribe({
       next: () => {
-        // Refresh dashboard data to reflect changes
         this.loadDashboardData();
       },
       error: (error) => {
-        console.error('Failed to cancel course:', error);
+        console.error('Failed to cancel booking:', error);
       },
     });
+  }
+
+  viewBookingDetails(bookingId: number): void {
+    // TODO: Implémenter l'affichage des détails du booking
+    console.log('View booking details:', bookingId);
   }
 
   sendInvoice(invoiceId: number): void {
     this.invoiceService.sendInvoiceByEmail(invoiceId).subscribe({
       next: () => {
         console.log('Invoice sent successfully');
-        // Refresh dashboard data to reflect changes
         this.loadDashboardData();
       },
       error: (error) => {
@@ -616,7 +705,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   onSettings(): void {
     console.log('Settings clicked');
-    // TODO: Implement settings navigation
   }
 
   onLogout(): void {
@@ -626,22 +714,32 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   getStatusColor(status: string): string {
     const colors: { [key: string]: string } = {
-      confirmed: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      overdue: 'bg-red-100 text-red-800',
+      // Booking statuses
+      CONFIRMED: 'bg-green-100 text-green-800',
+      PENDING: 'bg-yellow-100 text-yellow-800',
+      COMPLETED: 'bg-blue-100 text-blue-800',
+      CANCELLED: 'bg-red-100 text-red-800',
+      // Invoice statuses
+      DRAFT: 'bg-gray-100 text-gray-800',
+      SENT: 'bg-blue-100 text-blue-800',
+      PAID: 'bg-green-100 text-green-800',
+      OVERDUE: 'bg-orange-100 text-orange-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   }
 
   getStatusLabel(status: string): string {
     const labels: { [key: string]: string } = {
-      confirmed: 'Confirmé',
-      pending: 'En attente',
-      completed: 'Terminé',
-      paid: 'Payée',
-      overdue: 'En retard',
+      // Booking statuses
+      CONFIRMED: 'Confirmé',
+      PENDING: 'En attente',
+      COMPLETED: 'Terminé',
+      CANCELLED: 'Annulé',
+      // Invoice statuses
+      DRAFT: 'Brouillon',
+      SENT: 'Envoyée',
+      PAID: 'Payée',
+      OVERDUE: 'En retard',
     };
     return labels[status] || status;
   }
@@ -675,7 +773,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     if (!this.currentUser()) return;
 
     if (this.editingAvailability()) {
-      // Update existing availability
       const updateRequest: UpdateAvailabilityRequest = {
         date: this.availabilityFormData().date,
         startTime: this.availabilityFormData().startTime,
@@ -698,7 +795,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
           },
         });
     } else {
-      // Create new availability
       const createRequest: CreateAvailabilityRequest = {
         teacherId: this.currentUser().id,
         ...this.availabilityFormData(),
@@ -760,7 +856,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   private getUserFriendlyErrorMessage(error: any): string {
     const errorMessage = error?.error?.message || error?.message || '';
 
-    // Erreurs de chevauchement d'horaires
     if (
       errorMessage.includes('Time slot overlaps with existing availability')
     ) {
@@ -775,7 +870,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
       return 'Vous avez déjà une disponibilité qui chevauche cet horaire. Veuillez choisir un autre créneau.';
     }
 
-    // Erreurs de date passée
     if (
       errorMessage.includes('Cannot update availability to a past date') ||
       errorMessage.includes('past date')
@@ -783,23 +877,19 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
       return 'Vous ne pouvez pas créer ou modifier une disponibilité pour une date passée.';
     }
 
-    // Erreurs de prix négatif
     if (errorMessage.includes('Price cannot be negative')) {
       return 'Le prix ne peut pas être négatif.';
     }
 
-    // Erreurs d'heure de fin avant heure de début
     if (errorMessage.includes('End time must be after start time')) {
       return "L'heure de fin doit être après l'heure de début.";
     }
 
-    // Erreur par défaut
     return `Erreur : ${errorMessage || "Une erreur inattendue s'est produite."}`;
   }
 
   // Calendar methods
   selectDate(dateInfo: any): void {
-    // Open modal with selected date pre-filled
     this.availabilityFormData.update((data) => ({
       ...data,
       date: dateInfo.dateString,
@@ -833,5 +923,197 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   onTabChange(tabId: string) {
     this.activeTab.set(tabId);
+  }
+
+  // Invitation methods
+  openInvitationModal(): void {
+    this.showInvitationModal.set(true);
+    this.invitationEmail.set('');
+    this.invitationSuccess.set(null);
+    this.invitationError.set(null);
+  }
+
+  closeInvitationModal(): void {
+    this.showInvitationModal.set(false);
+    this.invitationEmail.set('');
+    this.invitationLoading.set(false);
+    this.invitationSuccess.set(null);
+    this.invitationError.set(null);
+  }
+
+  sendParentInvitation(): void {
+    const email = this.invitationEmail().trim();
+
+    if (!email) {
+      this.invitationError.set('Veuillez saisir une adresse email');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.invitationError.set('Adresse email invalide');
+      return;
+    }
+
+    this.invitationLoading.set(true);
+    this.invitationError.set(null);
+
+    this.invitationService
+      .sendInvitation({
+        email,
+        targetRole: 'PARENT' as TypeUser,
+      })
+      .subscribe({
+        next: (response) => {
+          this.invitationLoading.set(false);
+          this.invitationSuccess.set(
+            `Invitation envoyée avec succès à ${email}`,
+          );
+          this.invitationEmail.set('');
+          setTimeout(() => {
+            if (this.invitationSuccess()) {
+              this.closeInvitationModal();
+            }
+          }, 3000);
+        },
+        error: (error) => {
+          this.invitationLoading.set(false);
+          const errorMessage =
+            error?.error?.message ||
+            error?.message ||
+            "Erreur lors de l'envoi de l'invitation";
+          this.invitationError.set(errorMessage);
+        },
+      });
+  }
+
+  // Completed unbilled courses methods
+  private loadCompletedUnbilledCours(): void {
+    this.coursService.getCompletedUnbilledCours().subscribe({
+      next: (courses) => {
+        this.completedUnbilledCours.set(courses);
+      },
+      error: (error) => {
+        console.error('Failed to load completed unbilled courses:', error);
+        this.completedUnbilledCours.set([]);
+      },
+    });
+  }
+
+  toggleCoursSelection(coursId: number): void {
+    this.selectedCoursForInvoice.update((selected) => {
+      const newSet = new Set(selected);
+      if (newSet.has(coursId)) {
+        newSet.delete(coursId);
+      } else {
+        newSet.add(coursId);
+      }
+      return newSet;
+    });
+  }
+
+  selectAllCoursForParent(parentId: number): void {
+    const parentCourses = this.completedUnbilledCours().filter(
+      (c) => c.parentId === parentId,
+    );
+    const parentCoursIds = parentCourses.map((c) => c.coursId);
+    const currentSelected = this.selectedCoursForInvoice();
+
+    // Check if all courses for this parent are already selected
+    const allSelected = parentCoursIds.every((id) => currentSelected.has(id));
+
+    this.selectedCoursForInvoice.update((selected) => {
+      const newSet = new Set(selected);
+      if (allSelected) {
+        // Deselect all courses for this parent
+        parentCoursIds.forEach((id) => newSet.delete(id));
+      } else {
+        // Select all courses for this parent (clear other selections first)
+        newSet.clear();
+        parentCoursIds.forEach((id) => newSet.add(id));
+      }
+      return newSet;
+    });
+  }
+
+  isCoursSelected(coursId: number): boolean {
+    return this.selectedCoursForInvoice().has(coursId);
+  }
+
+  areAllCoursSelectedForParent(parentId: number): boolean {
+    const parentCourses = this.completedUnbilledCours().filter(
+      (c) => c.parentId === parentId,
+    );
+    const currentSelected = this.selectedCoursForInvoice();
+    return (
+      parentCourses.length > 0 &&
+      parentCourses.every((c) => currentSelected.has(c.coursId))
+    );
+  }
+
+  openCreateInvoiceModal(): void {
+    if (this.selectedCoursForInvoice().size === 0) {
+      return;
+    }
+    this.invoiceCreationError.set(null);
+    this.invoiceDescription.set('');
+    this.invoiceNotes.set('');
+    this.invoicePaymentDelayDays.set(30);
+    this.showCreateInvoiceModal.set(true);
+  }
+
+  closeCreateInvoiceModal(): void {
+    this.showCreateInvoiceModal.set(false);
+    this.invoiceCreationError.set(null);
+    this.invoiceCreationLoading.set(false);
+  }
+
+  createInvoice(): void {
+    const selectedIds = Array.from(this.selectedCoursForInvoice());
+    const parent = this.selectedCoursParent();
+
+    if (selectedIds.length === 0 || !parent) {
+      this.invoiceCreationError.set('Veuillez sélectionner au moins un cours');
+      return;
+    }
+
+    this.invoiceCreationLoading.set(true);
+    this.invoiceCreationError.set(null);
+
+    const request: CreateInvoiceRequest = {
+      coursIds: selectedIds,
+      parentId: parent.parentId,
+      description: this.invoiceDescription() || undefined,
+      notes: this.invoiceNotes() || undefined,
+      paymentDelayDays: this.invoicePaymentDelayDays(),
+    };
+
+    this.invoiceService.createInvoice(request).subscribe({
+      next: (invoice) => {
+        this.invoiceCreationLoading.set(false);
+        this.closeCreateInvoiceModal();
+        this.selectedCoursForInvoice.set(new Set());
+        // Refresh data
+        this.loadCompletedUnbilledCours();
+        this.loadInvoices().subscribe();
+      },
+      error: (error) => {
+        this.invoiceCreationLoading.set(false);
+        const errorMessage =
+          error?.error?.message ||
+          error?.message ||
+          'Erreur lors de la création de la facture';
+        this.invoiceCreationError.set(errorMessage);
+      },
+    });
+  }
+
+  formatCoursDate(date: string): string {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   }
 }

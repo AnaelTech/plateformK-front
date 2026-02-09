@@ -10,6 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { User } from '../../models/User';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 export enum DashboardType {
   PARENT = 'PARENT',
@@ -20,7 +21,7 @@ export enum DashboardType {
 @Component({
   selector: 'app-dashboard-navbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NotificationBellComponent],
   templateUrl: './dashboard-navbar.component.html',
 })
 export class DashboardNavbarComponent {
@@ -77,6 +78,10 @@ export class DashboardNavbarComponent {
   onLogoutClick(): void {
     this.logout.emit();
     this.closeDropdown();
+  }
+
+  onProfilClick(): void {
+    this.router.navigate(['/profile']);
   }
 
   getInitials(firstName: string, lastName: string): string {

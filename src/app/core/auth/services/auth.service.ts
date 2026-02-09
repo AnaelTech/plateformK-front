@@ -1,15 +1,16 @@
-// src/app/services/auth.service.ts
-import { Injectable } from '@angular/core';
+// src/app/core/auth/services/auth.service.ts
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, concatMap, map } from 'rxjs';
+import { Observable, tap, concatMap, map, BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 import { UserService } from '../../../shared/services/user.service';
 import { environment } from '../../../../environments/environment.development';
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
+import {
+  AuthResponse,
+  LoginRequest,
+  RefreshTokenRequest,
+  StoredTokens,
+} from '../models/auth.model';
 
 export interface RegisterRequest {
   email: string;
@@ -20,63 +21,98 @@ export interface RegisterRequest {
   city?: string;
   address?: string;
   postalCode?: string;
-  birthDate?: string; // format YYYY-MM-DD
-}
-
-export interface AuthResponse {
-  accessToken: string;
-  tokenType: string; // "Bearer"
+  birthDate?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = environment.apiUrl + '/auth';
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly userService = inject(UserService);
+
+  private readonly apiUrl = environment.apiUrl + 'auth';
   private readonly tokenKey = 'auth_token';
+  private readonly refreshTokenKey = 'refresh_token';
 
-  constructor(
-    private readonly http: HttpClient,
-    private readonly router: Router,
-    private readonly userService: UserService
-  ) {}
+  private isRefreshing = false;
+  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-  // Inscription
   register(data: RegisterRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, data);
   }
 
-  // Connexion
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.apiUrl}/login`, credentials)
       .pipe(
-        tap((response) => this.saveToken(response.accessToken)),
+        tap((response) => this.saveTokens(response)),
         concatMap((response) =>
-          this.userService.getCurrentUser().pipe(
-            map(() => response)
-          )
-        )
+          this.userService.getCurrentUser().pipe(map(() => response)),
+        ),
       );
   }
 
-  // Sauvegarde du token
-  private saveToken(token: string): void {
-    localStorage.setItem(this.tokenKey, token);
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const request: RefreshTokenRequest = { refreshToken };
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/refresh`, request)
+      .pipe(tap((response) => this.saveTokens(response)));
   }
 
-  // Récupérer le token
+  logout(path: string = '/'): void {
+    const refreshToken = this.getRefreshToken();
+
+    if (refreshToken) {
+      const request: RefreshTokenRequest = { refreshToken };
+      this.http.post(`${this.apiUrl}/logout`, request).subscribe({
+        next: () => this.clearTokensAndNavigate(path),
+        error: () => this.clearTokensAndNavigate(path),
+      });
+    } else {
+      this.clearTokensAndNavigate(path);
+    }
+  }
+
+  private saveTokens(response: AuthResponse): void {
+    const tokens: StoredTokens = {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    };
+
+    try {
+      const payload = JSON.parse(atob(response.accessToken.split('.')[1]));
+      tokens.expiresAt = payload.exp * 1000;
+    } catch (e) {
+      console.error('Failed to decode token', e);
+    }
+
+    localStorage.setItem(this.tokenKey, tokens.accessToken);
+    localStorage.setItem(this.refreshTokenKey, tokens.refreshToken);
+    if (tokens.expiresAt) {
+      localStorage.setItem('token_expires_at', tokens.expiresAt.toString());
+    }
+  }
+
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
 
-  // Vérifier si l'utilisateur est connecté
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.refreshTokenKey);
+  }
+
   isLoggedIn(): boolean {
     const token = this.getToken();
     return token != null && !this.isTokenExpired(token);
   }
 
-  // Vérifier l'expiration du token (décodage simple)
   isTokenExpired(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -86,9 +122,23 @@ export class AuthService {
     }
   }
 
-  // Déconnexion
-  logout(path: string = '/'): void {
+  getIsRefreshing(): boolean {
+    return this.isRefreshing;
+  }
+
+  setIsRefreshing(value: boolean): void {
+    this.isRefreshing = value;
+  }
+
+  getRefreshTokenSubject(): BehaviorSubject<string | null> {
+    return this.refreshTokenSubject;
+  }
+
+  private clearTokensAndNavigate(path: string): void {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.refreshTokenKey);
+    localStorage.removeItem('token_expires_at');
+    this.userService.clearCache();
     this.router.navigate([path]);
   }
 }

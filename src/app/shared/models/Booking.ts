@@ -20,6 +20,8 @@ export interface Booking {
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   notes?: string;
+  notionsCovered?: string;
+  teacherFeedback?: string;
   status: BookingStatus;
   // Propriétés pour le template (rétrocompatibilité)
   child?: string;
@@ -39,6 +41,11 @@ export interface BookingRequest {
 export interface BookingUpdateRequest {
   status?: BookingStatus;
   notes?: string;
+}
+
+export interface CompleteBookingRequest {
+  notionsCovered?: string;
+  teacherFeedback: string;
 }
 
 export interface BookingStats {

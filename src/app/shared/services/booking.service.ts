@@ -14,7 +14,7 @@ import {
   providedIn: 'root',
 })
 export class BookingService {
-  private readonly apiUrl = `${environment.apiUrl}/api/bookings`;
+  private readonly apiUrl = `${environment.apiUrl}bookings`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -90,9 +90,17 @@ export class BookingService {
     page: number = 0,
     size: number = 10,
   ): Observable<{
-    content: Booking[];
-    totalElements: number;
-    totalPages: number;
+    data: Booking[];
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      totalElements: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrevious: boolean;
+      isFirst: boolean;
+      isLast: boolean;
+    };
   }> {
     this._loading.set(true);
     this._error.set(null);
@@ -103,18 +111,26 @@ export class BookingService {
 
     return this.http
       .get<{
-        content: Booking[];
-        totalElements: number;
-        totalPages: number;
+        data: Booking[];
+        pagination: {
+          currentPage: number;
+          pageSize: number;
+          totalElements: number;
+          totalPages: number;
+          hasNext: boolean;
+          hasPrevious: boolean;
+          isFirst: boolean;
+          isLast: boolean;
+        };
       }>(this.apiUrl, { params })
       .pipe(
         tap((response) => {
           if (page === 0) {
-            this._bookings.set(response.content);
+            this._bookings.set(response.data);
           } else {
             this._bookings.update((current) => [
               ...current,
-              ...response.content,
+              ...response.data,
             ]);
           }
           this._loading.set(false);
@@ -122,7 +138,19 @@ export class BookingService {
         catchError((error) => {
           this._error.set(error.message || 'Failed to load bookings');
           this._loading.set(false);
-          return of({ content: [], totalElements: 0, totalPages: 0 });
+          return of({ 
+            data: [], 
+            pagination: {
+              currentPage: 0,
+              pageSize: 0,
+              totalElements: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrevious: false,
+              isFirst: true,
+              isLast: true
+            }
+          });
         }),
       );
   }
@@ -236,11 +264,11 @@ export class BookingService {
     );
   }
 
-  completeBooking(id: number): Observable<Booking> {
+  completeBooking(id: number, request: import('../models/Booking').CompleteBookingRequest): Observable<Booking> {
     this._loading.set(true);
     this._error.set(null);
 
-    return this.http.put<Booking>(`${this.apiUrl}/${id}/complete`, {}).pipe(
+    return this.http.put<Booking>(`${this.apiUrl}/${id}/complete`, request).pipe(
       tap((completedBooking) => {
         this._bookings.update((bookings) =>
           bookings.map((booking) =>

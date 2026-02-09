@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, of, map } from 'rxjs';
+import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, UserRequest } from '../models/User';
 
@@ -8,7 +8,7 @@ import { User, UserRequest } from '../models/User';
   providedIn: 'root',
 })
 export class UserService {
-  private readonly apiUrl = `${environment.apiUrl}/users`;
+  private readonly apiUrl = `${environment.apiUrl}users`;
 
   private readonly _currentUser = signal<User | null>(null);
   private readonly _usersCache = signal<User[]>([]);
@@ -29,11 +29,19 @@ export class UserService {
     page: number = 0,
     size: number = 10,
     sortBy: string = 'id',
-    direction: string = 'ASC'
+    direction: string = 'ASC',
   ): Observable<{
-    content: User[];
-    totalElements: number;
-    totalPages: number;
+    data: User[];
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      totalElements: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrevious: boolean;
+      isFirst: boolean;
+      isLast: boolean;
+    };
   }> {
     const params = new HttpParams()
       .set('page', page.toString())
@@ -45,20 +53,29 @@ export class UserService {
     this._error.set(null);
 
     return this.http
-      .get<{ content: User[]; totalElements: number; totalPages: number }>(
-        this.apiUrl,
-        { params }
-      )
+      .get<{
+        data: User[];
+        pagination: {
+          currentPage: number;
+          pageSize: number;
+          totalElements: number;
+          totalPages: number;
+          hasNext: boolean;
+          hasPrevious: boolean;
+          isFirst: boolean;
+          isLast: boolean;
+        };
+      }>(this.apiUrl, { params })
       .pipe(
         tap((response) => {
-          this._usersCache.set(response.content);
+          this._usersCache.set(response.data);
           this._loadingUsers.set(false);
         }),
         catchError((error) => {
           this._error.set(error.message || 'Failed to load users');
           this._loadingUsers.set(false);
           throw error;
-        })
+        }),
       );
   }
 
@@ -86,7 +103,7 @@ export class UserService {
         this._error.set(error.message || 'Failed to load current user');
         this._loadingCurrentUser.set(false);
         throw error;
-      })
+      }),
     );
   }
 
@@ -94,7 +111,7 @@ export class UserService {
     return this.http.post<User>(this.apiUrl, user).pipe(
       tap((newUser) => {
         this._usersCache.update((users) => [...users, newUser]);
-      })
+      }),
     );
   }
 
@@ -102,33 +119,58 @@ export class UserService {
     return this.http.put<User>(`${this.apiUrl}/${id}`, user).pipe(
       tap((updatedUser) => {
         this._usersCache.update((users) =>
-          users.map((u) => (u.id === id ? updatedUser : u))
+          users.map((u) => (u.id === id ? updatedUser : u)),
         );
 
         if (this._currentUser()?.id === id) {
           this._currentUser.set(updatedUser);
         }
-      })
+      }),
     );
   }
 
-   deleteUser(id: number): Observable<void> {
-     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-       tap(() => {
-         this._usersCache.update((users) => users.filter((u) => u.id !== id));
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        this._usersCache.update((users) => users.filter((u) => u.id !== id));
 
-         if (this._currentUser()?.id === id) {
-           this._currentUser.set(null);
-         }
-       })
-     );
-   }
+        if (this._currentUser()?.id === id) {
+          this._currentUser.set(null);
+        }
+      }),
+    );
+  }
 
-   getParentsByStudentId(studentId: number): Observable<User[]> {
-     return this.http.get<User[]>(`${this.apiUrl}/${studentId}/parents`);
-   }
+  getParentsByStudentId(studentId: number): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/${studentId}/parents`);
+  }
 
-   clearCache(): void {
+  /**
+   * Récupère les enfants d'un parent.
+   */
+  getChildrenByParentId(parentId: number): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/${parentId}/children`);
+  }
+
+  /**
+   * Assigne un élève existant à un parent.
+   */
+  assignEleveToParent(parentId: number, eleveId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${parentId}/assign-eleve`, {
+      eleveId,
+    });
+  }
+
+  /**
+   * Retire un élève d'un parent (supprime la relation).
+   */
+  removeEleveFromParent(parentId: number, eleveId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/${parentId}/remove-eleve/${eleveId}`,
+    );
+  }
+
+  clearCache(): void {
     this._usersCache.set([]);
     this._currentUser.set(null);
     this._error.set(null);
@@ -136,5 +178,17 @@ export class UserService {
 
   refreshCurrentUser(): void {
     this.getCurrentUser().subscribe();
+  }
+
+  /**
+   * Crée un compte enfant et établit la relation avec le parent.
+   */
+  createChild(
+    request: import('../models/child.model').CreateChildRequest,
+  ): Observable<import('../models/child.model').CreateChildResponse> {
+    return this.http.post<import('../models/child.model').CreateChildResponse>(
+      `${this.apiUrl}/child`,
+      request,
+    );
   }
 }

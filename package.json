@@ -6,10 +6,18 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:coverage": "ng test --code-coverage",
+    "e2e": "ng e2e",
+    "e2e:ui": "ng e2e --ui",
+    "e2e:headed": "npx playwright test --headed",
+    "e2e:debug": "npx playwright test --debug",
+    "e2e:report": "npx playwright show-report",
+    "e2e:install": "npx playwright install --with-deps"
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^19.2.0",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",
@@ -17,24 +25,30 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@stomp/stompjs": "^7.2.1",
     "@tailwindcss/postcss": "^4.1.17",
     "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
+    "sockjs-client": "^1.6.1",
     "tailwindcss": "^4.1.17",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.12",
-    "@angular/cli": "^19.2.12",
+    "@angular/cli": "^21.1.2",
     "@angular/compiler-cli": "^19.2.0",
+    "@playwright/test": "^1.58.1",
     "@types/jasmine": "~5.1.0",
+    "@types/node": "^22.10.0",
+    "@types/sockjs-client": "^1.5.4",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "playwright-ng-schematics": "^21.0.3",
     "typescript": "~5.7.2"
   }
 }

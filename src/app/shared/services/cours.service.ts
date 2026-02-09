@@ -7,14 +7,14 @@ import {
   CoursStatus,
   CreateCoursRequest,
   UpdateCoursRequest,
-  AssignEleveRequest,
+  CompletedUnbilledCours,
 } from '../models/Cours';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CoursService {
-  private readonly apiUrl = `${environment.apiUrl}/cours`;
+  private readonly apiUrl = `${environment.apiUrl}courses`;
 
   private readonly _coursList = signal<Cours[]>([]);
   private readonly _selectedCours = signal<Cours | null>(null);
@@ -29,7 +29,7 @@ export class CoursService {
   readonly totalElements = this._totalElements.asReadonly();
 
   readonly activeCours = computed(() =>
-    this._coursList().filter((cours) => cours.statut === CoursStatus.PENDING)
+    this._coursList().filter((cours) => cours.statut === CoursStatus.PENDING),
   );
 
   constructor(private readonly http: HttpClient) {}
@@ -38,11 +38,19 @@ export class CoursService {
     page: number = 0,
     size: number = 10,
     sortBy: string = 'id',
-    direction: string = 'ASC'
+    direction: string = 'ASC',
   ): Observable<{
-    content: Cours[];
-    totalElements: number;
-    totalPages: number;
+    data: Cours[];
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      totalElements: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrevious: boolean;
+      isFirst: boolean;
+      isLast: boolean;
+    };
   }> {
     this._loading.set(true);
     this._error.set(null);
@@ -54,31 +62,40 @@ export class CoursService {
       .set('direction', direction);
 
     return this.http
-      .get<{ content: Cours[]; totalElements: number; totalPages: number }>(
-        this.apiUrl,
-        { params }
-      )
+      .get<{
+        data: Cours[];
+        pagination: {
+          currentPage: number;
+          pageSize: number;
+          totalElements: number;
+          totalPages: number;
+          hasNext: boolean;
+          hasPrevious: boolean;
+          isFirst: boolean;
+          isLast: boolean;
+        };
+      }>(this.apiUrl, { params })
       .pipe(
         tap((response) => {
           if (page === 0) {
-            this._coursList.set(response.content);
+            this._coursList.set(response.data);
           } else {
             this._coursList.update((current) => {
               const existingIds = new Set(current.map((c) => c.id));
-              const newCours = response.content.filter(
-                (c) => !existingIds.has(c.id)
+              const newCours = response.data.filter(
+                (c) => !existingIds.has(c.id),
               );
               return [...current, ...newCours];
             });
           }
-          this._totalElements.set(response.totalElements);
+          this._totalElements.set(response.pagination.totalElements);
           this._loading.set(false);
         }),
         catchError((error) => {
           this._error.set(error.message || 'Failed to load cours');
           this._loading.set(false);
           throw error;
-        })
+        }),
       );
   }
 
@@ -94,7 +111,7 @@ export class CoursService {
           }
           return current;
         });
-      })
+      }),
     );
   }
 
@@ -103,7 +120,7 @@ export class CoursService {
       tap((newCours) => {
         this._coursList.update((current) => [newCours, ...current]);
         this._totalElements.update((total) => total + 1);
-      })
+      }),
     );
   }
 
@@ -111,28 +128,89 @@ export class CoursService {
     return this.http.put<Cours>(`${this.apiUrl}/${id}`, cours).pipe(
       tap((updatedCours) => {
         this._coursList.update((current) =>
-          current.map((c) => (c.id === id ? updatedCours : c))
+          current.map((c) => (c.id === id ? updatedCours : c)),
         );
         if (this._selectedCours()?.id === id) {
           this._selectedCours.set(updatedCours);
         }
-      })
+      }),
     );
   }
 
-  assignEleve(id: number, request: AssignEleveRequest): Observable<Cours> {
+  /**
+   * Get all available cours (slots without bookings)
+   * @param page Page number (0-based)
+   * @param size Page size
+   * @param sortBy Sort field
+   * @param direction Sort direction (ASC/DESC)
+   */
+  getAvailableCours(
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = 'dateCours',
+    direction: string = 'ASC',
+  ): Observable<{
+    data: Cours[];
+    pagination: {
+      currentPage: number;
+      pageSize: number;
+      totalElements: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrevious: boolean;
+      isFirst: boolean;
+      isLast: boolean;
+    };
+  }> {
+    this._loading.set(true);
+    this._error.set(null);
+
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('direction', direction);
+
     return this.http
-      .put<Cours>(`${this.apiUrl}/${id}/assign-eleve`, request)
+      .get<{
+        data: Cours[];
+        pagination: {
+          currentPage: number;
+          pageSize: number;
+          totalElements: number;
+          totalPages: number;
+          hasNext: boolean;
+          hasPrevious: boolean;
+          isFirst: boolean;
+          isLast: boolean;
+        };
+      }>(`${this.apiUrl}/available`, { params })
       .pipe(
-        tap((updatedCours) => {
-          this._coursList.update((current) =>
-            current.map((c) => (c.id === id ? updatedCours : c))
-          );
-          if (this._selectedCours()?.id === id) {
-            this._selectedCours.set(updatedCours);
-          }
-        })
+        tap((response) => {
+          this._loading.set(false);
+        }),
+        catchError((error) => {
+          this._error.set(error.message || 'Failed to load available cours');
+          this._loading.set(false);
+          throw error;
+        }),
       );
+  }
+
+  /**
+   * Get available cours for a specific teacher
+   * @param teacherId Teacher's user ID
+   */
+  getAvailableCoursByTeacher(teacherId: number): Observable<Cours[]> {
+    return this.http.get<Cours[]>(`${this.apiUrl}/teacher/${teacherId}/available`);
+  }
+
+  /**
+   * Get available cours for a specific subject/matiere
+   * @param matiere Subject name
+   */
+  getAvailableCoursByMatiere(matiere: string): Observable<Cours[]> {
+    return this.http.get<Cours[]>(`${this.apiUrl}/matiere/${matiere}/available`);
   }
 
   deleteCours(id: number): Observable<void> {
@@ -143,7 +221,7 @@ export class CoursService {
         if (this._selectedCours()?.id === id) {
           this._selectedCours.set(null);
         }
-      })
+      }),
     );
   }
 
@@ -160,5 +238,13 @@ export class CoursService {
 
   refreshCours(): void {
     this.getAllCours().subscribe();
+  }
+
+  /**
+   * Get completed courses that are not yet billed.
+   * Used by teachers to select courses for invoice creation.
+   */
+  getCompletedUnbilledCours(): Observable<CompletedUnbilledCours[]> {
+    return this.http.get<CompletedUnbilledCours[]>(`${this.apiUrl}/completed-unbilled`);
   }
 }
