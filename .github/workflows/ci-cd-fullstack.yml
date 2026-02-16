@@ -1,5 +1,4 @@
 name: CI - Angular
-
 on:
   push:
     branches: [dev, staging, main]
@@ -14,9 +13,6 @@ jobs:
     name: Lint & Build Angular
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: ./plateformK
 
     steps:
       - name: Checkout code
@@ -27,13 +23,16 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: ./plateformK/package-lock.json
+          cache-dependency-path: plateformK/package-lock.json # Sans le ./ au début
 
       - name: Install dependencies
+        working-directory: ./plateformK
         run: npm ci --legacy-peer-deps
 
       - name: Run ESLint
+        working-directory: ./plateformK
         run: npm run lint
 
       - name: Build Angular app
+        working-directory: ./plateformK
         run: npm run build -- --configuration=production
