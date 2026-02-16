@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: plateformK/package-lock.json # Sans le ./ au début
+          cache-dependency-path: "**/plateformK/package-lock.json" # Sans le ./ au début
 
       - name: Install dependencies
         working-directory: ./plateformK
