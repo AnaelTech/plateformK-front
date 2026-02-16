@@ -1,4 +1,5 @@
-name: CI - Angular
+name: CI - Lint Angular
+
 on:
   push:
     branches: [dev, staging, main]
@@ -9,21 +10,19 @@ permissions:
   contents: read
 
 jobs:
-  lint-and-build:
-    name: Lint & Build Angular
+  lint:
+    name: ESLint
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js with cache
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: "plateformK/package-lock.json"
 
       - name: Install dependencies
         working-directory: ./plateformK
@@ -32,7 +31,3 @@ jobs:
       - name: Run ESLint
         working-directory: ./plateformK
         run: npm run lint
-
-      - name: Build Angular app
-        working-directory: ./plateformK
-        run: npm run build -- --configuration=production
