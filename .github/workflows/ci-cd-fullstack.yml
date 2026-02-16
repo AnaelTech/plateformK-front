@@ -18,12 +18,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js with cache
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: "**/plateformK/package-lock.json" # Sans le ./ au début
+          cache-dependency-path: "plateformK/package-lock.json"
 
       - name: Install dependencies
         working-directory: ./plateformK
