@@ -25,9 +25,7 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        working-directory: ./plateformK
         run: npm ci --legacy-peer-deps
 
       - name: Run ESLint
-        working-directory: ./plateformK
         run: npm run lint
