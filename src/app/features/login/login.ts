@@ -70,7 +70,7 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authService.login({ email, password }).subscribe({
-      next: (response) => {
+      next: () => {
         //console.log('Connexion réussie ! Token reçu.');
 
         const user = this.userService.currentUser();

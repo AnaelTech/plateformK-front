@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -16,7 +16,7 @@ import {
 export class BookingService {
   private readonly apiUrl = `${environment.apiUrl}bookings`;
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   private readonly _bookings = signal<Booking[]>([]);
   private readonly _selectedBooking = signal<Booking | null>(null);
@@ -87,8 +87,8 @@ export class BookingService {
   }
 
   getBookings(
-    page: number = 0,
-    size: number = 10,
+    page = 0,
+    size = 10,
   ): Observable<{
     data: Booking[];
     pagination: {
@@ -128,18 +128,15 @@ export class BookingService {
           if (page === 0) {
             this._bookings.set(response.data);
           } else {
-            this._bookings.update((current) => [
-              ...current,
-              ...response.data,
-            ]);
+            this._bookings.update((current) => [...current, ...response.data]);
           }
           this._loading.set(false);
         }),
         catchError((error) => {
           this._error.set(error.message || 'Failed to load bookings');
           this._loading.set(false);
-          return of({ 
-            data: [], 
+          return of({
+            data: [],
             pagination: {
               currentPage: 0,
               pageSize: 0,
@@ -148,8 +145,8 @@ export class BookingService {
               hasNext: false,
               hasPrevious: false,
               isFirst: true,
-              isLast: true
-            }
+              isLast: true,
+            },
           });
         }),
       );
@@ -240,11 +237,11 @@ export class BookingService {
     );
   }
 
-  confirmBooking(id: number, p0: { statut: any }): Observable<Booking> {
+  confirmBooking(id: number, request: { statut: BookingStatus }): Observable<Booking> {
     this._loading.set(true);
     this._error.set(null);
 
-    return this.http.put<Booking>(`${this.apiUrl}/${id}/confirm`, {}).pipe(
+    return this.http.put<Booking>(`${this.apiUrl}/${id}/confirm`, request).pipe(
       tap((confirmedBooking) => {
         this._bookings.update((bookings) =>
           bookings.map((booking) =>
@@ -264,28 +261,33 @@ export class BookingService {
     );
   }
 
-  completeBooking(id: number, request: import('../models/Booking').CompleteBookingRequest): Observable<Booking> {
+  completeBooking(
+    id: number,
+    request: import('../models/Booking').CompleteBookingRequest,
+  ): Observable<Booking> {
     this._loading.set(true);
     this._error.set(null);
 
-    return this.http.put<Booking>(`${this.apiUrl}/${id}/complete`, request).pipe(
-      tap((completedBooking) => {
-        this._bookings.update((bookings) =>
-          bookings.map((booking) =>
-            booking.id === id ? completedBooking : booking,
-          ),
-        );
-        if (this._selectedBooking()?.id === id) {
-          this._selectedBooking.set(completedBooking);
-        }
-        this._loading.set(false);
-      }),
-      catchError((error) => {
-        this._error.set(error.message || 'Failed to complete booking');
-        this._loading.set(false);
-        throw error;
-      }),
-    );
+    return this.http
+      .put<Booking>(`${this.apiUrl}/${id}/complete`, request)
+      .pipe(
+        tap((completedBooking) => {
+          this._bookings.update((bookings) =>
+            bookings.map((booking) =>
+              booking.id === id ? completedBooking : booking,
+            ),
+          );
+          if (this._selectedBooking()?.id === id) {
+            this._selectedBooking.set(completedBooking);
+          }
+          this._loading.set(false);
+        }),
+        catchError((error) => {
+          this._error.set(error.message || 'Failed to complete booking');
+          this._loading.set(false);
+          throw error;
+        }),
+      );
   }
 
   deleteBooking(id: number): Observable<void> {
@@ -315,7 +317,7 @@ export class BookingService {
     this._error.set(null);
 
     return this.http.get<BookingStats>(`${this.apiUrl}/stats`).pipe(
-      tap((stats) => {
+      tap(() => {
         this._loading.set(false);
       }),
       catchError((error) => {

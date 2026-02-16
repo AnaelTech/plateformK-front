@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -23,13 +23,13 @@ export class UserService {
   readonly error = this._error.asReadonly();
   readonly isAuthenticated = computed(() => this._currentUser() !== null);
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getUsers(
-    page: number = 0,
-    size: number = 10,
-    sortBy: string = 'id',
-    direction: string = 'ASC',
+    page = 0,
+    size = 10,
+    sortBy = 'id',
+    direction = 'ASC',
   ): Observable<{
     data: User[];
     pagination: {

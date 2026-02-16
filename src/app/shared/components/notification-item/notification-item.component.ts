@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  computed,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import {
@@ -26,16 +33,20 @@ export class NotificationItemComponent {
   @Output() delete = new EventEmitter<number>();
   @Output() navigate = new EventEmitter<void>();
 
-  constructor(private readonly router: Router) {}
+  private readonly router = inject(Router);
 
   // Computed properties
-  readonly isUnread = computed(() => 
-    this.notification.status === NotificationStatus.UNREAD
+  readonly isUnread = computed(
+    () => this.notification.status === NotificationStatus.UNREAD,
   );
 
   readonly icon = computed(() => getNotificationIcon(this.notification.type));
-  readonly colorClass = computed(() => getNotificationColor(this.notification.type));
-  readonly relativeTime = computed(() => getRelativeTime(this.notification.createdAt));
+  readonly colorClass = computed(() =>
+    getNotificationColor(this.notification.type),
+  );
+  readonly relativeTime = computed(() =>
+    getRelativeTime(this.notification.createdAt),
+  );
 
   /**
    * Handle notification click - navigate if action URL exists

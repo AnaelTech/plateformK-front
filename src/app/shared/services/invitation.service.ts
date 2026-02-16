@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
@@ -16,7 +16,7 @@ import { environment } from '../../../environments/environment';
 export class InvitationService {
   private readonly apiUrl = `${environment.apiUrl}invitations`;
 
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   /**
    * Envoie une invitation.

@@ -1,16 +1,9 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import {
-  HttpClientTestingModule,
-  HttpTestingController,
-} from '@angular/common/http/testing';
+import { HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService, RegisterRequest } from './auth.service';
 import { UserService } from '../../../shared/services/user.service';
-import {
-  AuthResponse,
-  LoginRequest,
-  RefreshTokenRequest,
-} from '../models/auth.model';
+import { AuthResponse, LoginRequest } from '../models/auth.model';
 import { User, TypeUser } from '../../../shared/models/User';
 import { of } from 'rxjs';
 
@@ -33,33 +26,35 @@ describe('AuthService', () => {
     phoneNumber: '0612345678',
     city: 'Paris',
     address: '123 Rue de la Paix',
-    postalCode: 75001,
+    postalCode: 75001
   };
 
   const mockAuthResponse: AuthResponse = {
-    accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxOTk5OTk5OTk5fQ.signature',
+    accessToken:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxOTk5OTk5OTk5fQ.signature',
     refreshToken: 'refresh-token-123',
     tokenType: 'Bearer',
-    user: mockUser,
+    user: mockUser
   };
 
-  const mockExpiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxMDAwMDAwMDAwfQ.signature';
+  const mockExpiredToken =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoxMDAwMDAwMDAwfQ.signature';
 
   beforeEach(() => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     userServiceSpy = jasmine.createSpyObj('UserService', [
       'getCurrentUser',
-      'clearCache',
+      'clearCache'
     ]);
     userServiceSpy.getCurrentUser.and.returnValue(of(mockUser));
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [],
       providers: [
         AuthService,
         { provide: Router, useValue: routerSpy },
-        { provide: UserService, useValue: userServiceSpy },
-      ],
+        { provide: UserService, useValue: userServiceSpy }
+      ]
     });
 
     service = TestBed.inject(AuthService);
@@ -88,15 +83,15 @@ describe('AuthService', () => {
         firstName: 'Jane',
         lastName: 'Doe',
         phoneNumber: '0612345678',
-        city: 'Paris',
+        city: 'Paris'
       };
 
-      service.register(registerData).subscribe((response) => {
+      service.register(registerData).subscribe(response => {
         expect(response).toBeTruthy();
       });
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/v1/auth/register',
+        'http://localhost:8080/api/v1/auth/register'
       );
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(registerData);
@@ -108,22 +103,20 @@ describe('AuthService', () => {
     it('should login successfully and save tokens', fakeAsync(() => {
       const credentials: LoginRequest = {
         email: 'test@example.com',
-        password: 'password123',
+        password: 'password123'
       };
 
-      service.login(credentials).subscribe((response) => {
+      service.login(credentials).subscribe(response => {
         expect(response).toEqual(mockAuthResponse);
         expect(localStorage.getItem('auth_token')).toBe(
-          mockAuthResponse.accessToken,
+          mockAuthResponse.accessToken
         );
         expect(localStorage.getItem('refresh_token')).toBe(
-          mockAuthResponse.refreshToken,
+          mockAuthResponse.refreshToken
         );
       });
 
-      const req = httpMock.expectOne(
-        'http://localhost:8080/api/v1/auth/login',
-      );
+      const req = httpMock.expectOne('http://localhost:8080/api/v1/auth/login');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(credentials);
       req.flush(mockAuthResponse);
@@ -134,14 +127,12 @@ describe('AuthService', () => {
     it('should call userService.getCurrentUser after successful login', fakeAsync(() => {
       const credentials: LoginRequest = {
         email: 'test@example.com',
-        password: 'password123',
+        password: 'password123'
       };
 
       service.login(credentials).subscribe();
 
-      const req = httpMock.expectOne(
-        'http://localhost:8080/api/v1/auth/login',
-      );
+      const req = httpMock.expectOne('http://localhost:8080/api/v1/auth/login');
       req.flush(mockAuthResponse);
 
       tick();
@@ -153,15 +144,15 @@ describe('AuthService', () => {
     it('should refresh token successfully', () => {
       localStorage.setItem('refresh_token', 'old-refresh-token');
 
-      service.refreshToken().subscribe((response) => {
+      service.refreshToken().subscribe(response => {
         expect(response).toEqual(mockAuthResponse);
         expect(localStorage.getItem('auth_token')).toBe(
-          mockAuthResponse.accessToken,
+          mockAuthResponse.accessToken
         );
       });
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/v1/auth/refresh',
+        'http://localhost:8080/api/v1/auth/refresh'
       );
       expect(req.request.method).toBe('POST');
       expect(req.request.body.refreshToken).toBe('old-refresh-token');
@@ -172,7 +163,7 @@ describe('AuthService', () => {
       localStorage.removeItem('refresh_token');
 
       expect(() => service.refreshToken()).toThrowError(
-        'No refresh token available',
+        'No refresh token available'
       );
     });
   });
@@ -186,7 +177,7 @@ describe('AuthService', () => {
       service.logout('/login');
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/v1/auth/logout',
+        'http://localhost:8080/api/v1/auth/logout'
       );
       expect(req.request.method).toBe('POST');
       req.flush({});
@@ -207,7 +198,7 @@ describe('AuthService', () => {
       service.logout('/');
 
       const req = httpMock.expectOne(
-        'http://localhost:8080/api/v1/auth/logout',
+        'http://localhost:8080/api/v1/auth/logout'
       );
       req.error(new ErrorEvent('Network error'));
 

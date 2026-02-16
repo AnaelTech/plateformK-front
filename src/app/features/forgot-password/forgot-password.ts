@@ -55,7 +55,7 @@ export class ForgotPasswordComponent {
         this.isLoading.set(false);
         this.isSuccess.set(true);
       },
-      error: (err) => {
+      error: () => {
         this.isLoading.set(false);
         // Pour des raisons de sécurité, on affiche toujours un succès
         // même si l'email n'existe pas

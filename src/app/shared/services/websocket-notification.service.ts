@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, effect } from '@angular/core';
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription, Frame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { UserService } from './user.service';
@@ -81,11 +81,11 @@ export class WebSocketNotificationService {
 
     // Create STOMP client
     this.stompClient = new Client({
-      webSocketFactory: () => socket as any,
+      webSocketFactory: () => socket as WebSocket,
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
-      debug: (str: string) => {
+      debug: () => {
         //console.log('[WebSocket Debug]', str);
       },
       reconnectDelay: this.reconnectDelay,
@@ -94,7 +94,7 @@ export class WebSocketNotificationService {
       onConnect: () => this.onConnect(user.id),
       onDisconnect: () => this.onDisconnect(),
       onStompError: (frame) => this.onError(frame),
-      onWebSocketError: (event) => this.onWebSocketError(event),
+      onWebSocketError: () => this.onWebSocketError(),
     });
 
     // Activate the client
@@ -141,10 +141,10 @@ export class WebSocketNotificationService {
   /**
    * Handle STOMP errors
    */
-  private onError(frame: any): void {
+  private onError(frame: Frame): void {
     //console.error('[WebSocket] STOMP error', frame);
     this._error.set(
-      'Connection error: ' + (frame.headers?.message || 'Unknown error'),
+      'Connection error: ' + (frame.headers?.['message'] || 'Unknown error'),
     );
     this._connected.set(false);
 
@@ -155,7 +155,7 @@ export class WebSocketNotificationService {
   /**
    * Handle WebSocket errors
    */
-  private onWebSocketError(event: any): void {
+  private onWebSocketError(): void {
     //console.error('[WebSocket] WebSocket error', event);
     this._error.set('WebSocket error');
     this._connected.set(false);
@@ -177,7 +177,7 @@ export class WebSocketNotificationService {
 
       // Optional: Play sound or show browser notification
       this.showBrowserNotification(notification);
-    } catch (error) {
+    } catch {
       //console.error('[WebSocket] Failed to parse notification', error);
     }
   }
@@ -224,7 +224,7 @@ export class WebSocketNotificationService {
    */
   requestNotificationPermission(): void {
     if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then((permission) => {
+      Notification.requestPermission().then(() => {
         //console.log('[WebSocket] Notification permission:', permission);
       });
     }

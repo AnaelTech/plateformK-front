@@ -81,8 +81,14 @@
 @if (showMenu()) {
   <!-- Overlay -->
   <div
+    role="button"
+    tabindex="0"
+    aria-label="Fermer le menu"
     class="fixed inset-0 bg-transparent bg-opacity-50 z-40 sm:hidden animate-fade-in"
     (click)="toggleMenu()"
+    (keydown.enter)="toggleMenu()"
+    (keydown.space)="toggleMenu(); $event.preventDefault()"
+    (keydown.escape)="toggleMenu()"
   ></div>
 
   <!-- Menu drawer -->
@@ -124,7 +130,7 @@
           "
         >
           <svg
-            class="w-5 h-5 flex-shrink-0"
+            class="w-5 h-5 shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

@@ -1,11 +1,10 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   UpdateProfileRequest,
   ChangePasswordRequest,
-  ProfileResponse,
 } from '../models/profile.model';
 import { User } from '../models/User';
 
@@ -29,7 +28,7 @@ export class ProfileService {
   readonly updating = this._updating.asReadonly();
   readonly error = this._error.asReadonly();
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   /**
    * Récupère le profil de l'utilisateur connecté.
@@ -46,10 +45,10 @@ export class ProfileService {
       catchError((error) => {
         this._loading.set(false);
         this._error.set(
-          error.error?.message || 'Erreur lors du chargement du profil'
+          error.error?.message || 'Erreur lors du chargement du profil',
         );
         throw error;
-      })
+      }),
     );
   }
 
@@ -68,10 +67,10 @@ export class ProfileService {
       catchError((error) => {
         this._updating.set(false);
         this._error.set(
-          error.error?.message || 'Erreur lors de la mise à jour du profil'
+          error.error?.message || 'Erreur lors de la mise à jour du profil',
         );
         throw error;
-      })
+      }),
     );
   }
 
@@ -89,10 +88,10 @@ export class ProfileService {
       catchError((error) => {
         this._updating.set(false);
         this._error.set(
-          error.error?.message || 'Erreur lors du changement de mot de passe'
+          error.error?.message || 'Erreur lors du changement de mot de passe',
         );
         throw error;
-      })
+      }),
     );
   }
 

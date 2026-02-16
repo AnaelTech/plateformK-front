@@ -1,116 +1,22 @@
-version: '3.8'
+version: "3.8"
+
+networks:
+  plateformk-network:
+    driver: bridge
 
 services:
-  # ===========================================
-  # Frontend Angular (PlateformK / Klassio)
-  # ===========================================
   frontend:
     build:
       context: .
-      dockerfile: Containerfile
-    container_name: klassio-frontend
-    ports:
-      - "${FRONTEND_PORT:-4200}:80"
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - backend
+      dockerfile: Dockerfile
+    container_name: plateformk-frontend-dev
     networks:
-      - klassio-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # ===========================================
-  # Backend Spring Boot (API)
-  # ===========================================
-  backend:
-    image: ${BACKEND_IMAGE:-klassio-backend:latest}
-    container_name: klassio-backend
+      - plateformk-network
     ports:
-      - "${BACKEND_PORT:-8080}:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/${POSTGRES_DB:-klassio}
-      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-klassio}
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-klassio_secret}
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-min-256-bits}
-      - JWT_EXPIRATION=${JWT_EXPIRATION:-3600000}
-      - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION:-604800000}
-    depends_on:
-      database:
-        condition: service_healthy
-    networks:
-      - klassio-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-  # ===========================================
-  # Base de données PostgreSQL
-  # ===========================================
-  database:
-    image: postgres:16-alpine
-    container_name: klassio-database
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-klassio}
-      - POSTGRES_USER=${POSTGRES_USER:-klassio}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-klassio_secret}
+      - "4200:4200"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/init-db:/docker-entrypoint-initdb.d:ro
-    networks:
-      - klassio-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-klassio} -d ${POSTGRES_DB:-klassio}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  # ===========================================
-  # Redis (Cache & Sessions) - Optionnel
-  # ===========================================
-  redis:
-    image: redis:7-alpine
-    container_name: klassio-redis
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_secret}
-    volumes:
-      - redis_data:/data
-    networks:
-      - klassio-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_secret}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-# ===========================================
-# Volumes persistants
-# ===========================================
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
-
-# ===========================================
-# Réseau
-# ===========================================
-networks:
-  klassio-network:
-    driver: bridge
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm start

@@ -19,7 +19,7 @@ export class RegisterInvitationComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   token = signal<string>('');
-  tokenData = signal<any>(null);
+  tokenData = signal<{email: string; targetRole: string} | null>(null);
   validating = signal(true);
   validationError = signal<string | null>(null);
   submitting = signal(false);
@@ -116,7 +116,7 @@ export class RegisterInvitationComponent implements OnInit {
   }
 
   getRoleLabel(role: string | undefined): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       PARENT: 'Parent',
       ELEVE: 'Élève',
       PROFESSEUR: 'Professeur',

@@ -84,7 +84,7 @@ export class ProfileComponent implements OnInit {
         this.populateForm(profile);
         this.isLoading.set(false);
       },
-      error: (err) => {
+      error: () => {
         this.isLoading.set(false);
         this.errorMessage.set('Erreur lors du chargement du profil');
       },
@@ -174,7 +174,7 @@ export class ProfileComponent implements OnInit {
           this.passwordForm.reset();
           this.showPasswordSection.set(false);
         },
-        error: (err) => {
+      error: (err) => {
           this.isChangingPassword.set(false);
           this.errorMessage.set(
             err.error?.message || 'Erreur lors du changement de mot de passe',
@@ -238,7 +238,24 @@ export class ProfileComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    const currentUser = this.userService.currentUser();
+    if (currentUser) {
+      switch (currentUser.typeUser) {
+        case 'PROFESSEUR':
+          this.router.navigate(['/dashboard']);
+          break;
+        case 'PARENT':
+          this.router.navigate(['/parent-dashboard']);
+          break;
+        case 'ELEVE':
+          this.router.navigate(['/student-dashboard']);
+          break;
+        default:
+          this.router.navigate(['/login']);
+      }
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   // Getters pour les erreurs de validation

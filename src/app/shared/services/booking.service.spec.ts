@@ -130,7 +130,7 @@ describe('BookingService', () => {
 
       let errorCaught = false;
       service.createBooking(request).subscribe({
-        error: (error) => {
+        error: () => {
           errorCaught = true;
         },
       });

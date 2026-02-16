@@ -1,9 +1,9 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  Cours,
+  CoursSession,
   CoursStatus,
   CreateCoursRequest,
   UpdateCoursRequest,
@@ -16,8 +16,8 @@ import {
 export class CoursService {
   private readonly apiUrl = `${environment.apiUrl}courses`;
 
-  private readonly _coursList = signal<Cours[]>([]);
-  private readonly _selectedCours = signal<Cours | null>(null);
+  private readonly _coursList = signal<CoursSession[]>([]);
+  private readonly _selectedCours = signal<CoursSession | null>(null);
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private readonly _totalElements = signal<number>(0);
@@ -32,15 +32,15 @@ export class CoursService {
     this._coursList().filter((cours) => cours.statut === CoursStatus.PENDING),
   );
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getAllCours(
-    page: number = 0,
-    size: number = 10,
-    sortBy: string = 'id',
-    direction: string = 'ASC',
+    page = 0,
+    size = 10,
+    sortBy = 'id',
+    direction = 'ASC',
   ): Observable<{
-    data: Cours[];
+    data: CoursSession[];
     pagination: {
       currentPage: number;
       pageSize: number;
@@ -63,7 +63,7 @@ export class CoursService {
 
     return this.http
       .get<{
-        data: Cours[];
+        data: CoursSession[];
         pagination: {
           currentPage: number;
           pageSize: number;
@@ -99,11 +99,11 @@ export class CoursService {
       );
   }
 
-  getCoursById(id: number): Observable<Cours> {
+  getCoursById(id: number): Observable<CoursSession> {
     const cached = this._coursList().find((c) => c.id === id);
     if (cached) return of(cached);
 
-    return this.http.get<Cours>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<CoursSession>(`${this.apiUrl}/${id}`).pipe(
       tap((cours) => {
         this._coursList.update((current) => {
           if (!current.some((c) => c.id === id)) {
@@ -115,8 +115,8 @@ export class CoursService {
     );
   }
 
-  createCours(cours: CreateCoursRequest): Observable<Cours> {
-    return this.http.post<Cours>(this.apiUrl, cours).pipe(
+  createCours(cours: CreateCoursRequest): Observable<CoursSession> {
+    return this.http.post<CoursSession>(this.apiUrl, cours).pipe(
       tap((newCours) => {
         this._coursList.update((current) => [newCours, ...current]);
         this._totalElements.update((total) => total + 1);
@@ -124,8 +124,8 @@ export class CoursService {
     );
   }
 
-  updateCours(id: number, cours: UpdateCoursRequest): Observable<Cours> {
-    return this.http.put<Cours>(`${this.apiUrl}/${id}`, cours).pipe(
+  updateCours(id: number, cours: UpdateCoursRequest): Observable<CoursSession> {
+    return this.http.put<CoursSession>(`${this.apiUrl}/${id}`, cours).pipe(
       tap((updatedCours) => {
         this._coursList.update((current) =>
           current.map((c) => (c.id === id ? updatedCours : c)),
@@ -145,12 +145,12 @@ export class CoursService {
    * @param direction Sort direction (ASC/DESC)
    */
   getAvailableCours(
-    page: number = 0,
-    size: number = 10,
-    sortBy: string = 'dateCours',
-    direction: string = 'ASC',
+    page = 0,
+    size = 10,
+    sortBy = 'sessionDate',
+    direction = 'ASC',
   ): Observable<{
-    data: Cours[];
+    data: CoursSession[];
     pagination: {
       currentPage: number;
       pageSize: number;
@@ -173,7 +173,7 @@ export class CoursService {
 
     return this.http
       .get<{
-        data: Cours[];
+        data: CoursSession[];
         pagination: {
           currentPage: number;
           pageSize: number;
@@ -186,7 +186,7 @@ export class CoursService {
         };
       }>(`${this.apiUrl}/available`, { params })
       .pipe(
-        tap((response) => {
+        tap(() => {
           this._loading.set(false);
         }),
         catchError((error) => {
@@ -201,16 +201,20 @@ export class CoursService {
    * Get available cours for a specific teacher
    * @param teacherId Teacher's user ID
    */
-  getAvailableCoursByTeacher(teacherId: number): Observable<Cours[]> {
-    return this.http.get<Cours[]>(`${this.apiUrl}/teacher/${teacherId}/available`);
+  getAvailableCoursByTeacher(teacherId: number): Observable<CoursSession[]> {
+    return this.http.get<CoursSession[]>(
+      `${this.apiUrl}/teacher/${teacherId}/available`,
+    );
   }
 
   /**
    * Get available cours for a specific subject/matiere
    * @param matiere Subject name
    */
-  getAvailableCoursByMatiere(matiere: string): Observable<Cours[]> {
-    return this.http.get<Cours[]>(`${this.apiUrl}/matiere/${matiere}/available`);
+  getAvailableCoursByMatiere(matiere: string): Observable<CoursSession[]> {
+    return this.http.get<CoursSession[]>(
+      `${this.apiUrl}/matiere/${matiere}/available`,
+    );
   }
 
   deleteCours(id: number): Observable<void> {
@@ -225,7 +229,7 @@ export class CoursService {
     );
   }
 
-  selectCours(cours: Cours | null): void {
+  selectCours(cours: CoursSession | null): void {
     this._selectedCours.set(cours);
   }
 
@@ -245,6 +249,8 @@ export class CoursService {
    * Used by teachers to select courses for invoice creation.
    */
   getCompletedUnbilledCours(): Observable<CompletedUnbilledCours[]> {
-    return this.http.get<CompletedUnbilledCours[]>(`${this.apiUrl}/completed-unbilled`);
+    return this.http.get<CompletedUnbilledCours[]>(
+      `${this.apiUrl}/completed-unbilled`,
+    );
   }
 }

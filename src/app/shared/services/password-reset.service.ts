@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -26,7 +26,7 @@ export class PasswordResetService {
   readonly error = this._error.asReadonly();
   readonly success = this._success.asReadonly();
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   /**
    * Demande un email de réinitialisation de mot de passe.
@@ -47,10 +47,11 @@ export class PasswordResetService {
       catchError((error) => {
         this._loading.set(false);
         this._error.set(
-          error.error?.message || 'Erreur lors de la demande de réinitialisation'
+          error.error?.message ||
+            'Erreur lors de la demande de réinitialisation',
         );
         throw error;
-      })
+      }),
     );
   }
 
@@ -73,7 +74,7 @@ export class PasswordResetService {
           this._loading.set(false);
           this._error.set(error.error?.message || 'Token invalide ou expiré');
           throw error;
-        })
+        }),
       );
   }
 
@@ -95,10 +96,11 @@ export class PasswordResetService {
       catchError((error) => {
         this._loading.set(false);
         this._error.set(
-          error.error?.message || 'Erreur lors de la réinitialisation du mot de passe'
+          error.error?.message ||
+            'Erreur lors de la réinitialisation du mot de passe',
         );
         throw error;
-      })
+      }),
     );
   }
 

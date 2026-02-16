@@ -5,12 +5,12 @@ export enum CoursStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export interface Cours {
+export interface CoursSession {
   id: number;
   titre: string;
   matiere: string;
   dureeMinutes: number;
-  dateCours: string;
+  sessionDate: string;
   tarif: number;
   teacherId: number;        // The teacher who created the slot
   parentId?: number;        // The parent who booked (from booking, null if not booked)
@@ -27,7 +27,7 @@ export interface CreateCoursRequest {
   titre: string;
   matiere: string;
   dureeMinutes: number;
-  dateCours: string;
+  sessionDate: string;
   tarif: number;
   teacherId: number;        // Renamed from parentId - the teacher creating the slot
   statut: CoursStatus;
@@ -37,7 +37,7 @@ export interface UpdateCoursRequest {
   titre?: string;
   matiere?: string;
   dureeMinutes?: number;
-  dateCours?: string; // ISO string
+  sessionDate?: string; // ISO string
   tarif?: number;
   teacherId?: number;       // Renamed from parentId
   statut?: CoursStatus;
@@ -51,7 +51,7 @@ export interface CompletedUnbilledCours {
   titre: string;
   matiere: string;
   dureeMinutes: number;
-  dateCours: string;
+  sessionDate: string;
   tarif: number;
   eleveId: number;
   eleveName: string;

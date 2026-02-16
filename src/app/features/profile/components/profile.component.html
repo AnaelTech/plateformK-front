@@ -59,7 +59,12 @@
         <div
           class="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-2"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -74,7 +79,12 @@
         <div
           class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -88,9 +98,7 @@
 
       <!-- Statut email -->
       @if (profile() && !profile()!.emailValid) {
-        <div
-          class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl"
-        >
+        <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
           <div class="flex items-start gap-3">
             <svg
               class="w-5 h-5 text-amber-600 mt-0.5"
@@ -183,10 +191,14 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Prénom -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-firstName"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Prénom
               </label>
               <input
+                id="profile-firstName"
                 type="text"
                 formControlName="firstName"
                 [class]="
@@ -204,10 +216,14 @@
 
             <!-- Nom -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-lastName"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Nom
               </label>
               <input
+                id="profile-lastName"
                 type="text"
                 formControlName="lastName"
                 [class]="
@@ -225,13 +241,21 @@
 
             <!-- Email -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-email"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email
                 @if (profile()?.emailValid) {
                   <span
                     class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
                   >
-                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      class="w-3 h-3 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      aria-hidden="true"
+                    >
                       <path
                         fill-rule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -243,6 +267,7 @@
                 }
               </label>
               <input
+                id="profile-email"
                 type="email"
                 formControlName="email"
                 [class]="
@@ -258,17 +283,22 @@
               }
               @if (emailChanged()) {
                 <p class="mt-1 text-sm text-amber-600">
-                  La modification de l'email nécessitera une nouvelle validation.
+                  La modification de l'email nécessitera une nouvelle
+                  validation.
                 </p>
               }
             </div>
 
             <!-- Téléphone -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-phoneNumber"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Téléphone
               </label>
               <input
+                id="profile-phoneNumber"
                 type="tel"
                 formControlName="phoneNumber"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
@@ -277,10 +307,14 @@
 
             <!-- Adresse -->
             <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-address"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Adresse
               </label>
               <input
+                id="profile-address"
                 type="text"
                 formControlName="address"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
@@ -289,10 +323,14 @@
 
             <!-- Ville -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-city"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Ville
               </label>
               <input
+                id="profile-city"
                 type="text"
                 formControlName="city"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
@@ -301,10 +339,14 @@
 
             <!-- Code postal -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-postalCode"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Code postal
               </label>
               <input
+                id="profile-postalCode"
                 type="text"
                 formControlName="postalCode"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
@@ -313,10 +355,14 @@
 
             <!-- Date de naissance -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="profile-birthDate"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Date de naissance
               </label>
               <input
+                id="profile-birthDate"
                 type="date"
                 formControlName="birthDate"
                 class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
@@ -332,7 +378,11 @@
             >
               @if (isUpdating()) {
                 <span class="flex items-center gap-2">
-                  <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <svg
+                    class="animate-spin h-5 w-5"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <circle
                       class="opacity-25"
                       cx="12"
@@ -361,8 +411,14 @@
       <!-- Sécurité -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
         <div
+          role="button"
+          tabindex="0"
+          [attr.aria-expanded]="showPasswordSection()"
+          aria-controls="password-section"
           class="px-6 py-4 border-b border-gray-100 flex items-center justify-between cursor-pointer"
           (click)="togglePasswordSection()"
+          (keydown.enter)="togglePasswordSection()"
+          (keydown.space)="togglePasswordSection(); $event.preventDefault()"
         >
           <h2 class="text-lg font-semibold text-gray-900">Sécurité</h2>
           <svg
@@ -373,6 +429,7 @@
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path
               stroke-linecap="round"
@@ -382,9 +439,9 @@
             />
           </svg>
         </div>
-
         @if (showPasswordSection()) {
           <form
+            id="password-section"
             [formGroup]="passwordForm"
             (ngSubmit)="onChangePassword()"
             class="p-6"
@@ -392,10 +449,14 @@
             <div class="space-y-4 max-w-md">
               <!-- Mot de passe actuel -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  for="security-currentPassword"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Mot de passe actuel
                 </label>
                 <input
+                  id="security-currentPassword"
                   type="password"
                   formControlName="currentPassword"
                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
@@ -406,28 +467,36 @@
                   </p>
                 }
               </div>
-
               <!-- Nouveau mot de passe -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  for="security-newPassword"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Nouveau mot de passe
                 </label>
                 <input
+                  id="security-newPassword"
                   type="password"
                   formControlName="newPassword"
                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"
                 />
                 @if (newPasswordError) {
-                  <p class="mt-1 text-sm text-red-600">{{ newPasswordError }}</p>
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ newPasswordError }}
+                  </p>
                 }
               </div>
-
               <!-- Confirmer -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  for="security-confirmPassword"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Confirmer le nouveau mot de passe
                 </label>
                 <input
+                  id="security-confirmPassword"
                   type="password"
                   formControlName="confirmPassword"
                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl transition-all focus:outline-none focus:border-indigo-500"

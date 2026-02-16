@@ -944,7 +944,9 @@
                   />
                 </svg>
                 <span class="hidden sm:inline"
-                  >Créer une facture ({{ selectedCoursForInvoice().size }}
+                  >Créer une facture ({{
+                    selectedCoursForInvoice().size
+                  }}
                   cours)</span
                 >
                 <span class="sm:hidden"
@@ -1006,7 +1008,15 @@
                 <div class="space-y-2">
                   @for (cours of parentGroup.courses; track cours.coursId) {
                     <div
+                      role="button"
+                      tabindex="0"
                       (click)="toggleCoursSelection(cours.coursId)"
+                      (keydown.enter)="toggleCoursSelection(cours.coursId)"
+                      (keydown.space)="
+                        toggleCoursSelection(cours.coursId);
+                        $event.preventDefault()
+                      "
+                      [attr.aria-pressed]="isCoursSelected(cours.coursId)"
                       class="flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition-all"
                       [class]="
                         isCoursSelected(cours.coursId)
@@ -1050,7 +1060,7 @@
                           <span class="text-gray-600">{{ cours.matiere }}</span>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                          {{ formatCoursDate(cours.dateCours) }} -
+                          {{ formatCoursDate(cours.sessionDate) }} -
                           {{ cours.dureeMinutes }} min
                         </div>
                       </div>
@@ -1099,205 +1109,214 @@
             </h2>
           </div>
 
-        <!-- Version DESKTOP : Tableau -->
-        <div class="hidden lg:block overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  N° Facture
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Élève
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Date émission
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Échéance
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Montant
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Statut
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @for (invoice of invoices(); track invoice.id) {
-                <tr class="hover:bg-gray-50 transition-colors">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="font-medium text-gray-900">
-                      #{{ invoice.id }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ invoice.studentName || "Élève" }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ formatDate(invoice.creationDate) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ formatDate(invoice.dueDate) }}
-                    @if (invoice.isPaid && invoice.paidAt) {
-                      <div class="text-xs text-green-600 mt-1">
-                        Payée le {{ formatDate(invoice.paidAt) }}
-                      </div>
-                    }
-                  </td>
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
-                  >
-                    {{ invoice.totalAmount }}€
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      [class]="
-                        'px-3 py-1 rounded-full text-xs font-medium ' +
-                        getStatusColor(invoice.statut)
-                      "
-                    >
-                      {{ getStatusLabel(invoice.statut) }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex gap-2">
-                      <button
-                        (click)="downloadInvoice(invoice.id)"
-                        class="text-indigo-600 hover:text-indigo-800 font-medium"
-                      >
-                        Télécharger
-                      </button>
-                      @if (!invoice.isPaid) {
-                        <button
-                          (click)="sendInvoice(invoice.id)"
-                          class="text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          Envoyer
-                        </button>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
+          <!-- Version DESKTOP : Tableau -->
+          <div class="hidden lg:block overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <td colspan="7" class="px-6 py-12 text-center text-gray-600">
-                    Aucune facture enregistrée
-                  </td>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    N° Facture
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Élève
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Date émission
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Échéance
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Montant
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Statut
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (invoice of invoices(); track invoice.id) {
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="font-medium text-gray-900">
+                        #{{ invoice.id }}
+                      </div>
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                    >
+                      {{ invoice.studentName || "Élève" }}
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
+                    >
+                      {{ formatDate(invoice.creationDate) }}
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm text-gray-600"
+                    >
+                      {{ formatDate(invoice.dueDate) }}
+                      @if (invoice.isPaid && invoice.paidAt) {
+                        <div class="text-xs text-green-600 mt-1">
+                          Payée le {{ formatDate(invoice.paidAt) }}
+                        </div>
+                      }
+                    </td>
+                    <td
+                      class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900"
+                    >
+                      {{ invoice.totalAmount }}€
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        [class]="
+                          'px-3 py-1 rounded-full text-xs font-medium ' +
+                          getStatusColor(invoice.statut)
+                        "
+                      >
+                        {{ getStatusLabel(invoice.statut) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <div class="flex gap-2">
+                        <button
+                          (click)="downloadInvoice(invoice.id)"
+                          class="text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                          Télécharger
+                        </button>
+                        @if (!invoice.isPaid) {
+                          <button
+                            (click)="sendInvoice(invoice.id)"
+                            class="text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            Envoyer
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td
+                      colspan="7"
+                      class="px-6 py-12 text-center text-gray-600"
+                    >
+                      Aucune facture enregistrée
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
 
-        <!-- Version MOBILE/TABLET : Cards -->
-        <div class="lg:hidden divide-y divide-gray-100">
-          @for (invoice of invoices(); track invoice.id) {
-            <div
-              class="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-            >
-              <div class="flex items-start justify-between mb-3">
-                <div>
-                  <h3 class="font-semibold text-gray-900 text-sm mb-1">
-                    Facture #{{ invoice.id }}
-                  </h3>
-                  <p class="text-xs text-gray-600">
-                    {{ invoice.studentName || "Élève" }}
-                  </p>
+          <!-- Version MOBILE/TABLET : Cards -->
+          <div class="lg:hidden divide-y divide-gray-100">
+            @for (invoice of invoices(); track invoice.id) {
+              <div
+                class="p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+              >
+                <div class="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 class="font-semibold text-gray-900 text-sm mb-1">
+                      Facture #{{ invoice.id }}
+                    </h3>
+                    <p class="text-xs text-gray-600">
+                      {{ invoice.studentName || "Élève" }}
+                    </p>
+                  </div>
+                  <span
+                    [class]="
+                      'px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-2 ' +
+                      getStatusColor(invoice.statut)
+                    "
+                  >
+                    {{ getStatusLabel(invoice.statut) }}
+                  </span>
                 </div>
-                <span
-                  [class]="
-                    'px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-2 ' +
-                    getStatusColor(invoice.statut)
-                  "
-                >
-                  {{ getStatusLabel(invoice.statut) }}
-                </span>
-              </div>
 
-              <div class="space-y-1.5 text-xs text-gray-600 mb-3">
-                <div class="flex justify-between">
-                  <span>Émise le</span>
-                  <span class="font-medium text-gray-900">{{
-                    formatDate(invoice.creationDate)
-                  }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Échéance</span>
-                  <span class="font-medium text-gray-900">{{
-                    formatDate(invoice.dueDate)
-                  }}</span>
-                </div>
-                @if (invoice.isPaid && invoice.paidAt) {
+                <div class="space-y-1.5 text-xs text-gray-600 mb-3">
                   <div class="flex justify-between">
-                    <span>Payée le</span>
-                    <span class="font-medium text-green-600">{{
-                      formatDate(invoice.paidAt)
+                    <span>Émise le</span>
+                    <span class="font-medium text-gray-900">{{
+                      formatDate(invoice.creationDate)
                     }}</span>
                   </div>
-                }
-                <div class="flex justify-between">
-                  <span>Montant</span>
-                  <span class="font-bold text-gray-900 text-sm"
-                    >{{ invoice.totalAmount }}€</span
+                  <div class="flex justify-between">
+                    <span>Échéance</span>
+                    <span class="font-medium text-gray-900">{{
+                      formatDate(invoice.dueDate)
+                    }}</span>
+                  </div>
+                  @if (invoice.isPaid && invoice.paidAt) {
+                    <div class="flex justify-between">
+                      <span>Payée le</span>
+                      <span class="font-medium text-green-600">{{
+                        formatDate(invoice.paidAt)
+                      }}</span>
+                    </div>
+                  }
+                  <div class="flex justify-between">
+                    <span>Montant</span>
+                    <span class="font-bold text-gray-900 text-sm"
+                      >{{ invoice.totalAmount }}€</span
+                    >
+                  </div>
+                </div>
+
+                <div class="flex gap-2">
+                  <button
+                    (click)="downloadInvoice(invoice.id)"
+                    class="flex-1 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium active:bg-indigo-700"
                   >
+                    <span class="hidden sm:inline">Télécharger</span>
+                    <svg
+                      class="w-4 h-4 mx-auto sm:hidden"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </button>
+                  @if (!invoice.isPaid) {
+                    <button
+                      (click)="sendInvoice(invoice.id)"
+                      class="flex-1 px-3 py-1.5 border-2 border-indigo-600 text-indigo-600 rounded-lg text-xs font-medium active:bg-indigo-50"
+                    >
+                      Envoyer
+                    </button>
+                  }
                 </div>
               </div>
-
-              <div class="flex gap-2">
-                <button
-                  (click)="downloadInvoice(invoice.id)"
-                  class="flex-1 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium active:bg-indigo-700"
-                >
-                  <span class="hidden sm:inline">Télécharger</span>
-                  <svg
-                    class="w-4 h-4 mx-auto sm:hidden"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </button>
-                @if (!invoice.isPaid) {
-                  <button
-                    (click)="sendInvoice(invoice.id)"
-                    class="flex-1 px-3 py-1.5 border-2 border-indigo-600 text-indigo-600 rounded-lg text-xs font-medium active:bg-indigo-50"
-                  >
-                    Envoyer
-                  </button>
-                }
+            } @empty {
+              <div class="p-12 text-center text-gray-600 text-sm">
+                Aucune facture enregistrée
               </div>
-            </div>
-          } @empty {
-            <div class="p-12 text-center text-gray-600 text-sm">
-              Aucune facture enregistrée
-            </div>
-          }
-        </div>
+            }
+          </div>
         </div>
       </div>
     }
@@ -1344,6 +1363,14 @@
             <div class="grid grid-cols-7 gap-1 sm:gap-2">
               @for (date of calendarDates(); track date.dateString) {
                 <div
+                  [attr.role]="!date.isPast ? 'button' : null"
+                  [attr.tabindex]="!date.isPast ? 0 : null"
+                  [attr.aria-disabled]="date.isPast"
+                  [attr.aria-label]="
+                    date.isPast
+                      ? 'Date passée - non modifiable'
+                      : 'Cliquez pour ajouter une disponibilité'
+                  "
                   [class]="
                     'min-h-[60px] sm:min-h-20 border rounded-lg p-1 sm:p-2 transition-all ' +
                     (date.isPast
@@ -1358,7 +1385,11 @@
                       ? 'Date passée - non modifiable'
                       : 'Cliquez pour ajouter une disponibilité'
                   "
-                  (click)="date.isPast ? null : selectDate(date)"
+                  (click)="!date.isPast && selectDate(date)"
+                  (keydown.enter)="!date.isPast && selectDate(date)"
+                  (keydown.space)="
+                    !date.isPast && selectDate(date) && $event.preventDefault()
+                  "
                 >
                   <div class="text-sm font-medium mb-1">
                     {{ date.day }}
@@ -1586,10 +1617,14 @@
               <div class="space-y-4">
                 <!-- Date -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Date</label
+                  <label
+                    for="availability-date"
+                    class="block text-sm font-medium text-gray-700 mb-2"
                   >
+                    Date
+                  </label>
                   <input
+                    id="availability-date"
                     type="date"
                     [(ngModel)]="availabilityFormData().date"
                     name="date"
@@ -1600,10 +1635,14 @@
 
                 <!-- Heure de début -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Heure de début</label
+                  <label
+                    for="availability-start-time"
+                    class="block text-sm font-medium text-gray-700 mb-2"
                   >
+                    Heure de début
+                  </label>
                   <input
+                    id="availability-start-time"
                     type="time"
                     [(ngModel)]="availabilityFormData().startTime"
                     name="startTime"
@@ -1614,10 +1653,14 @@
 
                 <!-- Heure de fin -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Heure de fin</label
+                  <label
+                    for="availability-end-time"
+                    class="block text-sm font-medium text-gray-700 mb-2"
                   >
+                    Heure de fin
+                  </label>
                   <input
+                    id="availability-end-time"
                     type="time"
                     [(ngModel)]="availabilityFormData().endTime"
                     name="endTime"
@@ -1628,10 +1671,14 @@
 
                 <!-- Matière -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Matière</label
+                  <label
+                    for="availability-subject"
+                    class="block text-sm font-medium text-gray-700 mb-2"
                   >
+                    Matière
+                  </label>
                   <select
+                    id="availability-subject"
                     [(ngModel)]="availabilityFormData().subject"
                     name="subject"
                     required
@@ -1655,10 +1702,14 @@
 
                 <!-- Prix -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Prix (€)</label
+                  <label
+                    for="availability-price"
+                    class="block text-sm font-medium text-gray-700 mb-2"
                   >
+                    Prix (€)
+                  </label>
                   <input
+                    id="availability-price"
                     type="number"
                     [(ngModel)]="availabilityFormData().price"
                     name="price"
@@ -1696,17 +1747,31 @@
     @if (showInvitationModal()) {
       <div
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="parent-invitation-modal-title"
         (click)="closeInvitationModal()"
+        (keydown.escape)="closeInvitationModal()"
+        tabindex="-1"
       >
         <div
           class="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+          role="document"
           (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          tabindex="0"
         >
           <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-bold text-gray-900">Inviter un parent</h3>
+            <h3
+              id="parent-invitation-modal-title"
+              class="text-xl font-bold text-gray-900"
+            >
+              Inviter un parent
+            </h3>
             <button
               type="button"
               (click)="closeInvitationModal()"
+              aria-label="Fermer la modale d'invitation parent"
               class="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg
@@ -1845,18 +1910,32 @@
     @if (showCreateInvoiceModal()) {
       <div
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-invoice-modal-title"
         (click)="closeCreateInvoiceModal()"
+        (keydown.escape)="closeCreateInvoiceModal()"
+        tabindex="-1"
       >
         <div
           class="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          role="document"
           (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          tabindex="0"
         >
           <div class="p-6">
             <div class="flex items-center justify-between mb-6">
-              <h3 class="text-xl font-bold text-gray-900">Créer une facture</h3>
+              <h3
+                id="create-invoice-modal-title"
+                class="text-xl font-bold text-gray-900"
+              >
+                Créer une facture
+              </h3>
               <button
                 type="button"
                 (click)="closeCreateInvoiceModal()"
+                aria-label="Fermer la modale de création de facture"
                 class="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg
@@ -1900,7 +1979,9 @@
             @if (selectedCoursParent(); as parent) {
               <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                 <p class="text-sm text-gray-500 mb-1">Destinataire</p>
-                <p class="font-semibold text-gray-900">{{ parent.parentName }}</p>
+                <p class="font-semibold text-gray-900">
+                  {{ parent.parentName }}
+                </p>
                 <p class="text-sm text-gray-600">{{ parent.parentEmail }}</p>
               </div>
             }
@@ -1922,7 +2003,7 @@
                       <span class="text-gray-400 mx-1">-</span>
                       <span class="text-gray-600">{{ cours.matiere }}</span>
                       <div class="text-xs text-gray-500">
-                        {{ formatCoursDate(cours.dateCours) }}
+                        {{ formatCoursDate(cours.sessionDate) }}
                       </div>
                     </div>
                     <span class="font-semibold text-gray-900"
@@ -2069,8 +2150,8 @@
   <!-- Feedback Modal -->
   @if (showFeedbackModal()) {
     <app-feedback-modal
-      (submit)="onFeedbackSubmit($event)"
-      (cancel)="onFeedbackCancel()"
+      (feedbackSubmit)="onFeedbackSubmit($event)"
+      (feedbackCancel)="onFeedbackCancel()"
     ></app-feedback-modal>
   }
 </div>

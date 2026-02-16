@@ -69,10 +69,15 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   readonly userService = inject(UserService);
   readonly currentUser = this.userService.currentUser;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly upcomingCourses = signal<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly pastCourses = signal<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly teachers = signal<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly recentGrades = signal<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly stats = signal<any>({
     upcomingCourses: 0,
     completedCourses: 0,

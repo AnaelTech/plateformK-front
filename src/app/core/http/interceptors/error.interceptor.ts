@@ -1,6 +1,5 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../../../shared/services/notification.service';
 
@@ -11,7 +10,6 @@ import { NotificationService } from '../../../shared/services/notification.servi
  * Displays user-friendly messages via notification service.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
   const notificationService: NotificationService = inject(NotificationService);
 
   return next(req).pipe(
@@ -22,6 +20,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         // Client-side or network error
         errorMessage = `Network Error: ${error.error.message}`;
         console.error('Client-side error:', error.error.message);
+      } else if (error.error instanceof SyntaxError) {
+        // JSON parsing error - likely server returned HTML or malformed JSON
+        errorMessage = 'Server Error: Invalid response format received';
+        console.error('JSON Parse Error:', error.error.message, 'Response:', error.error);
+        notificationService.error(errorMessage, 5000);
       } else {
         // Backend error
         switch (error.status) {
@@ -69,7 +72,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             notificationService.warning(errorMessage);
             break;
 
-          case 429:
+          case 429: {
             errorMessage =
               error.error?.message ||
               'Too many requests. Please try again later.';
@@ -80,6 +83,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             console.warn('Rate Limit (429):', errorMessage);
             notificationService.warning(errorMessage, 5000);
             break;
+          }
 
           case 500:
             errorMessage = 'Server Error: Something went wrong on our end';

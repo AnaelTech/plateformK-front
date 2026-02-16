@@ -2,7 +2,9 @@
   <!-- Header avec navigation mois -->
   <div class="flex items-center justify-between mb-4 sm:mb-6">
     <button
+      type="button"
       (click)="previousMonth()"
+      aria-label="Mois précédent"
       class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200"
     >
       <svg
@@ -10,6 +12,7 @@
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
+        aria-hidden="true"
       >
         <path
           stroke-linecap="round"
@@ -19,11 +22,16 @@
         />
       </svg>
     </button>
-    <h3 class="text-base sm:text-xl font-bold text-gray-900 capitalize">
+    <h3
+      id="calendar-month-label"
+      class="text-base sm:text-xl font-bold text-gray-900 capitalize"
+    >
       {{ getMonthName() }}
     </h3>
     <button
+      type="button"
       (click)="nextMonth()"
+      aria-label="Mois suivant"
       class="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors active:bg-gray-200"
     >
       <svg
@@ -31,6 +39,7 @@
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
+        aria-hidden="true"
       >
         <path
           stroke-linecap="round"
@@ -43,24 +52,35 @@
   </div>
 
   <!-- Jours de la semaine -->
-  <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-4">
+  <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-4" role="row">
     @for (day of weekDays; track day) {
       <div
+        role="columnheader"
         class="text-center font-semibold text-gray-700 py-1 sm:py-2 text-xs sm:text-sm"
       >
         <!-- Version courte pour mobile, complète pour desktop -->
         <span class="hidden sm:inline">{{ day }}</span>
-        <span class="sm:hidden">{{ day.substring(0, 1) }}</span>
+        <span class="sm:hidden" [attr.aria-label]="day">{{          day.substring(0, 1)
+        }}</span>
       </div>
     }
   </div>
 
   <!-- Grille des dates -->
-  <div class="grid grid-cols-7 gap-1 sm:gap-2">
+  <div
+    class="grid grid-cols-7 gap-1 sm:gap-2"
+    role="grid"
+    aria-labelledby="calendar-month-label"
+  >
     @for (dateInfo of calendarDates(); track dateInfo.dateString) {
       <div
+        role="gridcell"
+        tabindex="0"
+        [attr.aria-label]="getDateAriaLabel(dateInfo)"
+        [attr.aria-selected]="dateInfo.isSelected"
+        [attr.aria-current]="dateInfo.isToday ? 'date' : null"
         [class]="
-          'min-h-[60px] sm:min-h-[80px] border rounded-lg p-1 sm:p-2 cursor-pointer transition-all touch-manipulation ' +
+          'min-h-[60px] sm:min-h-20 border rounded-lg p-1 sm:p-2 cursor-pointer transition-all touch-manipulation ' +
           (dateInfo.isCurrentMonth
             ? 'border-gray-200 hover:border-purple-300 active:bg-purple-50'
             : 'border-gray-100 bg-gray-50') +
@@ -70,6 +90,10 @@
           (dateInfo.isToday ? ' bg-blue-50 border-blue-300' : '')
         "
         (click)="onDateClick(dateInfo.dateString)"
+        (keydown.enter)="onDateClick(dateInfo.dateString)"
+        (keydown.space)="
+          onDateClick(dateInfo.dateString); $event.preventDefault()
+        "
       >
         <div
           [class]="

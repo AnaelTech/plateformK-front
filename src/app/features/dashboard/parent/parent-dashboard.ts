@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, effect, untracked, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  effect,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule,
@@ -16,7 +23,7 @@ import {
 import { InvitationService } from '../../../shared/services/invitation.service';
 import { TypeUser } from '../../../shared/models/User';
 import {
-  Cours,
+  CoursSession,
   CoursStatus,
   CreateCoursRequest,
 } from '../../../shared/models/Cours';
@@ -37,6 +44,7 @@ import {
 import { TabItem } from '../../../shared/models/TabItem';
 import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
 import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
+import { environment } from '../../../../environments/environment';
 
 export enum Tab {
   Overview = 'overview',
@@ -275,7 +283,7 @@ export class ParentDashboardComponent implements OnInit {
       titre: `Cours de ${availability.subject}`,
       matiere: availability.subject,
       dureeMinutes: availability.duration * 60,
-      dateCours: `${availability.date}T${availability.startTime}`,
+      sessionDate: `${availability.date}T${availability.startTime}`,
       tarif: availability.price,
       teacherId: availability.teacherId, // Le professeur qui a créé la disponibilité
       statut: CoursStatus.PENDING,
@@ -314,7 +322,12 @@ export class ParentDashboardComponent implements OnInit {
                   this.loadCoursData();
                 },
                 error: (error) => {
-                  //console.error('Erreur lors de la mise à jour de la disponibilité:', error);
+                  if (!environment.production) {
+                    console.error(
+                      'Erreur lors de la mise à jour de la disponibilité:',
+                      error,
+                    );
+                  }
                   alert(
                     'Réservation créée mais erreur lors de la mise à jour de la disponibilité',
                   );
@@ -324,13 +337,17 @@ export class ParentDashboardComponent implements OnInit {
               });
           },
           error: (error) => {
-            //console.error('Erreur lors de la réservation:', error);
+            if (!environment.production) {
+              console.error('Erreur lors de la réservation:', error);
+            }
             alert('Erreur lors de la création de la réservation');
           },
         });
       },
       error: (error) => {
-        //console.error('Erreur lors de la création du cours:', error);
+        if (!environment.production) {
+          console.error('Erreur lors de la création du cours:', error);
+        }
         alert('Erreur lors de la création du cours');
       },
     });
@@ -407,7 +424,9 @@ export class ParentDashboardComponent implements OnInit {
           this.loadCoursData();
         },
         error: (error) => {
-          //console.error('Erreur lors de la validation:', error);
+          if (!environment.production) {
+            console.error('Erreur lors de la validation:', error);
+          }
         },
       });
   }
@@ -420,7 +439,9 @@ export class ParentDashboardComponent implements OnInit {
           this.loadCoursData();
         },
         error: (error) => {
-          //console.error('Erreur lors de la finalisation:', error);
+          if (!environment.production) {
+            console.error('Erreur lors de la finalisation:', error);
+          }
         },
       });
   }
@@ -434,7 +455,9 @@ export class ParentDashboardComponent implements OnInit {
             this.loadCoursData();
           },
           error: (error) => {
-            //console.error("Erreur lors de l'annulation:", error);
+            if (!environment.production) {
+              console.error("Erreur lors de l'annulation:", error);
+            }
           },
         });
     }
@@ -446,8 +469,8 @@ export class ParentDashboardComponent implements OnInit {
         console.log('Invoice sent successfully');
         this.loadInvoicesData();
       },
-      error: (error) => {
-        //console.error('Failed to send invoice:', error);
+      error: () => {
+        //console.error('Failed to send invoice:');
       },
     });
   }
@@ -462,8 +485,8 @@ export class ParentDashboardComponent implements OnInit {
         link.click();
         globalThis.URL.revokeObjectURL(url);
       },
-      error: (error) => {
-        //console.error('Failed to download invoice:', error);
+      error: () => {
+        //console.error('Failed to download invoice:');
       },
     });
   }
@@ -570,7 +593,7 @@ export class ParentDashboardComponent implements OnInit {
           level: this.getStudentLevel(child),
           email: child.email,
           parent: `${user.firstName} ${user.lastName}`,
-          nextSession: this.getNextSession(child),
+          nextSession: this.getNextSession(),
         };
         childrenMap.set(c.id, c);
       });
@@ -600,18 +623,19 @@ export class ParentDashboardComponent implements OnInit {
     // Charger les cours disponibles (slots sans réservation)
     // Utiliser getAllCours et filtrer côté client les cours disponibles
     // Un cours est disponible si: eleveId === null (pas de booking) et statut === PENDING
-    this.coursService.getAllCours(0, 100, 'dateCours', 'ASC').subscribe({
+    this.coursService.getAllCours(0, 100, 'sessionDate', 'ASC').subscribe({
       next: (response) => {
         const now = new Date();
         const slotsMap = new Map<number, SlotDisplay>();
         const slots = response.data
-          .filter((c: any) => 
-            c.eleveId === null && 
-            c.statut === CoursStatus.PENDING &&
-            new Date(c.dateCours) > now
+          .filter(
+            (c: CoursSession) =>
+              c.eleveId === null &&
+              c.statut === CoursStatus.PENDING &&
+              new Date(c.sessionDate) > now,
           )
-          .map((c: any) => this.coursToSlotDisplay(c));
-        slots.forEach((s: any) => slotsMap.set(s.id, s));
+          .map((c: CoursSession) => this.coursToSlotDisplay(c));
+        slots.forEach((s: SlotDisplay) => slotsMap.set(s.id, s));
         this._availableSlots.set(Array.from(slotsMap.values()));
       },
       error: (error) => {
@@ -666,7 +690,7 @@ export class ParentDashboardComponent implements OnInit {
     return statusMap[invoice.statut] || 'pending';
   }
 
-  private coursToBookingDisplay(cours: Cours): BookingDisplay {
+  private coursToBookingDisplay(cours: CoursSession): BookingDisplay {
     // Note: cours.eleveId no longer exists in the new architecture
     // Student info should come from the associated booking
     // This method might not be used anymore since bookings come from BookingService
@@ -675,7 +699,7 @@ export class ParentDashboardComponent implements OnInit {
       coursId: cours.id,
       eleveId: undefined, // No longer available on Cours
       child: 'Élève', // Would need to fetch from booking
-      date: new Date(cours.dateCours),
+      date: new Date(cours.sessionDate),
       subject: cours.matiere,
       teacher: 'Prof. Dubois',
       price: cours.tarif,
@@ -700,10 +724,10 @@ export class ParentDashboardComponent implements OnInit {
     };
   }
 
-  private coursToSlotDisplay(cours: Cours): SlotDisplay {
+  private coursToSlotDisplay(cours: CoursSession): SlotDisplay {
     return {
       id: cours.id,
-      date: new Date(cours.dateCours),
+      date: new Date(cours.sessionDate),
       duration: cours.dureeMinutes / 60,
       subject: cours.matiere,
       price: cours.tarif,
@@ -724,7 +748,7 @@ export class ParentDashboardComponent implements OnInit {
     }
   }
 
-  private getStudentLevel(eleve: any): string {
+  private getStudentLevel(eleve: User): string {
     if (!eleve.birthDate) return 'Niveau non défini';
 
     const birthYear = new Date(eleve.birthDate).getFullYear();
@@ -748,7 +772,7 @@ export class ParentDashboardComponent implements OnInit {
     return matchingLevel?.level || 'CM2 ou -';
   }
 
-  private getNextSession(eleve: any): Date | undefined {
+  private getNextSession(): Date | undefined {
     const nextSession = new Date();
     nextSession.setDate(
       nextSession.getDate() + Math.floor(Math.random() * 7) + 1,
@@ -769,8 +793,8 @@ export class ParentDashboardComponent implements OnInit {
         next: (availabilities) => {
           this.availabilities.set(availabilities);
         },
-        error: (error) => {
-          //console.error('Failed to load availabilities:', error);
+        error: () => {
+          //console.error('Failed to load availabilities:');
           this.availabilities.set([]);
         },
       });
@@ -846,21 +870,15 @@ export class ParentDashboardComponent implements OnInit {
       };
 
     this.userService.createChild(request).subscribe({
-      next: (response) => {
-        this.childFormLoading.set(false);
-        this.childFormSuccess.set(
-          `Compte créé avec succès pour ${response.firstName} ${response.lastName}`,
-        );
-        this.childForm.reset();
-
-        // Recharger la liste des enfants
-        this.loadUserData();
-
-        // Fermer le formulaire après 2 secondes
+      next: () => {
+        this.invitationLoading.set(false);
+        this.childFormSuccess.set('Compte enfant créé avec succès');
+        this.invitationEmail.set('');
         setTimeout(() => {
-          this.showManualChildForm.set(false);
-          this.childFormSuccess.set(null);
-        }, 2000);
+          if (this.invitationSuccess()) {
+            this.closeInvitationModal();
+          }
+        }, 3000);
       },
       error: (error) => {
         this.childFormLoading.set(false);
@@ -915,7 +933,7 @@ export class ParentDashboardComponent implements OnInit {
         parentId: currentUser?.id,
       })
       .subscribe({
-        next: (response) => {
+        next: () => {
           this.invitationLoading.set(false);
           this.invitationSuccess.set(
             `Invitation envoyée avec succès à ${email}`,

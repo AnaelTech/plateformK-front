@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -27,7 +27,7 @@ export class EmailValidationService {
   readonly codeSent = this._codeSent.asReadonly();
   readonly validated = this._validated.asReadonly();
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   /**
    * Envoie un code de validation par email à l'utilisateur connecté.
@@ -45,10 +45,10 @@ export class EmailValidationService {
       catchError((error) => {
         this._loading.set(false);
         this._error.set(
-          error.error?.message || "Erreur lors de l'envoi du code"
+          error.error?.message || "Erreur lors de l'envoi du code",
         );
         throw error;
-      })
+      }),
     );
   }
 
@@ -70,7 +70,7 @@ export class EmailValidationService {
         this._loading.set(false);
         this._error.set(error.error?.message || 'Code invalide ou expiré');
         throw error;
-      })
+      }),
     );
   }
 
@@ -79,7 +79,7 @@ export class EmailValidationService {
    */
   getValidationStatus(): Observable<EmailValidationStatus> {
     return this.http.get<EmailValidationStatus>(
-      `${this.apiUrl}/validation-status`
+      `${this.apiUrl}/validation-status`,
     );
   }
 

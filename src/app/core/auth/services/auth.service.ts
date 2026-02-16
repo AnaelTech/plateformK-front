@@ -39,8 +39,8 @@ export class AuthService {
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-  register(data: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, data);
+  register(data: RegisterRequest): Observable<RegisterRequest> {
+    return this.http.post<RegisterRequest>(`${this.apiUrl}/register`, data);
   }
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
@@ -66,7 +66,7 @@ export class AuthService {
       .pipe(tap((response) => this.saveTokens(response)));
   }
 
-  logout(path: string = '/'): void {
+  logout(path = '/'): void {
     const refreshToken = this.getRefreshToken();
 
     if (refreshToken) {

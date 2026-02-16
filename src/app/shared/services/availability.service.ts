@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import {
   HttpClient,
   HttpParams,
@@ -19,7 +19,7 @@ import {
 export class AvailabilityService {
   private readonly apiUrl = `${environment.apiUrl}availabilities`;
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   private readonly _availabilities = signal<Availability[]>([]);
   private readonly _selectedAvailability = signal<Availability | null>(null);

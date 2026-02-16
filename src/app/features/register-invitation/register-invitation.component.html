@@ -1,4 +1,6 @@
-<div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+<div
+  class="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4"
+>
   <div class="max-w-md w-full">
     <div class="bg-white rounded-2xl shadow-xl p-8">
       <!-- Header -->
@@ -6,9 +8,7 @@
         <h1 class="text-3xl font-bold text-gray-900 mb-2">
           Créer votre compte
         </h1>
-        <p class="text-gray-600">
-          Vous avez été invité à rejoindre PlatformK
-        </p>
+        <p class="text-gray-600">Vous avez été invité à rejoindre PlatformK</p>
       </div>
 
       <!-- Loading state -->
@@ -42,8 +42,18 @@
       @if (validationError()) {
         <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <div class="flex items-center gap-2 text-red-800 mb-4">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             <span class="font-medium">{{ validationError() }}</span>
           </div>
@@ -61,10 +71,14 @@
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
           <!-- Email (read-only) -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="register-email"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               Email
             </label>
             <input
+              id="register-email"
               type="email"
               [value]="tokenData()?.email"
               readonly
@@ -73,10 +87,23 @@
           </div>
 
           <!-- Role indicator -->
-          <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+          <div
+            class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg"
+          >
             <div class="flex items-center gap-2 text-indigo-800">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <span class="text-sm font-medium">
                 Compte {{ getRoleLabel(tokenData()?.targetRole) }}
@@ -86,61 +113,97 @@
 
           <!-- First Name -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="register-firstName"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               Prénom *
             </label>
             <input
+              id="register-firstName"
               type="text"
               formControlName="firstName"
               placeholder="Jean"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              [class.border-red-500]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"
+              [class.border-red-500]="
+                registerForm.get('firstName')?.invalid &&
+                registerForm.get('firstName')?.touched
+              "
             />
-            @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
+            @if (
+              registerForm.get("firstName")?.invalid &&
+              registerForm.get("firstName")?.touched
+            ) {
               <p class="mt-1 text-sm text-red-600">Le prénom est requis</p>
             }
           </div>
 
           <!-- Last Name -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="register-lastName"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               Nom *
             </label>
             <input
+              id="register-lastName"
               type="text"
               formControlName="lastName"
               placeholder="Dupont"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              [class.border-red-500]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"
+              [class.border-red-500]="
+                registerForm.get('lastName')?.invalid &&
+                registerForm.get('lastName')?.touched
+              "
             />
-            @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
+            @if (
+              registerForm.get("lastName")?.invalid &&
+              registerForm.get("lastName")?.touched
+            ) {
               <p class="mt-1 text-sm text-red-600">Le nom est requis</p>
             }
           </div>
 
           <!-- Password -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="register-password"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               Mot de passe *
             </label>
             <input
+              id="register-password"
               type="password"
               formControlName="password"
               placeholder="••••••••"
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+              [class.border-red-500]="
+                registerForm.get('password')?.invalid &&
+                registerForm.get('password')?.touched
+              "
             />
-            @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-              <p class="mt-1 text-sm text-red-600">Le mot de passe doit contenir au moins 6 caractères</p>
+            @if (
+              registerForm.get("password")?.invalid &&
+              registerForm.get("password")?.touched
+            ) {
+              <p class="mt-1 text-sm text-red-600">
+                Le mot de passe doit contenir au moins 6 caractères
+              </p>
             }
           </div>
 
           <!-- Phone Number -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="register-phoneNumber"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               Téléphone
             </label>
             <input
+              id="register-phoneNumber"
               type="tel"
               formControlName="phoneNumber"
               placeholder="06 12 34 56 78"
@@ -150,10 +213,14 @@
 
           <!-- Address -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="register-address"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               Adresse
             </label>
             <input
+              id="register-address"
               type="text"
               formControlName="address"
               placeholder="12 rue de la République"
@@ -164,10 +231,14 @@
           <!-- City and Postal Code -->
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="register-city"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Ville
               </label>
               <input
+                id="register-city"
                 type="text"
                 formControlName="city"
                 placeholder="Paris"
@@ -175,10 +246,14 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="register-postalCode"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Code postal
               </label>
               <input
+                id="register-postalCode"
                 type="number"
                 formControlName="postalCode"
                 placeholder="75001"
@@ -191,8 +266,18 @@
           @if (submitError()) {
             <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div class="flex items-center gap-2 text-red-800">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 <span class="text-sm">{{ submitError() }}</span>
               </div>

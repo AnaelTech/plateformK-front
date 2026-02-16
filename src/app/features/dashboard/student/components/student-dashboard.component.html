@@ -409,7 +409,7 @@
             >
               <div class="flex items-center gap-4 mb-4">
                 <div
-                  class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xl font-bold"
+                  class="w-16 h-16 bg-linear-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xl font-bold"
                 >
                   {{ getInitials(teacher.name) }}
                 </div>
@@ -524,7 +524,7 @@
   @if (showBookingDetails() && selectedBookingForDetails()) {
     <app-booking-details-modal
       [booking]="selectedBookingForDetails()!"
-      (close)="closeBookingDetails()"
+      (closed)="closeBookingDetails()"
     ></app-booking-details-modal>
   }
 </div>

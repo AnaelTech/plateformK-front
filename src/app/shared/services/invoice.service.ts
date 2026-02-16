@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -13,7 +13,7 @@ export interface Invoice {
   description?: string;
   notes?: string;
   studentName?: string;
-  
+
   // Nouveaux champs pour gérer les types de factures et le paiement
   invoiceType: 'CLIENT_INVOICE' | 'TEACHER_INVOICE';
   paidAt?: string;
@@ -32,7 +32,7 @@ export interface CompletedUnbilledCours {
   titre: string;
   matiere: string;
   dureeMinutes: number;
-  dateCours: string;
+  sessionDate: string;
   tarif: number;
   eleveId: number;
   eleveName: string;
@@ -57,7 +57,7 @@ export interface CreateInvoiceRequest {
 export class InvoiceService {
   private readonly apiUrl = `${environment.apiUrl}invoices`;
 
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
   getMyInvoices(): Observable<Invoice[]> {
     return this.http.get<Invoice[]>(`${this.apiUrl}/my`);

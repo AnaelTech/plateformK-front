@@ -37,8 +37,8 @@ export class NotificationApiService {
    * Get paginated notifications
    */
   getNotifications(
-    page: number = 0,
-    size: number = 20,
+    page = 0,
+    size = 20,
     status?: NotificationStatus
   ): Observable<NotificationPage> {
     let params = new HttpParams()
@@ -115,8 +115,8 @@ export class NotificationApiService {
    */
   getNotificationsByType(
     type: NotificationType,
-    page: number = 0,
-    size: number = 20
+    page = 0,
+    size = 20
   ): Observable<NotificationPage> {
     const params = new HttpParams()
       .set('page', page.toString())

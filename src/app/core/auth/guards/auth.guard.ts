@@ -17,7 +17,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
  * Redirects to login if user is not authenticated.
  */
 export const authGuard: CanActivateFn = (
-  route: ActivatedRouteSnapshot,
+  _route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot,
 ) => {
   const authService = inject(AuthService);
@@ -43,7 +43,7 @@ export const authGuard: CanActivateFn = (
  * Usage: canActivate: [roleGuard(['TEACHER', 'ADMIN'])]
  */
 export function roleGuard(allowedRoles: string[]): CanActivateFn {
-  return (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return (_route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
     const authService = inject(AuthService);
     const userService = inject(UserService);
     const router = inject(Router);
@@ -122,10 +122,7 @@ function navigateToRoleDashboard(router: Router, userRole: string): void {
  * Prevents authenticated users from accessing login page.
  * Redirects to appropriate dashboard if already logged in.
  */
-export const loginGuard: CanActivateFn = (
-  route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot,
-) => {
+export const loginGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const userService = inject(UserService);
   const router = inject(Router);

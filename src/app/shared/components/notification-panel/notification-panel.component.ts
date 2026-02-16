@@ -1,4 +1,10 @@
-import { Component, Output, EventEmitter, inject, computed } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  inject,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationApiService } from '../../services/notification-api.service';
 import { NotificationItemComponent } from '../notification-item/notification-item.component';
@@ -15,7 +21,7 @@ import { NotificationItemComponent } from '../notification-item/notification-ite
   styleUrls: ['./notification-panel.component.css'],
 })
 export class NotificationPanelComponent {
-  @Output() close = new EventEmitter<void>();
+  @Output() buttonClose = new EventEmitter<void>();
 
   private readonly notificationApi = inject(NotificationApiService);
 
@@ -31,7 +37,8 @@ export class NotificationPanelComponent {
    */
   onMarkAsRead(notificationId: number): void {
     this.notificationApi.markAsRead(notificationId).subscribe({
-      error: (err) => console.error('Failed to mark notification as read:', err),
+      error: (err) =>
+        console.error('Failed to mark notification as read:', err),
     });
   }
 
@@ -59,13 +66,13 @@ export class NotificationPanelComponent {
    * Handle notification navigation (close panel)
    */
   onNotificationNavigate(): void {
-    this.close.emit();
+    this.buttonClose.emit();
   }
 
   /**
    * Close panel
    */
   onClose(): void {
-    this.close.emit();
+    this.buttonClose.emit();
   }
 }

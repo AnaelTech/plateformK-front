@@ -12,12 +12,12 @@ export interface Toast {
 
 /**
  * Notification Service using Angular Signals
- * 
+ *
  * Modern Angular 19 approach for toast notifications without external dependencies.
  * Uses signals for optimal change detection and reactivity.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
   private readonly MAX_TOASTS = 5;
@@ -25,7 +25,7 @@ export class NotificationService {
 
   // Signal for reactive toast list
   private toastsSignal = signal<Toast[]>([]);
-  
+
   // Readonly computed signal for external consumption
   readonly toasts = this.toastsSignal.asReadonly();
 
@@ -61,7 +61,7 @@ export class NotificationService {
    * Remove a specific toast by ID
    */
   remove(id: string): void {
-    this.toastsSignal.update(toasts => toasts.filter(t => t.id !== id));
+    this.toastsSignal.update((toasts) => toasts.filter((t) => t.id !== id));
   }
 
   /**
@@ -80,11 +80,11 @@ export class NotificationService {
       message,
       type,
       duration,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Add toast and limit to MAX_TOASTS
-    this.toastsSignal.update(toasts => {
+    this.toastsSignal.update((toasts) => {
       const updated = [...toasts, toast];
       return updated.slice(-this.MAX_TOASTS); // Keep only last N toasts
     });

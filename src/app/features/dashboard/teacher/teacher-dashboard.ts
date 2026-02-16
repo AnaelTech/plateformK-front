@@ -8,7 +8,7 @@ import {
   computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, map, catchError, of, Observable, interval } from 'rxjs';
+import { forkJoin, map, catchError, of, Observable, interval, Subscription } from 'rxjs';
 import { UserService } from '../../../shared/services/user.service';
 import { BookingService } from '../../../shared/services/booking.service';
 import {
@@ -20,7 +20,14 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 import { AvailabilityService } from '../../../shared/services/availability.service';
 import { InvitationService } from '../../../shared/services/invitation.service';
 import { CoursService } from '../../../shared/services/cours.service';
-import { TypeUser } from '../../../shared/models/User';
+import { TypeUser, User } from '../../../shared/models/User';
+
+type ExtendedUser = User & {
+  name: string;
+  level: string;
+  parent: string;
+  nextSession: Date | null;
+};
 import {
   Availability,
   CreateAvailabilityRequest,
@@ -36,8 +43,13 @@ import {
   FeedbackModalComponent,
   FeedbackModalData,
 } from '../../../shared/components/feedback-modal/feedback-modal.component';
-import { BookingStatus } from '../../../shared/models/Booking';
+import { BookingStatus, Booking } from '../../../shared/models/Booking';
 import { BookingDisplay } from '../../../shared/models/Parent';
+import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
+import {
+  getStatusColor,
+  getStatusLabel,
+} from '../../../shared/utils/status.utils';
 
 @Component({
   selector: 'app-teacher-dashboard',
@@ -103,7 +115,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     },
   ];
 
-  private availabilityRefreshSubscription: any;
+  private availabilityRefreshSubscription: Subscription | undefined;
 
   // Loading and error states
   loading = signal(false);
@@ -151,13 +163,16 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   // Computed: group completed unbilled courses by parent
   completedCoursByParent = computed(() => {
     const courses = this.completedUnbilledCours();
-    const grouped = new Map<number, {
-      parentId: number;
-      parentName: string;
-      parentEmail: string;
-      courses: CompletedUnbilledCours[];
-      totalAmount: number;
-    }>();
+    const grouped = new Map<
+      number,
+      {
+        parentId: number;
+        parentName: string;
+        parentEmail: string;
+        courses: CompletedUnbilledCours[];
+        totalAmount: number;
+      }
+    >();
 
     for (const cours of courses) {
       const existing = grouped.get(cours.parentId);
@@ -182,7 +197,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   selectedCoursDetails = computed(() => {
     const selectedIds = this.selectedCoursForInvoice();
     const allCourses = this.completedUnbilledCours();
-    return allCourses.filter(c => selectedIds.has(c.coursId));
+    return allCourses.filter((c) => selectedIds.has(c.coursId));
   });
 
   // Computed: total amount for selected courses
@@ -236,7 +251,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   });
 
   // Current user for navbar
-  currentUser = signal<any>(null);
+  currentUser = signal<User | null>(null);
 
   // Data signals
   stats = signal({
@@ -246,8 +261,8 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     completedBookings: 0,
   });
 
-  students = signal<any[]>([]);
-  parents = signal<any[]>([]);
+  students = signal<ExtendedUser[]>([]);
+  parents = signal<User[]>([]);
   invoices = signal<Invoice[]>([]);
 
   // Computed properties for template
@@ -308,7 +323,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
       parents: this.loadParents(),
       students: this.loadStudents(),
     }).subscribe({
-      next: ({ parents, students }) => {
+      next: () => {
         // Charger les parents pour chaque élève
         this.loadParentsForStudents().subscribe({
           next: () => {
@@ -358,7 +373,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadStats(): Observable<any> {
+  private loadStats(): Observable<unknown> {
     return forkJoin({
       bookingStats: this.bookingService.getBookingStats(),
       studentsCount: this.userService.getUsers(0, 1000),
@@ -367,7 +382,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         // Calculate stats from booking data
         this.stats.set({
           totalStudents:
-            studentsCount?.data.filter((u: any) => u.typeUser === 'ELEVE')
+            studentsCount?.data.filter((u: unknown) => (u as User).typeUser === 'ELEVE')
               .length || 0,
           monthlyRevenue: 0, // Will be calculated after bookings are loaded
           pendingBookings: bookingStats?.pendingBookings || 0,
@@ -389,11 +404,11 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadParents(): Observable<any[]> {
+  private loadParents(): Observable<unknown[]> {
     return this.userService.getUsers(0, 1000).pipe(
       map((response) => {
         const parents =
-          response?.data.filter((u: any) => u.typeUser === 'PARENT') || [];
+          response?.data.filter((u: unknown) => (u as User).typeUser === 'PARENT') || [];
         this.parents.set(parents);
         return parents;
       }),
@@ -405,17 +420,17 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadStudents(): Observable<any[]> {
+  private loadStudents(): Observable<unknown[]> {
     return this.userService.getUsers(0, 100).pipe(
       map((response) => {
         const eleves =
           response?.data
-            .filter((u: any) => u.typeUser === 'ELEVE')
-            .map((eleve: any) => ({
-              ...eleve,
-              name: `${eleve.firstName} ${eleve.lastName}`,
-              level: this.getStudentLevel(eleve),
-              parent: [],
+            .filter((u: unknown) => (u as User).typeUser === 'ELEVE')
+            .map((eleve: unknown) => ({
+              ...(eleve as User),
+              name: `${(eleve as User).firstName} ${(eleve as User).lastName}`,
+              level: this.getStudentLevel(eleve as User),
+              parent: '',
               nextSession: null,
             })) || [];
         this.students.set(eleves);
@@ -433,17 +448,17 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     return this.bookingService.getBookings(0, 50).pipe(
       map((response) => {
         const transformedBookings: BookingDisplay[] =
-          response?.data.map((booking: any) => ({
-            id: booking.id,
-            coursId: booking.coursId,
-            eleveId: booking.eleveId,
-            child: booking.eleveName,
-            date: new Date(booking.coursDate),
-            duration: booking.coursDureeMinutes / 60,
-            subject: booking.coursMatiere || booking.coursTitre,
-            teacher: '', // Sera rempli si nécessaire
-            status: booking.status as BookingStatus,
-            price: booking.coursTarif || 0,
+          response?.data.map((booking: unknown) => ({
+            id: (booking as Booking).id,
+            coursId: (booking as Booking).coursId,
+            eleveId: (booking as Booking).eleveId,
+            child: (booking as Booking).eleveName,
+            date: new Date((booking as Booking).coursDate),
+            duration: (booking as Booking).coursDureeMinutes / 60,
+            subject: (booking as Booking).coursMatiere || (booking as Booking).coursTitre,
+            teacher: '',
+            status: (booking as Booking).status as BookingStatus,
+            price: (booking as Booking).coursTarif || 0,
           })) || [];
 
         this._bookings.set(transformedBookings);
@@ -481,7 +496,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     }
 
     this.availabilityService
-      .getAvailabilitiesByTeacher(this.currentUser().id)
+      .getAvailabilitiesByTeacher((this.currentUser() as User).id)
       .subscribe({
         next: (availabilities) => {
           this.availabilities.set(availabilities);
@@ -517,7 +532,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     }));
   }
 
-  private getStudentLevel(eleve: any): string {
+  private getStudentLevel(eleve: User): string {
     if (!eleve.birthDate) return 'Niveau non défini';
 
     const birthYear = new Date(eleve.birthDate).getFullYear();
@@ -567,7 +582,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
               ...student,
               parent:
                 result?.parents
-                  .map((p) => `${p.firstName} ${p.lastName}`)
+                  .map((p) => `${(p as User).firstName} ${(p as User).lastName}`)
                   .join(', ') || 'Non défini',
             };
           }),
@@ -578,14 +593,14 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   private updateStudentsNextSession(): void {
-    const updatedStudents = this.students().map((eleve: any) => ({
+    const updatedStudents = this.students().map((eleve: ExtendedUser) => ({
       ...eleve,
       nextSession: this.getNextSession(eleve),
     }));
     this.students.set(updatedStudents);
   }
 
-  private getNextSession(eleve: any): Date | null {
+  private getNextSession(eleve: ExtendedUser): Date | null {
     const now = new Date();
 
     const studentBookings = this._bookings().filter(
@@ -622,7 +637,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   validateBooking(bookingId: number): void {
     this.bookingService
-      .confirmBooking(bookingId, { statut: 'CONFIRMED' })
+      .confirmBooking(bookingId, { statut: BookingStatus.CONFIRMED })
       .subscribe({
         next: () => {
           this.loadDashboardData();
@@ -712,61 +727,13 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     this.authService.logout('/');
   }
 
-  getStatusColor(status: string): string {
-    const colors: { [key: string]: string } = {
-      // Booking statuses
-      CONFIRMED: 'bg-green-100 text-green-800',
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      COMPLETED: 'bg-blue-100 text-blue-800',
-      CANCELLED: 'bg-red-100 text-red-800',
-      // Invoice statuses
-      DRAFT: 'bg-gray-100 text-gray-800',
-      SENT: 'bg-blue-100 text-blue-800',
-      PAID: 'bg-green-100 text-green-800',
-      OVERDUE: 'bg-orange-100 text-orange-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  }
+  getStatusColor = getStatusColor;
+  getStatusLabel = getStatusLabel;
 
-  getStatusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      // Booking statuses
-      CONFIRMED: 'Confirmé',
-      PENDING: 'En attente',
-      COMPLETED: 'Terminé',
-      CANCELLED: 'Annulé',
-      // Invoice statuses
-      DRAFT: 'Brouillon',
-      SENT: 'Envoyée',
-      PAID: 'Payée',
-      OVERDUE: 'En retard',
-    };
-    return labels[status] || status;
-  }
-
-  formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  }
-
-  formatDateTime(date: Date): string {
-    return new Date(date).toLocaleString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('');
-  }
+  formatDate = (date: Date | string) =>
+    new DateFormatPipe().transform(date, 'date');
+  formatDateTime = (date: Date | string) =>
+    new DateFormatPipe().transform(date, 'datetime');
 
   // Availability management methods
   saveAvailability(): void {
@@ -796,7 +763,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         });
     } else {
       const createRequest: CreateAvailabilityRequest = {
-        teacherId: this.currentUser().id,
+        teacherId: (this.currentUser() as User).id,
         ...this.availabilityFormData(),
       };
 
@@ -853,8 +820,9 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private getUserFriendlyErrorMessage(error: any): string {
-    const errorMessage = error?.error?.message || error?.message || '';
+  private getUserFriendlyErrorMessage(error: unknown): string {
+    const err = error as { error?: { message?: string }; message?: string };
+    const errorMessage = err.error?.message || err.message || '';
 
     if (
       errorMessage.includes('Time slot overlaps with existing availability')
@@ -889,10 +857,10 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   // Calendar methods
-  selectDate(dateInfo: any): void {
+  selectDate(dateInfo: Record<string, unknown>): void {
     this.availabilityFormData.update((data) => ({
       ...data,
-      date: dateInfo.dateString,
+      date: dateInfo['dateString'] as string,
     }));
     this.showAvailabilityModal.set(true);
   }
@@ -964,7 +932,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         targetRole: 'PARENT' as TypeUser,
       })
       .subscribe({
-        next: (response) => {
+        next: () => {
           this.invitationLoading.set(false);
           this.invitationSuccess.set(
             `Invitation envoyée avec succès à ${email}`,
@@ -978,9 +946,10 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.invitationLoading.set(false);
+          const err = error as { error?: { message?: string }; message?: string };
           const errorMessage =
-            error?.error?.message ||
-            error?.message ||
+            err.error?.message ||
+            err.message ||
             "Erreur lors de l'envoi de l'invitation";
           this.invitationError.set(errorMessage);
         },
@@ -1089,7 +1058,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     };
 
     this.invoiceService.createInvoice(request).subscribe({
-      next: (invoice) => {
+      next: () => {
         this.invoiceCreationLoading.set(false);
         this.closeCreateInvoiceModal();
         this.selectedCoursForInvoice.set(new Set());
@@ -1097,23 +1066,30 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         this.loadCompletedUnbilledCours();
         this.loadInvoices().subscribe();
       },
-      error: (error) => {
-        this.invoiceCreationLoading.set(false);
-        const errorMessage =
-          error?.error?.message ||
-          error?.message ||
-          'Erreur lors de la création de la facture';
-        this.invoiceCreationError.set(errorMessage);
-      },
+        error: (error) => {
+          this.invoiceCreationLoading.set(false);
+          const err = error as { error?: { message?: string }; message?: string };
+          const errorMessage =
+            err.error?.message ||
+            err.message ||
+            'Erreur lors de la création de la facture';
+          this.invoiceCreationError.set(errorMessage);
+        },
     });
   }
 
-  formatCoursDate(date: string): string {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+  handleDateClick(date: Record<string, unknown>, event?: Event): void {
+    if (!(date['isPast'] as boolean)) {
+      this.selectDate(date);
+      event?.preventDefault();
+    }
   }
+
+  formatCoursDate = (date: string) =>
+    new DateFormatPipe().transform(date, 'sessionDate');
+  getInitials = (name: string) =>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('');
 }

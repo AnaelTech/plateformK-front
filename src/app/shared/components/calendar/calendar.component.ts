@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, computed, signal } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  computed,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvailabilitySlot } from '../../models/Availability';
 
@@ -7,7 +14,7 @@ import { AvailabilitySlot } from '../../models/Availability';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './calendar.component.html',
-  styleUrl: './calendar.component.css'
+  styleUrl: './calendar.component.css',
 })
 export class CalendarComponent {
   @Input() availabilities: AvailabilitySlot[] = [];
@@ -32,7 +39,9 @@ export class CalendarComponent {
 
     while (currentDate <= lastDay || dates.length % 7 !== 0) {
       const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-      const dayAvailabilities = this.availabilities.filter(a => a.date === dateString);
+      const dayAvailabilities = this.availabilities.filter(
+        (a) => a.date === dateString,
+      );
 
       dates.push({
         date: new Date(currentDate),
@@ -42,7 +51,7 @@ export class CalendarComponent {
         isToday: currentDate.toDateString() === new Date().toDateString(),
         isSelected: dateString === this.selectedDate,
         hasAvailabilities: dayAvailabilities.length > 0,
-        availabilities: dayAvailabilities
+        availabilities: dayAvailabilities,
       });
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -56,16 +65,46 @@ export class CalendarComponent {
 
   previousMonth(): void {
     const current = this.currentMonth();
-    this.currentMonth.set(new Date(current.getFullYear(), current.getMonth() - 1, 1));
+    this.currentMonth.set(
+      new Date(current.getFullYear(), current.getMonth() - 1, 1),
+    );
   }
 
   nextMonth(): void {
     const current = this.currentMonth();
-    this.currentMonth.set(new Date(current.getFullYear(), current.getMonth() + 1, 1));
+    this.currentMonth.set(
+      new Date(current.getFullYear(), current.getMonth() + 1, 1),
+    );
   }
 
   getMonthName(): string {
     const month = this.currentMonth();
-    return month.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    return month.toLocaleDateString('fr-FR', {
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
+  getDateAriaLabel(dateInfo: { dateString: string; isToday: boolean; isSelected: boolean; isCurrentMonth: boolean }): string {
+    const date = new Date(dateInfo.dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+    let label = date.toLocaleDateString('fr-FR', options);
+
+    if (dateInfo.isToday) {
+      label += ", aujourd'hui";
+    }
+    if (dateInfo.isSelected) {
+      label += ', sélectionné';
+    }
+    if (!dateInfo.isCurrentMonth) {
+      label += ', hors du mois en cours';
+    }
+
+    return label;
   }
 }
