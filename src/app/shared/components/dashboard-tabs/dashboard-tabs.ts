@@ -6,10 +6,10 @@ import { TabItem } from '../../models/TabItem';
   selector: 'app-dashboard-tabs',
   standalone: true,
   imports: [],
-  templateUrl: './dashboard-tabs.component.html',
+  templateUrl: './dashboard-tabs.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardTabsComponent {
+export class DashboardTabs {
   // Inputs
   tabs = input.required<TabItem[]>();
   activeTab = input.required<string>();

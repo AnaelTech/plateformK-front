@@ -13,8 +13,8 @@ import { trigger, transition, style, animate } from '@angular/animations';
   selector: 'app-toast',
   standalone: true,
   imports: [],
-  templateUrl: './toast.component.html',
-  styleUrls: ['./toast.component.scss'],
+  templateUrl: './toast.html',
+  styleUrls: ['./toast.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('toastAnimation', [
@@ -28,7 +28,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ])
   ]
 })
-export class ToastComponent {
+export class Toast {
   private notificationService = inject(NotificationService);
   
   // Signal from notification service

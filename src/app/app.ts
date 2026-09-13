@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ToastComponent } from './shared/components/toast/toast.component';
+import { Toast } from './shared/components/toast/toast';
 import { WebSocketNotificationService } from './shared/services/websocket-notification.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ToastComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
+  imports: [RouterOutlet, Toast],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent {
+export class App {
   title = 'Klassio';
 
   // Inject WebSocket service to ensure it's initialized early

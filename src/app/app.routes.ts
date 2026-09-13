@@ -9,27 +9,27 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/login/login').then((m) => m.LoginComponent),
+      import('./features/login/login').then((m) => m.Login),
     canActivate: [loginGuard],
   },
   {
     path: 'login',
     loadComponent: () =>
-      import('./features/login/login').then((m) => m.LoginComponent),
+      import('./features/login/login').then((m) => m.Login),
     canActivate: [loginGuard],
   },
   {
     path: 'register/invitation/:token',
     loadComponent: () =>
-      import('./features/register-invitation/register-invitation.component').then(
-        (m) => m.RegisterInvitationComponent,
+      import('./features/register-invitation/register-invitation').then(
+        (m) => m.RegisterInvitation,
       ),
   },
   {
     path: 'dashboard',
     loadComponent: () =>
       import('./features/dashboard/teacher/teacher-dashboard').then(
-        (m) => m.TeacherDashboardComponent,
+        (m) => m.TeacherDashboard,
       ),
     canActivate: [roleGuard(['PROFESSEUR'])],
   },
@@ -37,7 +37,7 @@ export const routes: Routes = [
     path: 'parent-dashboard',
     loadComponent: () =>
       import('./features/dashboard/parent/parent-dashboard').then(
-        (m) => m.ParentDashboardComponent,
+        (m) => m.ParentDashboard,
       ),
     canActivate: [roleGuard(['PARENT'])],
   },
@@ -45,7 +45,7 @@ export const routes: Routes = [
     path: 'student-dashboard',
     loadComponent: () =>
       import('./features/dashboard/student/student-dashboard').then(
-        (m) => m.StudentDashboardComponent,
+        (m) => m.StudentDashboard,
       ),
     canActivate: [roleGuard(['ELEVE'])],
   },
@@ -53,33 +53,33 @@ export const routes: Routes = [
     path: 'forgot-password',
     loadComponent: () =>
       import('./features/forgot-password/forgot-password').then(
-        (m) => m.ForgotPasswordComponent,
+        (m) => m.ForgotPassword,
       ),
   },
   {
     path: 'reset-password',
     loadComponent: () =>
       import('./features/reset-password/reset-password').then(
-        (m) => m.ResetPasswordComponent,
+        (m) => m.ResetPassword,
       ),
   },
   {
     path: 'profile',
     loadComponent: () =>
-      import('./features/profile/profile').then((m) => m.ProfileComponent),
+      import('./features/profile/profile').then((m) => m.Profile),
     canActivate: [authGuard],
   },
   {
     path: 'settings',
     loadComponent: () =>
-      import('./features/settings/settings').then((m) => m.SettingsComponent),
+      import('./features/settings/settings').then((m) => m.Settings),
     canActivate: [authGuard],
   },
   {
     path: '**',
     loadComponent: () =>
       import('./features/page-not-found/page-not-found').then(
-        (m) => m.PageNotFoundComponent,
+        (m) => m.PageNotFound,
       ),
   },
 ];

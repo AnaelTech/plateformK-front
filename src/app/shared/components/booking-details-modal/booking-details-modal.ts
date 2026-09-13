@@ -6,11 +6,11 @@ import { Booking } from '../../models/Booking';
   selector: 'app-booking-details-modal',
   standalone: true,
   imports: [],
-  templateUrl: './booking-details-modal.component.html',
-  styleUrl: './booking-details-modal.component.css',
+  templateUrl: './booking-details-modal.html',
+  styleUrl: './booking-details-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BookingDetailsModalComponent {
+export class BookingDetailsModal {
   booking = input.required<Booking>();
   closed = output<void>();
 

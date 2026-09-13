@@ -10,7 +10,7 @@ import {
 import { Router } from '@angular/router';
 
 import { User } from '../../models/User';
-import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
+import { NotificationBell } from '../notification-bell/notification-bell';
 import { getInitials } from '../../utils/string.utils';
 
 export enum DashboardType {
@@ -22,11 +22,11 @@ export enum DashboardType {
 @Component({
   selector: 'app-dashboard-navbar',
   standalone: true,
-  imports: [NotificationBellComponent],
-  templateUrl: './dashboard-navbar.component.html',
+  imports: [NotificationBell],
+  templateUrl: './dashboard-navbar.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardNavbarComponent {
+export class DashboardNavbar {
   private readonly router = inject(Router);
 
   // Inputs

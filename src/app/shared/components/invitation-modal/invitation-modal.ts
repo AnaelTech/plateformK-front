@@ -5,10 +5,10 @@ import { ChangeDetectionStrategy, Component, input, output, signal } from '@angu
   selector: 'app-invitation-modal',
   standalone: true,
   imports: [],
-  templateUrl: './invitation-modal.component.html',
+  templateUrl: './invitation-modal.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InvitationModalComponent {
+export class InvitationModal {
   /** Titre affiché dans le header de la modale */
   title = input.required<string>();
   /** Texte descriptif sous le titre */

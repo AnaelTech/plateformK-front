@@ -16,10 +16,10 @@ import { TypeUser } from '../../shared/models/User';
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule],
-  templateUrl: './components/login.component.html', // ou './login.component.html'
+  templateUrl: './components/login.html', // ou './login.html'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoginComponent {
+export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);

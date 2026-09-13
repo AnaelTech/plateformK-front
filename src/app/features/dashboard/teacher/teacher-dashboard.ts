@@ -32,15 +32,15 @@ import {
   CoursStatus,
   CoursSession,
 } from '../../../shared/models/Cours';
-import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
+import { DashboardNavbar } from '../../../shared/components/dashboard-navbar/dashboard-navbar';
 import { TabItem } from '../../../shared/models/TabItem';
-import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
+import { DashboardTabs } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
 import {
-  FeedbackModalComponent,
+  FeedbackModal,
   FeedbackModalData,
-} from '../../../shared/components/feedback-modal/feedback-modal.component';
-import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
-import { InvitationModalComponent } from '../../../shared/components/invitation-modal/invitation-modal.component';
+} from '../../../shared/components/feedback-modal/feedback-modal';
+import { BookingDetailsModal } from '../../../shared/components/booking-details-modal/booking-details-modal';
+import { InvitationModal } from '../../../shared/components/invitation-modal/invitation-modal';
 import { BookingStatus, Booking } from '../../../shared/models/Booking';
 import { BookingDisplay } from '../../../shared/models/Parent';
 import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
@@ -67,17 +67,17 @@ export enum Tab {
   imports: [
     CommonModule,
     FormsModule,
-    DashboardNavbarComponent,
-    DashboardTabsComponent,
-    FeedbackModalComponent,
-    BookingDetailsModalComponent,
-    InvitationModalComponent,
+    DashboardNavbar,
+    DashboardTabs,
+    FeedbackModal,
+    BookingDetailsModal,
+    InvitationModal,
   ],
   providers: [DateFormatPipe],
-  templateUrl: './components/teacher-dashboard.component.html',
+  templateUrl: './components/teacher-dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TeacherDashboardComponent implements OnInit, OnDestroy {
+export class TeacherDashboard implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly bookingService = inject(BookingService);
   private readonly invoiceService = inject(InvoiceService);
@@ -159,7 +159,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     price: 25,
   });
 
-  @ViewChild(InvitationModalComponent) invitationModal?: InvitationModalComponent;
+  @ViewChild(InvitationModal) invitationModal?: InvitationModal;
 
   // Invitation management
   showInvitationModal = signal(false);

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed, effect } 
 
 import { NotificationApiService } from '../../services/notification-api.service';
 import { WebSocketNotificationService } from '../../services/websocket-notification.service';
-import { NotificationPanelComponent } from '../notification-panel/notification-panel.component';
+import { NotificationPanel } from '../notification-panel/notification-panel';
 
 /**
  * Notification Bell Component
@@ -12,12 +12,12 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [NotificationPanelComponent],
-  templateUrl: './notification-bell.component.html',
-  styleUrls: ['./notification-bell.component.css'],
+  imports: [NotificationPanel],
+  templateUrl: './notification-bell.html',
+  styleUrls: ['./notification-bell.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotificationBellComponent {
+export class NotificationBell {
   private readonly notificationApi = inject(NotificationApiService);
   private readonly webSocketService = inject(WebSocketNotificationService);
 

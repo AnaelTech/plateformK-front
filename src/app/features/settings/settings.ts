@@ -11,10 +11,10 @@ import { getInitials } from '../../shared/utils/string.utils';
   selector: 'app-settings',
   standalone: true,
   imports: [],
-  templateUrl: './components/settings.component.html',
+  templateUrl: './components/settings.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsComponent {
+export class Settings {
   private readonly settings = inject(SettingsService);
   private readonly websocket = inject(WebSocketNotificationService);
   private readonly router = inject(Router);

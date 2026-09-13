@@ -14,11 +14,11 @@ import { AvailabilitySlot } from '../../models/Availability';
   selector: 'app-calendar',
   standalone: true,
   imports: [],
-  templateUrl: './calendar.component.html',
-  styleUrl: './calendar.component.css',
+  templateUrl: './calendar.html',
+  styleUrl: './calendar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CalendarComponent {
+export class Calendar {
   readonly availabilities = input<AvailabilitySlot[]>([]);
   readonly selectedDate = input<string | null>(null);
   @Output() dateSelected = new EventEmitter<string>();

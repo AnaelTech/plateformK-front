@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 
 import { NotificationApiService } from '../../services/notification-api.service';
-import { NotificationItemComponent } from '../notification-item/notification-item.component';
+import { NotificationItem } from '../notification-item/notification-item';
 
 /**
  * Notification Panel Component
@@ -17,12 +17,12 @@ import { NotificationItemComponent } from '../notification-item/notification-ite
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
-  imports: [NotificationItemComponent],
-  templateUrl: './notification-panel.component.html',
-  styleUrls: ['./notification-panel.component.css'],
+  imports: [NotificationItem],
+  templateUrl: './notification-panel.html',
+  styleUrls: ['./notification-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotificationPanelComponent {
+export class NotificationPanel {
   @Output() buttonClose = new EventEmitter<void>();
 
   private readonly notificationApi = inject(NotificationApiService);

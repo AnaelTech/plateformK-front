@@ -11,10 +11,10 @@ import { AuthResponse } from '../../core/auth/models/auth.model';
   selector: 'app-register-invitation',
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule],
-  templateUrl: './register-invitation.component.html',
+  templateUrl: './register-invitation.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterInvitationComponent implements OnInit {
+export class RegisterInvitation implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly invitationService = inject(InvitationService);

@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@ang
 import { Router } from '@angular/router';
 
 import { TabItem } from '../../../shared/models/TabItem';
-import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
-import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
+import { DashboardTabs } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
+import { DashboardNavbar } from '../../../shared/components/dashboard-navbar/dashboard-navbar';
 import { UserService } from '../../../shared/services/user.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { forkJoin } from 'rxjs';
-import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
+import { BookingDetailsModal } from '../../../shared/components/booking-details-modal/booking-details-modal';
 import { Booking, BookingStatus } from '../../../shared/models/Booking';
 import { BookingService } from '../../../shared/services/booking.service';
 import { Teacher } from '../../../shared/models/Student';
@@ -41,12 +41,12 @@ enum Tab {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [DashboardTabsComponent, DashboardNavbarComponent, BookingDetailsModalComponent],
+  imports: [DashboardTabs, DashboardNavbar, BookingDetailsModal],
   providers: [DateFormatPipe],
-  templateUrl: './components/student-dashboard.component.html',
+  templateUrl: './components/student-dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StudentDashboardComponent implements OnInit {
+export class StudentDashboard implements OnInit {
   private readonly bookingService = inject(BookingService);
 
   readonly Tab = Tab;

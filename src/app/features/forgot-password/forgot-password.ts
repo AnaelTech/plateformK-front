@@ -14,10 +14,10 @@ import { PasswordResetService } from '../../shared/services/password-reset.servi
   selector: 'app-forgot-password',
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
-  templateUrl: './components/forgot-password.component.html',
+  templateUrl: './components/forgot-password.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ForgotPasswordComponent {
+export class ForgotPassword {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly passwordResetService = inject(PasswordResetService);

@@ -11,11 +11,11 @@ export interface FeedbackModalData {
   selector: 'app-feedback-modal',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './feedback-modal.component.html',
-  styleUrls: ['./feedback-modal.component.css'],
+  templateUrl: './feedback-modal.html',
+  styleUrls: ['./feedback-modal.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedbackModalComponent {
+export class FeedbackModal {
   notionsCovered = signal('');
   teacherFeedback = signal('');
   errorMessage = signal('');

@@ -18,10 +18,10 @@ import { User } from '../../shared/models/User';
   selector: 'app-profile',
   standalone: true,
   imports: [ReactiveFormsModule],
-  templateUrl: './components/profile.component.html',
+  templateUrl: './components/profile.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfileComponent implements OnInit {
+export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly profileService = inject(ProfileService);

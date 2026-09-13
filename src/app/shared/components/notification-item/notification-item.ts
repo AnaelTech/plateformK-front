@@ -25,11 +25,11 @@ import {
   selector: 'app-notification-item',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './notification-item.component.html',
-  styleUrls: ['./notification-item.component.css'],
+  templateUrl: './notification-item.html',
+  styleUrls: ['./notification-item.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotificationItemComponent {
+export class NotificationItem {
   @Input({ required: true }) notification!: Notification;
   @Output() markAsRead = new EventEmitter<number>();
   @Output() delete = new EventEmitter<number>();

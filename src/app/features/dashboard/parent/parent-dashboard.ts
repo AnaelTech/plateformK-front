@@ -31,8 +31,8 @@ import {
 } from '../../../shared/models/Cours';
 import { Booking, BookingStatus } from '../../../shared/models/Booking';
 import { User } from '../../../shared/models/User';
-import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
-import { CalendarComponent } from '../../../shared/components/calendar/calendar.component';
+import { DashboardNavbar } from '../../../shared/components/dashboard-navbar/dashboard-navbar';
+import { Calendar } from '../../../shared/components/calendar/calendar';
 import { AvailabilitySlot } from '../../../shared/models/Availability';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { BookingService } from '../../../shared/services/booking.service';
@@ -43,9 +43,9 @@ import {
   Payment,
 } from '../../../shared/models/Parent';
 import { TabItem } from '../../../shared/models/TabItem';
-import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
-import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
-import { InvitationModalComponent } from '../../../shared/components/invitation-modal/invitation-modal.component';
+import { DashboardTabs } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
+import { BookingDetailsModal } from '../../../shared/components/booking-details-modal/booking-details-modal';
+import { InvitationModal } from '../../../shared/components/invitation-modal/invitation-modal';
 import { environment } from '../../../../environments/environment';
 import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
 import {
@@ -72,17 +72,17 @@ export enum Tab {
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    DashboardNavbarComponent,
-    CalendarComponent,
-    DashboardTabsComponent,
-    BookingDetailsModalComponent,
-    InvitationModalComponent
+    DashboardNavbar,
+    Calendar,
+    DashboardTabs,
+    BookingDetailsModal,
+    InvitationModal
 ],
   providers: [DateFormatPipe],
-  templateUrl: './components/parent-dashboard.component.html',
+  templateUrl: './components/parent-dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ParentDashboardComponent implements OnInit {
+export class ParentDashboard implements OnInit {
   private readonly userService = inject(UserService);
   private readonly coursService = inject(CoursService);
   private readonly invoiceService = inject(InvoiceService);
@@ -95,8 +95,8 @@ export class ParentDashboardComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly websocketService = inject(WebSocketNotificationService);
 
-  @ViewChild(InvitationModalComponent)
-  invitationModal?: InvitationModalComponent;
+  @ViewChild(InvitationModal)
+  invitationModal?: InvitationModal;
 
   readonly Tab = Tab;
 
