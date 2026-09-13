@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 
 
 @Component({
@@ -6,6 +6,7 @@ import { Component, input, output, signal } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './invitation-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvitationModalComponent {
   /** Titre affiché dans le header de la modale */
