@@ -63,6 +63,9 @@ En développement, un proxy peut être utilisé via `proxy.conf.json`.
 CHROME_BIN=$(command -v chromium || command -v google-chrome) npm run test:ci
 ```
 
+`npm run test:ci` mesure la couverture et échoue si les seuils minimaux définis dans
+`karma.conf.js` ne sont pas atteints (garde-fou anti-régression). Le rapport est publié en CI.
+
 ### E2E (Playwright)
 
 Les tests E2E sont répartis en deux familles :

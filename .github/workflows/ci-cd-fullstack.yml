@@ -56,6 +56,14 @@ jobs:
           CHROME_BIN: /usr/bin/google-chrome
         run: npm run test:ci
 
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 5
+
   build:
     name: Production build
     runs-on: ubuntu-latest
