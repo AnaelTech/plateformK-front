@@ -1,14 +1,16 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InvitationService } from '../../shared/services/invitation.service';
 import { AuthService } from '../../core/auth/services/auth.service';
+import { UserService } from '../../shared/services/user.service';
+import { AuthResponse } from '../../core/auth/models/auth.model';
 
 @Component({
   selector: 'app-register-invitation',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './register-invitation.component.html',
 })
 export class RegisterInvitationComponent implements OnInit {
@@ -16,6 +18,7 @@ export class RegisterInvitationComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly invitationService = inject(InvitationService);
   private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
   private readonly fb = inject(FormBuilder);
 
   token = signal<string>('');
@@ -91,10 +94,9 @@ export class RegisterInvitationComponent implements OnInit {
 
     this.invitationService.registerViaInvitation(request).subscribe({
       next: (response) => {
-        // Store tokens manually (since saveTokens is private)
-        localStorage.setItem('auth_token', response.accessToken);
-        localStorage.setItem('refresh_token', response.refreshToken);
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
+        // Utiliser AuthService pour sauvegarder les tokens correctement
+        // (incluant token_expires_at et initialisation des signals UserService)
+        this.authService.handlePostRegistration(response as unknown as AuthResponse);
 
         const role = response.user.typeUser;
         if (role === 'PARENT') {
