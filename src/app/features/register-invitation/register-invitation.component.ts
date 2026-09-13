@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,7 @@ import { AuthResponse } from '../../core/auth/models/auth.model';
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './register-invitation.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterInvitationComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
