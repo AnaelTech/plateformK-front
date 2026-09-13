@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TabItem } from '../../../shared/models/TabItem';
@@ -44,6 +44,7 @@ enum Tab {
   imports: [DashboardTabsComponent, DashboardNavbarComponent, BookingDetailsModalComponent],
   providers: [DateFormatPipe],
   templateUrl: './components/student-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StudentDashboardComponent implements OnInit {
   private readonly bookingService = inject(BookingService);
