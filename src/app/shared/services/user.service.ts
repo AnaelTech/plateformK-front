@@ -33,19 +33,7 @@ export class UserService {
     size = 10,
     sortBy = 'id',
     direction = 'ASC',
-  ): Observable<{
-    data: User[];
-    pagination: {
-      currentPage: number;
-      pageSize: number;
-      totalElements: number;
-      totalPages: number;
-      hasNext: boolean;
-      hasPrevious: boolean;
-      isFirst: boolean;
-      isLast: boolean;
-    };
-  }> {
+  ): Observable<Page<User>> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
@@ -56,19 +44,7 @@ export class UserService {
     this._error.set(null);
 
     return this.http
-      .get<{
-        data: User[];
-        pagination: {
-          currentPage: number;
-          pageSize: number;
-          totalElements: number;
-          totalPages: number;
-          hasNext: boolean;
-          hasPrevious: boolean;
-          isFirst: boolean;
-          isLast: boolean;
-        };
-      }>(this.apiUrl, { params })
+      .get<Page<User>>(this.apiUrl, { params })
       .pipe(
         tap((response) => {
           this._usersCache.set(response.data);

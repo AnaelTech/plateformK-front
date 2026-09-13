@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Page } from '../models/Page';
 import {
   CoursSession,
   CoursStatus,
@@ -39,19 +40,7 @@ export class CoursService {
     size = 10,
     sortBy = 'id',
     direction = 'ASC',
-  ): Observable<{
-    data: CoursSession[];
-    pagination: {
-      currentPage: number;
-      pageSize: number;
-      totalElements: number;
-      totalPages: number;
-      hasNext: boolean;
-      hasPrevious: boolean;
-      isFirst: boolean;
-      isLast: boolean;
-    };
-  }> {
+  ): Observable<Page<CoursSession>> {
     this._loading.set(true);
     this._error.set(null);
 
@@ -62,19 +51,7 @@ export class CoursService {
       .set('direction', direction);
 
     return this.http
-      .get<{
-        data: CoursSession[];
-        pagination: {
-          currentPage: number;
-          pageSize: number;
-          totalElements: number;
-          totalPages: number;
-          hasNext: boolean;
-          hasPrevious: boolean;
-          isFirst: boolean;
-          isLast: boolean;
-        };
-      }>(this.apiUrl, { params })
+      .get<Page<CoursSession>>(this.apiUrl, { params })
       .pipe(
         tap((response) => {
           if (page === 0) {
@@ -149,19 +126,7 @@ export class CoursService {
     size = 10,
     sortBy = 'sessionDate',
     direction = 'ASC',
-  ): Observable<{
-    data: CoursSession[];
-    pagination: {
-      currentPage: number;
-      pageSize: number;
-      totalElements: number;
-      totalPages: number;
-      hasNext: boolean;
-      hasPrevious: boolean;
-      isFirst: boolean;
-      isLast: boolean;
-    };
-  }> {
+  ): Observable<Page<CoursSession>> {
     this._loading.set(true);
     this._error.set(null);
 
@@ -172,19 +137,7 @@ export class CoursService {
       .set('direction', direction);
 
     return this.http
-      .get<{
-        data: CoursSession[];
-        pagination: {
-          currentPage: number;
-          pageSize: number;
-          totalElements: number;
-          totalPages: number;
-          hasNext: boolean;
-          hasPrevious: boolean;
-          isFirst: boolean;
-          isLast: boolean;
-        };
-      }>(`${this.apiUrl}/available`, { params })
+      .get<Page<CoursSession>>(`${this.apiUrl}/available`, { params })
       .pipe(
         tap(() => {
           this._loading.set(false);

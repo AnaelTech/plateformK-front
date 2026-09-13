@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { Page } from '../models/Page';
 import {
   Booking,
   BookingRequest,
@@ -86,22 +87,7 @@ export class BookingService {
     );
   }
 
-  getBookings(
-    page = 0,
-    size = 10,
-  ): Observable<{
-    data: Booking[];
-    pagination: {
-      currentPage: number;
-      pageSize: number;
-      totalElements: number;
-      totalPages: number;
-      hasNext: boolean;
-      hasPrevious: boolean;
-      isFirst: boolean;
-      isLast: boolean;
-    };
-  }> {
+  getBookings(page = 0, size = 10): Observable<Page<Booking>> {
     this._loading.set(true);
     this._error.set(null);
 
@@ -110,19 +96,7 @@ export class BookingService {
       .set('size', size.toString());
 
     return this.http
-      .get<{
-        data: Booking[];
-        pagination: {
-          currentPage: number;
-          pageSize: number;
-          totalElements: number;
-          totalPages: number;
-          hasNext: boolean;
-          hasPrevious: boolean;
-          isFirst: boolean;
-          isLast: boolean;
-        };
-      }>(this.apiUrl, { params })
+      .get<Page<Booking>>(this.apiUrl, { params })
       .pipe(
         tap((response) => {
           if (page === 0) {
