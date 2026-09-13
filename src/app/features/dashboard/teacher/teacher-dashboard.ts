@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, map, catchError, of, Observable, interval, Subscription } from 'rxjs';
@@ -75,6 +75,7 @@ export enum Tab {
   ],
   providers: [DateFormatPipe],
   templateUrl: './components/teacher-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TeacherDashboardComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
