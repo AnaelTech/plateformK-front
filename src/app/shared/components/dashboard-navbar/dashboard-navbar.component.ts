@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
   signal,
@@ -23,6 +24,7 @@ export enum DashboardType {
   standalone: true,
   imports: [NotificationBellComponent],
   templateUrl: './dashboard-navbar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardNavbarComponent {
   private readonly router = inject(Router);
