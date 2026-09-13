@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed } from '@angular/core';
 
 import {
   ReactiveFormsModule,
@@ -19,6 +19,7 @@ import { User } from '../../shared/models/User';
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './components/profile.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProfileComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
