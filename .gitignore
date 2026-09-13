@@ -45,6 +45,7 @@ Thumbs.db
 /playwright-report/
 /test-results/
 /playwright/.auth/
+/e2e/.auth/
 
 /test-results
 audit-report.json

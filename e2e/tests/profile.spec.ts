@@ -1,18 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/auth.fixture';
 
 test.describe('Profil utilisateur', () => {
   test('devrait afficher la page de profil', async ({ page }) => {
     await page.goto('/profile');
 
-    // Vérifier que la page de profil est chargée
     await expect(page).toHaveURL(/.*profile.*/);
-
-    // Vérifier les éléments du profil
-    await expect(
-      page
-        .getByRole('heading', { name: /profil/i })
-        .or(page.getByText(/informations personnelles/i)),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: /profil/i })).toBeVisible();
   });
 
   test("devrait afficher les informations de l'utilisateur", async ({
@@ -20,84 +13,29 @@ test.describe('Profil utilisateur', () => {
   }) => {
     await page.goto('/profile');
 
-    // Vérifier la présence des champs de profil
-    await expect(
-      page
-        .getByLabel(/prénom/i)
-        .or(page.getByLabel(/first name/i))
-        .or(page.getByPlaceholder(/prénom/i)),
-    ).toBeVisible();
-
-    await expect(
-      page
-        .getByLabel(/nom/i)
-        .or(page.getByLabel(/last name/i))
-        .or(page.getByPlaceholder(/nom/i)),
-    ).toBeVisible();
-
-    await expect(
-      page.getByLabel(/email/i).or(page.getByPlaceholder(/email/i)),
-    ).toBeVisible();
+    await expect(page.getByLabel('Prénom')).toBeVisible();
+    await expect(page.getByLabel('Nom')).toBeVisible();
+    await expect(page.getByLabel('Email')).toBeVisible();
   });
 
-  test('devrait permettre de modifier les informations', async ({ page }) => {
+  test('devrait désactiver l\'enregistrement si l\'email est invalide', async ({
+    page,
+  }) => {
     await page.goto('/profile');
 
-    // Trouver le bouton de modification
-    const editButton = page
-      .getByRole('button', { name: /modifier/i })
-      .or(page.getByRole('button', { name: /éditer/i }))
-      .or(page.getByRole('button', { name: /edit/i }));
+    const emailInput = page.getByLabel('Email');
+    await emailInput.fill('email-invalide');
 
-    if (await editButton.isVisible()) {
-      await editButton.click();
-
-      // Vérifier que les champs deviennent éditables
-      const firstNameInput = page
-        .getByLabel(/prénom/i)
-        .or(page.getByLabel(/first name/i));
-
-      await expect(firstNameInput).toBeEnabled();
-    }
+    await expect(
+      page.getByRole('button', { name: /enregistrer les modifications/i }),
+    ).toBeDisabled();
   });
 
-  test('devrait valider les modifications', async ({ page }) => {
+  test('devrait afficher la section sécurité', async ({ page }) => {
     await page.goto('/profile');
 
-    // Trouver le bouton de modification
-    const editButton = page
-      .getByRole('button', { name: /modifier/i })
-      .or(page.getByRole('button', { name: /éditer/i }));
+    await page.getByRole('button', { name: /sécurité/i }).click();
 
-    if (await editButton.isVisible()) {
-      await editButton.click();
-
-      // Modifier un champ
-      const phoneInput = page
-        .getByLabel(/téléphone/i)
-        .or(page.getByLabel(/phone/i));
-
-      if (await phoneInput.isVisible()) {
-        await phoneInput.fill('0612345678');
-      }
-
-      // Sauvegarder
-      const saveButton = page
-        .getByRole('button', { name: /sauvegarder/i })
-        .or(page.getByRole('button', { name: /enregistrer/i }))
-        .or(page.getByRole('button', { name: /save/i }));
-
-      if (await saveButton.isVisible()) {
-        await saveButton.click();
-
-        // Vérifier le message de succès
-        await expect(
-          page
-            .getByText(/succès/i)
-            .or(page.getByText(/enregistré/i))
-            .or(page.getByText(/mis à jour/i)),
-        ).toBeVisible({ timeout: 10000 });
-      }
-    }
+    await expect(page.locator('#password-section')).toBeVisible();
   });
 });

@@ -65,7 +65,18 @@ test.describe('Page de connexion', () => {
     await expect(rememberMeCheckbox).toBeChecked();
   });
 
-  test('devrait soumettre le formulaire avec des identifiants', async ({ page }) => {
+  test('devrait afficher une erreur si les identifiants sont invalides', async ({
+    page,
+  }) => {
+    // Simule un 401 sans dépendre d'un backend réel.
+    await page.route('**/auth/login', (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Unauthorized' }),
+      }),
+    );
+
     await page.goto('/login');
 
     // Remplir le formulaire
@@ -79,18 +90,10 @@ test.describe('Page de connexion', () => {
     // Cliquer sur le bouton
     await submitButton.click();
 
-    // Vérifier qu'une action se produit (soit redirection, soit erreur, soit loader)
-    // On attend soit un changement d'URL, soit que le bouton change d'état
-    await Promise.race([
-      expect(page).not.toHaveURL('/login', { timeout: 5000 }),
-      expect(page.getByText('Connexion...')).toBeVisible({ timeout: 5000 }),
-      expect(page.locator('.animate-spin')).toBeVisible({ timeout: 5000 }),
-      // Si rien ne se passe après 5s, le test passe quand même
-      page.waitForTimeout(5000),
-    ]).catch(() => {
-      // C'est OK si aucune des conditions n'est remplie
-      // (peut arriver si pas de backend)
-    });
+    // Le message d'erreur renvoyé par le composant doit s'afficher
+    await expect(
+      page.getByText('Identifiants incorrects. Veuillez réessayer.'),
+    ).toBeVisible();
   });
 });
 
