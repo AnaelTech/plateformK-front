@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 
 import {
   ReactiveFormsModule,
@@ -17,6 +17,7 @@ import { PasswordResetService } from '../../shared/services/password-reset.servi
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './components/reset-password.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPasswordComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
