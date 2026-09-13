@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { Booking } from '../../models/Booking';
 
@@ -8,6 +8,7 @@ import { Booking } from '../../models/Booking';
   imports: [],
   templateUrl: './booking-details-modal.component.html',
   styleUrl: './booking-details-modal.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingDetailsModalComponent {
   booking = input.required<Booking>();
