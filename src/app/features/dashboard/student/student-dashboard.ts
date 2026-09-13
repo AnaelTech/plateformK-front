@@ -218,7 +218,6 @@ export class StudentDashboard implements OnInit {
   }
 
   onNavbarLogout(): void {
-    this.userService.clearCache();
     this.authService.logout('/');
   }
 

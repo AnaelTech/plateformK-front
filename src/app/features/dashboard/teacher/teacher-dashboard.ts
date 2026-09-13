@@ -832,7 +832,6 @@ export class TeacherDashboard implements OnInit, OnDestroy {
   }
 
   onLogout(): void {
-    this.userService.clearCache();
     this.authService.logout('/');
   }
 

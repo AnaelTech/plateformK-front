@@ -9,6 +9,7 @@ import { map, catchError, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../../../shared/services/user.service';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { getDashboardRoute } from '../../routing/dashboard-routes';
 
 /**
  * Authentication Guard
@@ -101,19 +102,7 @@ export function roleGuard(allowedRoles: string[]): CanActivateFn {
  * Helper function to navigate to the appropriate dashboard based on user role
  */
 function navigateToRoleDashboard(router: Router, userRole: string): void {
-  switch (userRole) {
-    case 'PROFESSEUR':
-      router.navigate(['/dashboard']);
-      break;
-    case 'PARENT':
-      router.navigate(['/parent-dashboard']);
-      break;
-    case 'ELEVE':
-      router.navigate(['/student-dashboard']);
-      break;
-    default:
-      router.navigate(['/login']);
-  }
+  router.navigate([getDashboardRoute(userRole)]);
 }
 
 /**

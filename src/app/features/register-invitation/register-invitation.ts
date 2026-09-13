@@ -6,6 +6,7 @@ import { InvitationService } from '../../shared/services/invitation.service';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { AuthResponse } from '../../core/auth/models/auth.model';
+import { getDashboardRoute } from '../../core/routing/dashboard-routes';
 
 @Component({
   selector: 'app-register-invitation',
@@ -99,14 +100,9 @@ export class RegisterInvitation implements OnInit {
         // (incluant token_expires_at et initialisation des signals UserService)
         this.authService.handlePostRegistration(response as unknown as AuthResponse);
 
-        const role = response.user.typeUser;
-        if (role === 'PARENT') {
-          this.router.navigate(['/parent-dashboard']);
-        } else if (role === 'ELEVE') {
-          this.router.navigate(['/student-dashboard']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
+        this.router.navigate([
+          getDashboardRoute(response.user.typeUser, '/dashboard'),
+        ]);
       },
       error: (error) => {
         this.submitting.set(false);

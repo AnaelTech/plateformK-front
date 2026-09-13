@@ -150,10 +150,9 @@ describe('TeacherDashboard', () => {
     newFixture.destroy();
   });
 
-  it('should clear the cache and logout', () => {
+  it('should logout', () => {
     component.onLogout();
 
-    expect(userServiceMock.clearCache).toHaveBeenCalled();
     expect(authServiceMock.logout).toHaveBeenCalledWith('/');
   });
 

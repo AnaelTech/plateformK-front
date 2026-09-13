@@ -139,10 +139,9 @@ describe('ParentDashboard', () => {
     expect(newFixture.componentInstance.activeTab()).toBe(Tab.Invoices);
   });
 
-  it('should clear the cache and logout on navbar logout', () => {
+  it('should logout on navbar logout', () => {
     component.onNavbarLogout();
 
-    expect(userServiceMock.clearCache).toHaveBeenCalled();
     expect(authServiceMock.logout).toHaveBeenCalledWith('/');
   });
 

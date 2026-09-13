@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/auth/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
-import { TypeUser } from '../../shared/models/User';
+import { getDashboardRoute } from '../../core/routing/dashboard-routes';
 
 @Component({
   selector: 'app-login',
@@ -78,15 +78,7 @@ export class Login {
 
         this.isLoading.set(false);
 
-        let redirectPath = '/dashboard';
-
-        if (user?.typeUser === TypeUser.PARENT) {
-          redirectPath = '/parent-dashboard';
-        } else if (user?.typeUser === TypeUser.ELEVE) {
-          redirectPath = '/student-dashboard';
-        }
-
-        this.router.navigate([redirectPath]);
+        this.router.navigate([getDashboardRoute(user?.typeUser, '/dashboard')]);
       },
       error: (err) => {
         this.isLoading.set(false);

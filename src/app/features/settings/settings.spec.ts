@@ -146,10 +146,9 @@ describe('Settings', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['/']);
   });
 
-  it('should clear the cache and logout', () => {
+  it('should logout', () => {
     component.logout();
 
-    expect(userServiceMock.clearCache).toHaveBeenCalled();
     expect(authServiceMock.logout).toHaveBeenCalledWith('/');
   });
 });

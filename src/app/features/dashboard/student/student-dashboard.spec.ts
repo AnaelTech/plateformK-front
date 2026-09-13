@@ -102,10 +102,9 @@ describe('StudentDashboard', () => {
     expect(component.activeTab()).toBe(component.Tab.Overview);
   });
 
-  it('should clear the cache and logout from the navbar', () => {
+  it('should logout from the navbar', () => {
     component.onNavbarLogout();
 
-    expect(userServiceMock.clearCache).toHaveBeenCalled();
     expect(authServiceMock.logout).toHaveBeenCalledWith('/');
   });
 

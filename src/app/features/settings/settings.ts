@@ -5,6 +5,7 @@ import { SettingsService } from '../../shared/services/settings.service';
 import { WebSocketNotificationService } from '../../shared/services/websocket-notification.service';
 import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../core/auth/services/auth.service';
+import { getDashboardRoute } from '../../core/routing/dashboard-routes';
 import { getInitials } from '../../shared/utils/string.utils';
 
 @Component({
@@ -55,21 +56,10 @@ export class Settings {
   }
 
   goBack(): void {
-    const currentUser = this.user();
-    if (currentUser) {
-      const routesByRole: Record<string, string> = {
-        PROFESSEUR: '/dashboard',
-        PARENT: '/parent-dashboard',
-        ELEVE: '/student-dashboard',
-      };
-      this.router.navigate([routesByRole[currentUser.typeUser] ?? '/']);
-    } else {
-      this.router.navigate(['/']);
-    }
+    this.router.navigate([getDashboardRoute(this.user()?.typeUser, '/')]);
   }
 
   logout(): void {
-    this.userService.clearCache();
     this.authService.logout('/');
   }
 }

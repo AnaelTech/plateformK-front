@@ -13,6 +13,7 @@ import { EmailValidationService } from '../../shared/services/email-validation.s
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserService } from '../../shared/services/user.service';
 import { User } from '../../shared/models/User';
+import { getDashboardRoute } from '../../core/routing/dashboard-routes';
 
 @Component({
   selector: 'app-profile',
@@ -239,24 +240,9 @@ export class Profile implements OnInit {
   }
 
   goBack(): void {
-    const currentUser = this.userService.currentUser();
-    if (currentUser) {
-      switch (currentUser.typeUser) {
-        case 'PROFESSEUR':
-          this.router.navigate(['/dashboard']);
-          break;
-        case 'PARENT':
-          this.router.navigate(['/parent-dashboard']);
-          break;
-        case 'ELEVE':
-          this.router.navigate(['/student-dashboard']);
-          break;
-        default:
-          this.router.navigate(['/login']);
-      }
-    } else {
-      this.router.navigate(['/login']);
-    }
+    this.router.navigate([
+      getDashboardRoute(this.userService.currentUser()?.typeUser),
+    ]);
   }
 
   // Getters pour les erreurs de validation
