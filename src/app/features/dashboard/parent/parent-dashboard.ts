@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
   signal,
@@ -79,6 +80,7 @@ export enum Tab {
 ],
   providers: [DateFormatPipe],
   templateUrl: './components/parent-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParentDashboardComponent implements OnInit {
   private readonly userService = inject(UserService);
