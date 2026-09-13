@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { SettingsService } from '../../shared/services/settings.service';
@@ -12,6 +12,7 @@ import { getInitials } from '../../shared/utils/string.utils';
   standalone: true,
   imports: [],
   templateUrl: './components/settings.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsComponent {
   private readonly settings = inject(SettingsService);
