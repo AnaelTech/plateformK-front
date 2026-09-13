@@ -1,316 +1,111 @@
-# PlateformK
+# PlateformK (frontend)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.12.
+Application Angular de gestion d'activité de soutien scolaire (professeurs, parents, élèves).
 
-## TODO
+## Stack
 
-[ ] Put project on Github
-[ ] Build login page
-[ ] Build model for login page
+- **Angular 21** (standalone components, signals, control flow `@if` / `@for`)
+- **TypeScript 5.9**, ESLint (angular-eslint)
+- **Karma + Jasmine** pour les tests unitaires
+- **Playwright** pour les tests E2E
+- **nginx** (image de production) servi derrière un reverse proxy
 
-## Development server
+## Prérequis
 
-To start a local development server, run:
+- Node.js **22+** (le projet est développé/testé sous Node 24, CI en Node 22)
+- npm
+- Un backend `back-plateformK` accessible (Spring Boot) pour les fonctionnalités authentifiées
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Installation
 
 ```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-# front-plateformK
-
-## Description
-
-Interface utilisateur de la solution de gestion de facture
-
-## Version Node.js
-
-- Node.js v22.17.1
-- npm 11.5.2
-
-## Version Angular
-
-- Angular CLI 19.2.12
-- Angular Framework 19.2.0
-
-## Version TypeScript
-
-- TypeScript 5.7.2
-
-## Base de données
-
-- API REST (back-plateformK)
-
-## 📖 Guide de Déploiement – Application Angular
-
-### 1. Pré-requis
-*Serveur*
-
-- OS : Linux (Ubuntu/Debian/CentOS) ou Windows Server
-- Réseau : Accès SSH (Linux) ou RDP (Windows)
-- Ports ouverts : 80, 443 (HTTPS), 4200 (développement)
-
-### 2. Installation des dépendances (Linux)
-
-Mettre à jour le serveur :
-
-```bash
-sudo apt update && sudo apt upgrade -y
-```
-
-Installation de Node.js et npm :
-
-```bash
-# Via NodeSource repository (recommandé)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# Vérifier les versions
-node --version
-npm --version
-```
-
-Installation d'Angular CLI :
-
-```bash
-# Installation globale d'Angular CLI
-sudo npm install -g @angular/cli@19.2.12
-
-# Vérifier la version
-ng version
-```
-
-Installation de Git :
-
-```bash
-sudo apt install git -y
-git --version
-```
-
->[!WARNING]
->Si vous utilisez Docker, seule l'installation de Docker et Git est nécessaire. Node.js et Angular CLI ne sont pas requis, car ils sont déjà gérés dans l'image.
-
-```bash
-sudo apt-get install docker.io -y
-```
-
-## Cloner le projet
-
-```bash
-git clone https://github.com/AnaelTech/front-plateformK
-cd front-plateformK
-```
-
-## Configuration de l'environnement
-
->[!TIP]
-> Les fichiers de configuration se trouvent dans `src/environments/`.
-
-### Environnement de développement (`environment.ts`)
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api',
-  appName: 'PlateformK Dev'
-};
-```
-
-### Environnement de production (`environment.prod.ts`)
-```typescript
-export const environment = {
-  production: true,
-  apiUrl: 'https://api.votre-domaine.com/api',
-  appName: 'PlateformK'
-};
-```
-
-## Installation des dépendances
-
-```bash
-# Installer les dépendances du projet
 npm install
-
-# ou avec cache nettoyé
-npm ci
 ```
 
-## 🔨 Build du projet avec Angular CLI
+## Environnements
 
-### Build de développement
+La configuration d'API est définie dans `src/environments/` :
+
+| Fichier | Usage | `apiUrl` |
+| --- | --- | --- |
+| `environment.ts` | développement | `http://localhost:8080/api/v1/` |
+| `environment.prod.ts` | production | à renseigner (domaine réel) |
+
+Le build de production remplace automatiquement `environment.ts` par `environment.prod.ts`
+(voir `angular.json`, `fileReplacements`).
+
+## Démarrage
+
 ```bash
-# Serveur de développement
-ng serve
-
-# Serveur de développement avec rechargement automatique
-ng serve --open
-
-# Build de développement
-ng build
+npm start        # ng serve sur http://localhost:4200
 ```
 
-### Build de production
-```bash
-# Build optimisé pour la production
-ng build --configuration production
+En développement, un proxy peut être utilisé via `proxy.conf.json`.
 
-# Build avec optimisations avancées
-ng build --prod --aot --build-optimizer
+## Scripts
 
-# Vérifier les fichiers générés
-ls -la dist/
-```
+| Commande | Description |
+| --- | --- |
+| `npm start` | Serveur de développement |
+| `npm run build` | Build de production (`dist/`) |
+| `npm test` | Tests unitaires (watch) |
+| `npm run test:ci` | Tests unitaires headless (CI) |
+| `npm run lint` | ESLint |
+| `npm run e2e` | Tests E2E Playwright |
+| `npm run e2e:noauth` | E2E sans authentification (utilisé en CI) |
+| `npm run e2e:ui` / `e2e:headed` / `e2e:debug` | E2E en mode interactif |
 
 ## Tests
 
-```bash
-# Tests unitaires
-ng test
-
-# Tests unitaires en mode CI
-ng test --watch=false --browsers=ChromeHeadless
-
-# Tests end-to-end
-ng e2e
-
-# Linting du code
-ng lint
-```
-
-## Lancer l'application
+### Unitaires
 
 ```bash
-# Mode développement
-ng serve --port 4200
-
-# Mode développement avec host spécifique
-ng serve --host 0.0.0.0 --port 4200
-
-# Servir les fichiers buildés (nécessite un serveur web)
-npx http-server dist/front-plateformk -p 8080
+CHROME_BIN=$(command -v chromium || command -v google-chrome) npm run test:ci
 ```
 
-## 🚀 Déploiement de l'application
+### E2E (Playwright)
 
-### Build de production
+Les tests E2E sont répartis en deux familles :
+
+- **sans authentification** (`*.noauth.spec.ts`) : page de connexion et protection des routes.
+  Ils ne nécessitent que le frontend et s'exécutent en CI.
+- **authentifiés** : nécessitent un backend disponible et un compte de test
+  (`test@klassio.com`). Le projet `setup` tente la connexion ; en cas d'échec, un marqueur
+  est écrit et les suites authentifiées sont **ignorées proprement** au lieu d'échouer.
 
 ```bash
-# Build optimisé pour la production
-ng build --configuration production
-
-# Vérifier les fichiers générés
-ls -la dist/front-plateformk/
+npx playwright install --with-deps chromium
+npm run e2e:noauth     # CI, sans backend
+npm run e2e            # suite complète (backend requis pour les suites authentifiées)
 ```
 
-## URLs d'accès
-
-- **Développement :** http://localhost:4200
-
-## Déploiement avec Docker
-
-### Dockerfile
-```dockerfile
-# Build stage
-FROM node:20-alpine as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN ng build --configuration production
-
-# Production stage  
-FROM nginx:alpine
-COPY --from=build /app/dist/front-plateformk /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-### Docker Compose
-```yaml
-version: '3.8'
-services:
-  frontend:
-    build: .
-    ports:
-      - "80:80"
-    environment:
-      - NODE_ENV=production
-  backend:
-    image: back-plateformk:latest
-    ports:
-      - "4200:4200"
-```
+## Docker
 
 ```bash
-# Avec Dockerfile
-docker build -t front-plateformk .
-docker run -d -p 80:80 front-plateformk
+# Image de production (multi-stage Node -> nginx)
+docker build -f Containerfile -t plateformk .
 
-# Avec Docker Compose
-docker-compose up -d
+# Environnement de développement
+docker compose up
 ```
 
+`nginx.conf` définit les en-têtes de sécurité (CSP, Permissions-Policy) et le fallback SPA.
+Le TLS doit être terminé par le reverse proxy en amont.
 
-## Contribution
+## Structure
 
-Les contributions sont les bienvenues ! N'hésitez pas à :
+```
+src/app/
+├── core/            # auth (services, guards, interceptors), http
+├── features/        # dashboards, login, profile, settings, register-invitation
+└── shared/          # composants, services, modèles, utils
+```
 
-1. Fork le projet
-2. Créer une branche pour votre fonctionnalité (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Commit vos changements (`git commit -am 'Ajouter nouvelle fonctionnalité'`)
-4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. Ouvrir une Pull Request
+## Sécurité
 
-## Licence
-
-Ce projet est sous licence [MIT](LICENSE).
-
----
-
->Généré avec le script GitHub Repository Creator
+- Les jetons JWT sont conservés côté navigateur (accès court, 15 min) et transmis via
+  l'intercepteur `auth.interceptor`. **Choix assumé** : ce stockage reste exposé en cas de
+  XSS ; il est mitigé par une CSP stricte (`nginx.conf`), l'absence d'injection de HTML non
+  fiable et la durée de vie courte du jeton. L'alternative (cookie `HttpOnly`) n'a pas été
+  retenue à ce stade.
+- Les erreurs HTTP sont normalisées et re-loguées de façon conditionnelle à l'environnement.
