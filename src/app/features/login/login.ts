@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
 import {
   ReactiveFormsModule,
@@ -17,6 +17,7 @@ import { TypeUser } from '../../shared/models/User';
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './components/login.component.html', // ou './login.component.html'
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -30,9 +31,9 @@ export class LoginComponent {
     rememberMe: [false],
   });
 
-  showPassword = false;
-  isLoading = false;
-  errorMessage: string | null = null; // Pour afficher un message d'erreur global
+  readonly showPassword = signal(false);
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null); // Pour afficher un message d'erreur global
 
   get emailError(): string | null {
     const control = this.loginForm.get('email');
@@ -55,7 +56,7 @@ export class LoginComponent {
   }
 
   togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+    this.showPassword.update((visible) => !visible);
   }
 
   onSubmit(): void {
@@ -64,8 +65,8 @@ export class LoginComponent {
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = null;
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
     const { email, password } = this.loginForm.value;
 
@@ -75,7 +76,7 @@ export class LoginComponent {
 
         const user = this.userService.currentUser();
 
-        this.isLoading = false;
+        this.isLoading.set(false);
 
         let redirectPath = '/dashboard';
 
@@ -88,18 +89,20 @@ export class LoginComponent {
         this.router.navigate([redirectPath]);
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         console.error('Erreur de connexion', err);
 
         // Gestion des erreurs HTTP
         if (err.status === 401) {
-          this.errorMessage = 'Identifiants incorrects. Veuillez réessayer.';
+          this.errorMessage.set('Identifiants incorrects. Veuillez réessayer.');
         } else if (err.status === 0 || !navigator.onLine) {
-          this.errorMessage =
-            'Impossible de contacter le serveur. Vérifiez votre connexion.';
+          this.errorMessage.set(
+            'Impossible de contacter le serveur. Vérifiez votre connexion.',
+          );
         } else {
-          this.errorMessage =
-            'Une erreur est survenue. Veuillez réessayer plus tard.';
+          this.errorMessage.set(
+            'Une erreur est survenue. Veuillez réessayer plus tard.',
+          );
         }
       },
     });

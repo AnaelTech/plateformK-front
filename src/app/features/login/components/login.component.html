@@ -196,7 +196,7 @@
                   </svg>
                 </div>
                 <input
-                  [type]="showPassword ? 'text' : 'password'"
+                  [type]="showPassword() ? 'text' : 'password'"
                   id="password"
                   formControlName="password"
                   placeholder="••••••••"
@@ -213,7 +213,7 @@
                   (click)="togglePasswordVisibility()"
                   class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  @if (!showPassword) {
+                  @if (!showPassword()) {
                     <svg
                       class="h-5 w-5"
                       fill="none"
@@ -280,7 +280,7 @@
             </div>
 
             <!-- Message d'erreur global -->
-            @if (errorMessage) {
+            @if (errorMessage()) {
               <div
                 class="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
               >
@@ -297,17 +297,17 @@
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p class="text-sm text-red-700">{{ errorMessage }}</p>
+                <p class="text-sm text-red-700">{{ errorMessage() }}</p>
               </div>
             }
 
             <!-- Bouton de connexion -->
             <button
               type="submit"
-              [disabled]="isLoading"
+              [disabled]="isLoading()"
               class="w-full bg-linear-to-r from-blue-600 to-blue-600 text-white py-3.5 rounded-xl font-semibold text-base transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              @if (!isLoading) {
+              @if (!isLoading()) {
                 <span>Se connecter</span>
               } @else {
                 <span class="flex items-center justify-center gap-2">
