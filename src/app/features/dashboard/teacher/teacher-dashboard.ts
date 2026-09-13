@@ -1,12 +1,6 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, map, catchError, of, Observable, interval, Subscription } from 'rxjs';
 import { UserService } from '../../../shared/services/user.service';
@@ -17,7 +11,6 @@ import {
   CreateInvoiceRequest,
 } from '../../../shared/services/invoice.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
-import { AvailabilityService } from '../../../shared/services/availability.service';
 import { InvitationService } from '../../../shared/services/invitation.service';
 import { CoursService } from '../../../shared/services/cours.service';
 import { TypeUser, User } from '../../../shared/models/User';
@@ -30,26 +23,43 @@ type ExtendedUser = User & {
 };
 import {
   Availability,
-  CreateAvailabilityRequest,
-  UpdateAvailabilityRequest,
   AvailabilityFormData,
 } from '../../../shared/models/Availability';
-import { CompletedUnbilledCours } from '../../../shared/models/Cours';
+import {
+  CompletedUnbilledCours,
+  CreateCoursRequest,
+  UpdateCoursRequest,
+  CoursStatus,
+  CoursSession,
+} from '../../../shared/models/Cours';
 import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
 import { TabItem } from '../../../shared/models/TabItem';
-import { Tab } from '../parent/parent-dashboard';
 import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
 import {
   FeedbackModalComponent,
   FeedbackModalData,
 } from '../../../shared/components/feedback-modal/feedback-modal.component';
+import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
+import { InvitationModalComponent } from '../../../shared/components/invitation-modal/invitation-modal.component';
 import { BookingStatus, Booking } from '../../../shared/models/Booking';
 import { BookingDisplay } from '../../../shared/models/Parent';
 import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
 import {
   getStatusColor,
   getStatusLabel,
+  InvoiceStatus,
 } from '../../../shared/utils/status.utils';
+import { getStudentLevel } from '../../../shared/utils/student.utils';
+import { getInitials } from '../../../shared/utils/string.utils';
+
+export enum Tab {
+  Overview = 'overview',
+  Courses = 'courses',
+  Students = 'students',
+  Invoices = 'invoices',
+  Calendar = 'calendar',
+  Availability = 'availability',
+}
 
 @Component({
   selector: 'app-teacher-dashboard',
@@ -60,7 +70,10 @@ import {
     DashboardNavbarComponent,
     DashboardTabsComponent,
     FeedbackModalComponent,
+    BookingDetailsModalComponent,
+    InvitationModalComponent,
   ],
+  providers: [DateFormatPipe],
   templateUrl: './components/teacher-dashboard.component.html',
 })
 export class TeacherDashboardComponent implements OnInit, OnDestroy {
@@ -68,11 +81,17 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   private readonly bookingService = inject(BookingService);
   private readonly invoiceService = inject(InvoiceService);
   private readonly authService = inject(AuthService);
-  private readonly availabilityService = inject(AvailabilityService);
   private readonly invitationService = inject(InvitationService);
   private readonly coursService = inject(CoursService);
+  private readonly datePipe = inject(DateFormatPipe);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   private readonly _bookings = signal<BookingDisplay[]>([]);
+
+  // Booking details modal
+  showBookingDetails = signal(false);
+  selectedBookingForDetails = signal<Booking | null>(null);
 
   readonly upcomingBookings = computed(() =>
     this._bookings().filter(
@@ -139,12 +158,10 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     price: 25,
   });
 
+  @ViewChild(InvitationModalComponent) invitationModal?: InvitationModalComponent;
+
   // Invitation management
   showInvitationModal = signal(false);
-  invitationEmail = signal('');
-  invitationLoading = signal(false);
-  invitationSuccess = signal<string | null>(null);
-  invitationError = signal<string | null>(null);
 
   // Feedback modal management
   showFeedbackModal = signal(false);
@@ -287,6 +304,14 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     this.loadCurrentUser();
     this.loadDashboardData();
     this.loadCompletedUnbilledCours();
+
+    // Deep-linking depuis une notification (ex: /dashboard?tab=courses)
+    this.route.queryParams.subscribe((params) => {
+      const tabId = params['tab'];
+      if (tabId && this.tabs.some((t) => t.id === tabId)) {
+        this.activeTab.set(tabId);
+      }
+    });
 
     // Rafraîchir les disponibilités toutes les 30 secondes
     this.availabilityRefreshSubscription = interval(30000).subscribe(() => {
@@ -475,12 +500,10 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   private loadInvoices(): Observable<Invoice[]> {
     return this.invoiceService.getMyInvoices().pipe(
       map((invoices) => {
-        // Filtrer uniquement les factures de type TEACHER_INVOICE
-        const teacherInvoices = invoices.filter(
-          (inv) => inv.invoiceType === 'TEACHER_INVOICE',
-        );
-        this.invoices.set(teacherInvoices || []);
-        return teacherInvoices || [];
+        // Le professeur voit toutes ses factures : celles qu'il émet pour les
+        // parents (CLIENT_INVOICE) comme les TEACHER_INVOICE qui le concernent.
+        this.invoices.set(invoices || []);
+        return invoices || [];
       }),
       catchError((error) => {
         console.error('Failed to load invoices:', error);
@@ -495,17 +518,47 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.availabilityService
-      .getAvailabilitiesByTeacher((this.currentUser() as User).id)
-      .subscribe({
-        next: (availabilities) => {
-          this.availabilities.set(availabilities);
-        },
-        error: (error) => {
-          console.error('Failed to load availabilities:', error);
-          this.availabilities.set([]);
-        },
-      });
+    const teacherId = (this.currentUser() as User).id;
+    this.coursService.getAllCours(0, 100, 'sessionDate', 'ASC').subscribe({
+      next: (response) => {
+        const now = new Date();
+        const teacherCours = response.data.filter(
+          (cours) =>
+            cours.teacherId === teacherId &&
+            new Date(cours.sessionDate) > now,
+        );
+        this.availabilities.set(
+          teacherCours.map((cours) => this.coursToAvailability(cours)),
+        );
+      },
+      error: (error) => {
+        console.error('Failed to load availabilities:', error);
+        this.availabilities.set([]);
+      },
+    });
+  }
+
+  private coursToAvailability(cours: CoursSession): Availability {
+    const sessionDate = new Date(cours.sessionDate);
+    const endDate = new Date(
+      sessionDate.getTime() + cours.dureeMinutes * 60 * 1000,
+    );
+    return {
+      id: cours.id,
+      teacherId: cours.teacherId,
+      teacherName: cours.teacherName || '',
+      date: cours.sessionDate.split('T')[0],
+      startTime: cours.sessionDate.split('T')[1]?.substring(0, 5) ?? '00:00',
+      endTime: `${String(endDate.getHours()).padStart(2, '0')}:${String(
+        endDate.getMinutes(),
+      ).padStart(2, '0')}`,
+      durationMinutes: cours.dureeMinutes,
+      subject: cours.matiere,
+      price: cours.tarif,
+      isAvailable: cours.eleveId == null,
+      createdAt: cours.createdAt ?? '',
+      updatedAt: cours.updatedAt ?? '',
+    };
   }
 
   private updateComputedData(): void {
@@ -533,27 +586,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   private getStudentLevel(eleve: User): string {
-    if (!eleve.birthDate) return 'Niveau non défini';
-
-    const birthYear = new Date(eleve.birthDate).getFullYear();
-    const currentYear = new Date().getFullYear();
-    const age = currentYear - birthYear;
-
-    const levelThresholds = [
-      { minAge: 18, level: 'Terminale ou +' },
-      { minAge: 17, level: 'Terminale' },
-      { minAge: 16, level: '1ère' },
-      { minAge: 15, level: 'Seconde' },
-      { minAge: 14, level: '3ème' },
-      { minAge: 13, level: '4ème' },
-      { minAge: 12, level: '5ème' },
-      { minAge: 11, level: '6ème' },
-    ];
-
-    const matchingLevel = levelThresholds.find(
-      (threshold) => age >= threshold.minAge,
-    );
-    return matchingLevel?.level || 'CM2 ou -';
+    return getStudentLevel(eleve);
   }
 
   private loadParentsForStudents(): Observable<void> {
@@ -637,7 +670,7 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   validateBooking(bookingId: number): void {
     this.bookingService
-      .confirmBooking(bookingId, { statut: BookingStatus.CONFIRMED })
+      .confirmBooking(bookingId)
       .subscribe({
         next: () => {
           this.loadDashboardData();
@@ -662,6 +695,8 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         this.showFeedbackModal.set(false);
         this.selectedBookingId.set(null);
         this.loadDashboardData();
+        // Le cours terminé devient immédiatement facturable
+        this.loadCompletedUnbilledCours();
       },
       error: (error) => {
         console.error('Failed to complete booking:', error);
@@ -686,15 +721,58 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   viewBookingDetails(bookingId: number): void {
-    // TODO: Implémenter l'affichage des détails du booking
-    console.log('View booking details:', bookingId);
+    const booking = this._bookings().find((b) => b.id === bookingId);
+    if (booking) {
+      // Convertir BookingDisplay en Booking pour la modal
+      const bookingData: Booking = {
+        id: booking.id,
+        coursId: booking.coursId ?? 0,
+        coursTitre: booking.subject ?? '',
+        coursMatiere: booking.subject ?? '',
+        coursDate: booking.date?.toISOString() ?? '',
+        coursDureeMinutes: (booking.duration ?? 0) * 60,
+        coursTarif: booking.price ?? 0,
+        parentId: 0,
+        parentName: '',
+        eleveId: booking.eleveId ?? 0,
+        eleveName: booking.child ?? '',
+        createdAt: '',
+        updatedAt: '',
+        status: booking.status,
+      };
+      this.selectedBookingForDetails.set(bookingData);
+      this.showBookingDetails.set(true);
+    }
+  }
+
+  closeBookingDetails(): void {
+    this.showBookingDetails.set(false);
+    this.selectedBookingForDetails.set(null);
   }
 
   sendInvoice(invoiceId: number): void {
     this.invoiceService.sendInvoiceByEmail(invoiceId).subscribe({
       next: () => {
         console.log('Invoice sent successfully');
-        this.loadDashboardData();
+        // Le backend n'ayant pas forcément basculé la facture en SENT à l'envoi,
+        // on s'en assure (le PATCH /status est désormais autorisé pour le prof).
+        const invoice = this.invoices().find((i) => i.id === invoiceId);
+        if (invoice && invoice.statut === InvoiceStatus.DRAFT) {
+          this.invoiceService
+            .updateInvoiceStatus(invoiceId, InvoiceStatus.SENT)
+            .subscribe({
+              next: () => this.loadDashboardData(),
+              error: (error) => {
+                console.error(
+                  'Failed to update invoice status to SENT:',
+                  error,
+                );
+                this.loadDashboardData();
+              },
+            });
+        } else {
+          this.loadDashboardData();
+        }
       },
       error: (error) => {
         console.error('Failed to send invoice:', error);
@@ -702,24 +780,61 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  downloadInvoice(invoiceId: number): void {
-    this.invoiceService.getInvoicePdf(invoiceId).subscribe({
-      next: (blob) => {
-        const url = globalThis.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `invoice-${invoiceId}.pdf`;
-        a.click();
-        globalThis.URL.revokeObjectURL(url);
-      },
+  /**
+   * Change le statut d'une facture depuis le sélecteur de la page Factures.
+   * Le statut PAID passe par l'endpoint dédié (qui renseigne paidAt) ;
+   * sortir d'un statut PAID repasse d'abord par mark-unpaid.
+   */
+  onInvoiceStatusChange(invoiceId: number, status: string): void {
+    if (status === InvoiceStatus.PAID) {
+      this.markInvoiceAsPaid(invoiceId);
+      return;
+    }
+
+    const invoice = this.invoices().find((i) => i.id === invoiceId);
+    const currentlyPaid = invoice?.isPaid === true;
+
+    const applyStatus = (): void => {
+      this.invoiceService
+        .updateInvoiceStatus(invoiceId, status)
+        .subscribe({
+          next: () => this.loadDashboardData(),
+          error: (error) => {
+            console.error('Failed to update invoice status:', error);
+            alert("Erreur lors du changement de statut de la facture");
+          },
+        });
+    };
+
+    if (currentlyPaid) {
+      this.invoiceService.markInvoiceAsUnpaid(invoiceId).subscribe({
+        next: () => applyStatus(),
+        error: (error) => {
+          console.error('Failed to unmark invoice as paid:', error);
+          alert("Erreur lors de l'annulation du paiement");
+        },
+      });
+    } else {
+      applyStatus();
+    }
+  }
+
+  markInvoiceAsPaid(invoiceId: number): void {
+    this.invoiceService.markInvoiceAsPaid(invoiceId).subscribe({
+      next: () => this.loadDashboardData(),
       error: (error) => {
-        console.error('Failed to download invoice:', error);
+        console.error('Failed to mark invoice as paid:', error);
+        alert("Erreur lors du marquage de la facture comme payée");
       },
     });
   }
 
+  downloadInvoice(invoiceId: number): void {
+    this.invoiceService.downloadInvoicePdf(invoiceId);
+  }
+
   onSettings(): void {
-    console.log('Settings clicked');
+    this.router.navigate(['/settings']);
   }
 
   onLogout(): void {
@@ -730,26 +845,41 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   getStatusColor = getStatusColor;
   getStatusLabel = getStatusLabel;
 
+  /**
+   * Statut d'affichage d'une facture : le champ calculé isOverdue (basé sur la
+   * date d'échéance) prime sur le statut en base, comme côté dashboard parent.
+   */
+  getInvoiceDisplayStatus = (invoice: Invoice): string => {
+    if (invoice.isPaid) return InvoiceStatus.PAID;
+    if (invoice.isOverdue) return InvoiceStatus.OVERDUE;
+    return invoice.statut;
+  };
+
   formatDate = (date: Date | string) =>
-    new DateFormatPipe().transform(date, 'date');
+    this.datePipe.transform(date, 'date');
   formatDateTime = (date: Date | string) =>
-    new DateFormatPipe().transform(date, 'datetime');
+    this.datePipe.transform(date, 'datetime');
 
   // Availability management methods
   saveAvailability(): void {
     if (!this.currentUser()) return;
 
+    const form = this.availabilityFormData();
+    const teacherId = (this.currentUser() as User).id;
+
     if (this.editingAvailability()) {
-      const updateRequest: UpdateAvailabilityRequest = {
-        date: this.availabilityFormData().date,
-        startTime: this.availabilityFormData().startTime,
-        endTime: this.availabilityFormData().endTime,
-        subject: this.availabilityFormData().subject,
-        price: this.availabilityFormData().price,
+      const updateRequest: UpdateCoursRequest = {
+        matiere: form.subject,
+        sessionDate: `${form.date}T${form.startTime}`,
+        dureeMinutes: this.computeDurationMinutes(
+          form.startTime,
+          form.endTime,
+        ),
+        tarif: form.price,
       };
 
-      this.availabilityService
-        .updateAvailability(this.editingAvailability()!.id, updateRequest)
+      this.coursService
+        .updateCours(this.editingAvailability()!.id, updateRequest)
         .subscribe({
           next: () => {
             this.loadAvailabilities();
@@ -762,12 +892,20 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
           },
         });
     } else {
-      const createRequest: CreateAvailabilityRequest = {
-        teacherId: (this.currentUser() as User).id,
-        ...this.availabilityFormData(),
+      const createRequest: CreateCoursRequest = {
+        titre: `Cours de ${form.subject}`,
+        matiere: form.subject,
+        sessionDate: `${form.date}T${form.startTime}`,
+        dureeMinutes: this.computeDurationMinutes(
+          form.startTime,
+          form.endTime,
+        ),
+        tarif: form.price,
+        teacherId,
+        statut: CoursStatus.PENDING,
       };
 
-      this.availabilityService.createAvailability(createRequest).subscribe({
+      this.coursService.createCours(createRequest).subscribe({
         next: () => {
           this.loadAvailabilities();
           this.closeAvailabilityModal();
@@ -779,6 +917,12 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  private computeDurationMinutes(startTime: string, endTime: string): number {
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    return endHour * 60 + endMinute - (startHour * 60 + startMinute);
   }
 
   editAvailability(availability: Availability): void {
@@ -794,8 +938,8 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   deleteAvailability(availabilityId: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')) {
-      this.availabilityService.deleteAvailability(availabilityId).subscribe({
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce créneau ?')) {
+      this.coursService.deleteCours(availabilityId).subscribe({
         next: () => {
           this.loadAvailabilities();
         },
@@ -895,63 +1039,47 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
 
   // Invitation methods
   openInvitationModal(): void {
+    this.invitationModal?.reset();
     this.showInvitationModal.set(true);
-    this.invitationEmail.set('');
-    this.invitationSuccess.set(null);
-    this.invitationError.set(null);
   }
 
   closeInvitationModal(): void {
     this.showInvitationModal.set(false);
-    this.invitationEmail.set('');
-    this.invitationLoading.set(false);
-    this.invitationSuccess.set(null);
-    this.invitationError.set(null);
+    this.invitationModal?.reset();
   }
 
-  sendParentInvitation(): void {
-    const email = this.invitationEmail().trim();
-
+  sendParentInvitation(email: string): void {
     if (!email) {
-      this.invitationError.set('Veuillez saisir une adresse email');
+      this.invitationModal?.setError('Veuillez saisir une adresse email');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      this.invitationError.set('Adresse email invalide');
+      this.invitationModal?.setError('Adresse email invalide');
       return;
     }
 
-    this.invitationLoading.set(true);
-    this.invitationError.set(null);
+    this.invitationModal?.setLoading(true);
 
     this.invitationService
-      .sendInvitation({
-        email,
-        targetRole: 'PARENT' as TypeUser,
-      })
+      .sendInvitation({ email, targetRole: 'PARENT' as TypeUser })
       .subscribe({
         next: () => {
-          this.invitationLoading.set(false);
-          this.invitationSuccess.set(
-            `Invitation envoyée avec succès à ${email}`,
-          );
-          this.invitationEmail.set('');
+          this.invitationModal?.setLoading(false);
+          this.invitationModal?.setSuccess(`Invitation envoyée avec succès à ${email}`);
           setTimeout(() => {
-            if (this.invitationSuccess()) {
+            if (this.invitationModal?.successMessage()) {
               this.closeInvitationModal();
             }
           }, 3000);
         },
         error: (error) => {
-          this.invitationLoading.set(false);
+          this.invitationModal?.setLoading(false);
           const err = error as { error?: { message?: string }; message?: string };
-          const errorMessage =
-            err.error?.message ||
-            err.message ||
-            "Erreur lors de l'envoi de l'invitation";
-          this.invitationError.set(errorMessage);
+          this.invitationModal?.setError(
+            err.error?.message || err.message || "Erreur lors de l'envoi de l'invitation"
+          );
         },
       });
   }
@@ -1086,10 +1214,6 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   formatCoursDate = (date: string) =>
-    new DateFormatPipe().transform(date, 'sessionDate');
-  getInitials = (name: string) =>
-    name
-      .split(' ')
-      .map((n) => n[0])
-      .join('');
+    this.datePipe.transform(date, 'sessionDate');
+  getInitials = (name: string) => getInitials(name);
 }

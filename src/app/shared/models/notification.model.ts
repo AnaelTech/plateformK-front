@@ -4,6 +4,7 @@
 export enum NotificationType {
   BOOKING_CONFIRMED = 'BOOKING_CONFIRMED',
   BOOKING_CANCELLED = 'BOOKING_CANCELLED',
+  BOOKING_COMPLETED = 'BOOKING_COMPLETED',
   NEW_AVAILABILITY = 'NEW_AVAILABILITY',
   INVOICE_CREATED = 'INVOICE_CREATED',
   INVOICE_DUE_SOON = 'INVOICE_DUE_SOON',
@@ -64,16 +65,25 @@ export interface NotificationRequest {
 }
 
 /**
- * Pagination response wrapper
+ * Pagination metadata (matches backend PaginationMeta)
  */
-export interface NotificationPage {
-  content: Notification[];
+export interface NotificationPagination {
+  currentPage: number;
+  pageSize: number;
   totalElements: number;
   totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+/**
+ * Pagination response wrapper - matches backend PaginatedResponse<NotificationResponse>
+ */
+export interface NotificationPage {
+  data: Notification[];
+  pagination: NotificationPagination;
 }
 
 /**
@@ -85,6 +95,8 @@ export function getNotificationIcon(type: NotificationType): string {
       return 'check-circle';
     case NotificationType.BOOKING_CANCELLED:
       return 'x-circle';
+    case NotificationType.BOOKING_COMPLETED:
+      return 'check-circle';
     case NotificationType.NEW_AVAILABILITY:
       return 'calendar';
     case NotificationType.INVOICE_CREATED:
@@ -112,6 +124,7 @@ export function getNotificationIcon(type: NotificationType): string {
 export function getNotificationColor(type: NotificationType): string {
   switch (type) {
     case NotificationType.BOOKING_CONFIRMED:
+    case NotificationType.BOOKING_COMPLETED:
     case NotificationType.INVOICE_PAID:
     case NotificationType.COURS_COMPLETED:
       return 'text-green-600';

@@ -1,18 +1,35 @@
-// student-dashboard.component.ts
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { TabItem } from '../../../shared/models/TabItem';
 import { DashboardTabsComponent } from '../../../shared/components/dashboard-tabs/dashboard-tabs';
 import { DashboardNavbarComponent } from '../../../shared/components/dashboard-navbar/dashboard-navbar.component';
 import { UserService } from '../../../shared/services/user.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
-import { StudentDashboardService } from './services/student-dashboard.service';
-import { Subject, combineLatest } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 import { BookingDetailsModalComponent } from '../../../shared/components/booking-details-modal/booking-details-modal.component';
-import { Booking } from '../../../shared/models/Booking';
+import { Booking, BookingStatus } from '../../../shared/models/Booking';
 import { BookingService } from '../../../shared/services/booking.service';
+import { Teacher } from '../../../shared/models/Student';
+import { DateFormatPipe } from '../../../shared/pipes/date-format.pipe';
+import { getStatusColor, getStatusLabel } from '../../../shared/utils/status.utils';
+import { getInitials } from '../../../shared/utils/string.utils';
+
+interface CourseDisplay {
+  id: number;
+  subject: string;
+  teacher: string;
+  date: string;
+  status: BookingStatus;
+  duration?: number;
+  description?: string;
+  value?: number;
+}
+
+interface StudentStats {
+  upcomingCourses: number;
+  completedCourses: number;
+}
 
 enum Tab {
   Overview = 'overview',
@@ -24,12 +41,11 @@ enum Tab {
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, DashboardTabsComponent, DashboardNavbarComponent, BookingDetailsModalComponent],
+  imports: [DashboardTabsComponent, DashboardNavbarComponent, BookingDetailsModalComponent],
+  providers: [DateFormatPipe],
   templateUrl: './components/student-dashboard.component.html',
 })
-export class StudentDashboardComponent implements OnInit, OnDestroy {
-  private readonly destroy$ = new Subject<void>();
-  private readonly studentDashboardService = inject(StudentDashboardService);
+export class StudentDashboardComponent implements OnInit {
   private readonly bookingService = inject(BookingService);
 
   readonly Tab = Tab;
@@ -69,26 +85,22 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   readonly userService = inject(UserService);
   readonly currentUser = this.userService.currentUser;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly upcomingCourses = signal<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly pastCourses = signal<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly teachers = signal<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly recentGrades = signal<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly stats = signal<any>({
+  readonly upcomingCourses = signal<CourseDisplay[]>([]);
+  readonly pastCourses = signal<CourseDisplay[]>([]);
+  readonly teachers = signal<Teacher[]>([]);
+  readonly recentGrades = signal<CourseDisplay[]>([]);
+  readonly stats = signal<StudentStats>({
     upcomingCourses: 0,
     completedCourses: 0,
-    averageGrade: 0,
-    pendingHomework: 0,
   });
   readonly loading = signal<boolean>(true);
 
   ngOnInit(): void {
     this.loadDashboardData();
   }
+
+  private readonly datePipe = inject(DateFormatPipe);
+  private readonly router = inject(Router);
 
   private loadDashboardData(): void {
     const currentUserId = this.currentUser()?.id;
@@ -97,14 +109,11 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    combineLatest({
-      bookings: this.studentDashboardService.getStudentBookings(currentUserId),
-      bookingStats: this.studentDashboardService.getBookingStats(),
-      teachers: this.studentDashboardService.getTeachers(),
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ bookings, bookingStats, teachers }) => {
+    forkJoin({
+      bookings: this.bookingService.getBookingsByEleve(currentUserId),
+      bookingStats: this.bookingService.getBookingStats(),
+    }).subscribe({
+        next: ({ bookings, bookingStats }) => {
           // Séparer les cours à venir et passés
           const now = new Date();
           const upcoming = bookings
@@ -112,7 +121,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
             .map((b) => ({
               id: b.id,
               subject: b.coursMatiere,
-              teacher: `Professeur - ${b.coursTitre}`,
+              teacher: b.teacherName || '',
               date: b.coursDate,
               status: b.status,
             }));
@@ -122,7 +131,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
             .map((b) => ({
               id: b.id,
               subject: b.coursMatiere,
-              teacher: `Professeur - ${b.coursTitre}`,
+              teacher: b.teacherName || '',
               date: b.coursDate,
               duration: b.coursDureeMinutes / 60,
               status: b.status,
@@ -130,14 +139,27 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
           this.upcomingCourses.set(upcoming);
           this.pastCourses.set(past);
-          this.teachers.set(teachers);
+
+          // Dériver les professeurs depuis les bookings (sans appel API séparé)
+          const teacherMap = new Map<string, Teacher>();
+          bookings.forEach((b) => {
+            const key =
+              b.teacherName || `${b.coursMatiere}-${b.coursTitre}`;
+            if (!teacherMap.has(key)) {
+              teacherMap.set(key, {
+                id: key.length + b.id,
+                name: b.teacherName || '',
+                subject: b.coursMatiere,
+                email: '',
+              });
+            }
+          });
+          this.teachers.set(Array.from(teacherMap.values()));
 
           // Mettre à jour les statistiques
           this.stats.set({
             upcomingCourses: upcoming.length,
             completedCourses: bookingStats.completedBookings,
-            averageGrade: 0, // À implémenter plus tard
-            pendingHomework: 0, // À implémenter plus tard
           });
 
           this.loading.set(false);
@@ -149,79 +171,28 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
   setActiveTab(tab: Tab): void {
     this.activeTab.set(tab);
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+    return getInitials(name);
   }
 
   formatDateTime(date: Date | string): string {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return this.datePipe.transform(date, 'datetime');
   }
 
   formatDate(date: Date | string): string {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
+    return this.datePipe.transform(date, 'date');
   }
 
   getStatusColor(status: string): string {
-    switch (status) {
-      case 'confirmed':
-      case 'completed':
-      case 'CONFIRMED':
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-      case 'missed':
-      case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    return getStatusColor(status);
   }
 
   getStatusLabel(status: string): string {
-    const upperStatus = status.toUpperCase();
-    switch (upperStatus) {
-      case 'CONFIRMED':
-        return 'Confirmé';
-      case 'PENDING':
-        return 'En attente';
-      case 'CANCELLED':
-        return 'Annulé';
-      case 'COMPLETED':
-        return 'Terminé';
-      case 'MISSED':
-        return 'Manqué';
-      default:
-        return status;
-    }
+    return getStatusLabel(status);
   }
 
   viewBookingDetails(bookingId: number): void {
@@ -242,7 +213,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   }
 
   onNavbarSettings(): void {
-    alert('Redirection vers les paramètres...');
+    this.router.navigate(['/settings']);
   }
 
   onNavbarLogout(): void {

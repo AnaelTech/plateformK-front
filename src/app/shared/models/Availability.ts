@@ -1,3 +1,9 @@
+/**
+ * Modèles de vue pour la gestion des créneaux.
+ * Les disponibilités sont des CoursSession (cours sans réservation) côté backend.
+ * Ces interfaces servent uniquement à l'affichage et au formulaire du frontend.
+ */
+
 export interface Availability {
   id: number;
   teacherId: number;
@@ -13,30 +19,12 @@ export interface Availability {
   updatedAt: string;
 }
 
-export interface CreateAvailabilityRequest {
-  teacherId: number;
-  date: string; // ISO date string
-  startTime: string; // HH:mm format
-  endTime: string; // HH:mm format
-  subject: string;
-  price: number;
-}
-
 export interface AvailabilityFormData {
   date: string; // ISO date string
   startTime: string; // HH:mm format
   endTime: string; // HH:mm format
   subject: string;
   price: number;
-}
-
-export interface UpdateAvailabilityRequest {
-  date?: string;
-  startTime?: string;
-  endTime?: string;
-  subject?: string;
-  price?: number;
-  isAvailable?: boolean;
 }
 
 export interface AvailabilitySlot {

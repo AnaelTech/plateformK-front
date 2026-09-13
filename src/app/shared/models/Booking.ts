@@ -17,6 +17,7 @@ export interface Booking {
   parentName: string;
   eleveId: number;
   eleveName: string;
+  teacherName?: string;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   notes?: string;

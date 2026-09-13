@@ -11,8 +11,10 @@ export interface CoursSession {
   matiere: string;
   dureeMinutes: number;
   sessionDate: string;
+  notionsAbordees?: string;   // Notions couvertes pendant le cours
   tarif: number;
   teacherId: number;        // The teacher who created the slot
+  teacherName?: string;     // Teacher display name
   parentId?: number;        // The parent who booked (from booking, null if not booked)
   eleveId?: number;         // The student (from booking, null if not booked)
   invoiceId?: number;
@@ -28,8 +30,10 @@ export interface CreateCoursRequest {
   matiere: string;
   dureeMinutes: number;
   sessionDate: string;
+  notionsAbordees?: string; // Notions prévues pour ce cours
   tarif: number;
   teacherId: number;        // Renamed from parentId - the teacher creating the slot
+  eleveId?: number;         // Elève optionnel à la création
   statut: CoursStatus;
 }
 
@@ -38,8 +42,10 @@ export interface UpdateCoursRequest {
   matiere?: string;
   dureeMinutes?: number;
   sessionDate?: string; // ISO string
+  notionsAbordees?: string; // Notions abordées (mise à jour après le cours)
   tarif?: number;
   teacherId?: number;       // Renamed from parentId
+  eleveId?: number;
   statut?: CoursStatus;
 }
 
