@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/utils/logger';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -335,7 +336,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.loadAvailabilities();
       },
       error: (error) => {
-        console.error('Failed to load current user:', error);
+        logger.error('Failed to load current user:', error);
       },
     });
   }
@@ -364,14 +365,14 @@ export class TeacherDashboard implements OnInit, OnDestroy {
                 this.loading.set(false);
               },
               error: (error) => {
-                console.error('Failed to load dashboard data:', error);
+                logger.error('Failed to load dashboard data:', error);
                 this.error.set('Erreur lors du chargement des données');
                 this.loading.set(false);
               },
             });
           },
           error: (error) => {
-            console.error('Failed to load parents for students:', error);
+            logger.error('Failed to load parents for students:', error);
             // Continue without parents
             forkJoin({
               stats: this.loadStats(),
@@ -383,7 +384,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
                 this.loading.set(false);
               },
               error: (error) => {
-                console.error('Failed to load dashboard data:', error);
+                logger.error('Failed to load dashboard data:', error);
                 this.error.set('Erreur lors du chargement des données');
                 this.loading.set(false);
               },
@@ -392,7 +393,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
-        console.error('Failed to load parents and students:', error);
+        logger.error('Failed to load parents and students:', error);
         this.error.set('Erreur lors du chargement des parents et élèves');
         this.loading.set(false);
       },
@@ -415,7 +416,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         return bookingStats;
       }),
       catchError((error) => {
-        console.error('Failed to load stats:', error);
+        logger.error('Failed to load stats:', error);
         // Set default stats on error
         this.stats.set({
           totalStudents: 0,
@@ -435,7 +436,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         return parents;
       }),
       catchError((error) => {
-        console.error('Failed to load parents:', error);
+        logger.error('Failed to load parents:', error);
         this.parents.set([]);
         return of([]);
       }),
@@ -456,7 +457,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         return students;
       }),
       catchError((error) => {
-        console.error('Failed to load students:', error);
+        logger.error('Failed to load students:', error);
         this.students.set([]);
         return of([]);
       }),
@@ -484,7 +485,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         return transformedBookings;
       }),
       catchError((error) => {
-        console.error('Failed to load bookings:', error);
+        logger.error('Failed to load bookings:', error);
         this._bookings.set([]);
         return of([]);
       }),
@@ -500,7 +501,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         return invoices || [];
       }),
       catchError((error) => {
-        console.error('Failed to load invoices:', error);
+        logger.error('Failed to load invoices:', error);
         this.invoices.set([]);
         return of([]);
       }),
@@ -526,7 +527,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         );
       },
       error: (error) => {
-        console.error('Failed to load availabilities:', error);
+        logger.error('Failed to load availabilities:', error);
         this.availabilities.set([]);
       },
     });
@@ -591,7 +592,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
       this.userService.getParentsByStudentId(student.id).pipe(
         map((parents) => ({ studentId: student.id, parents })),
         catchError((error) => {
-          console.error(
+          logger.error(
             `Failed to load parents for student ${student.id}:`,
             error,
           );
@@ -670,7 +671,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
           this.loadDashboardData();
         },
         error: (error) => {
-          console.error('Failed to validate booking:', error);
+          logger.error('Failed to validate booking:', error);
         },
       });
   }
@@ -693,7 +694,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.loadCompletedUnbilledCours();
       },
       error: (error) => {
-        console.error('Failed to complete booking:', error);
+        logger.error('Failed to complete booking:', error);
       },
     });
   }
@@ -709,7 +710,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.loadDashboardData();
       },
       error: (error) => {
-        console.error('Failed to cancel booking:', error);
+        logger.error('Failed to cancel booking:', error);
       },
     });
   }
@@ -747,7 +748,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
   sendInvoice(invoiceId: number): void {
     this.invoiceService.sendInvoiceByEmail(invoiceId).subscribe({
       next: () => {
-        console.log('Invoice sent successfully');
+        logger.log('Invoice sent successfully');
         // Le backend n'ayant pas forcément basculé la facture en SENT à l'envoi,
         // on s'en assure (le PATCH /status est désormais autorisé pour le prof).
         const invoice = this.invoices().find((i) => i.id === invoiceId);
@@ -757,7 +758,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
             .subscribe({
               next: () => this.loadDashboardData(),
               error: (error) => {
-                console.error(
+                logger.error(
                   'Failed to update invoice status to SENT:',
                   error,
                 );
@@ -769,7 +770,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Failed to send invoice:', error);
+        logger.error('Failed to send invoice:', error);
       },
     });
   }
@@ -794,7 +795,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         .subscribe({
           next: () => this.loadDashboardData(),
           error: (error) => {
-            console.error('Failed to update invoice status:', error);
+            logger.error('Failed to update invoice status:', error);
             alert("Erreur lors du changement de statut de la facture");
           },
         });
@@ -804,7 +805,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
       this.invoiceService.markInvoiceAsUnpaid(invoiceId).subscribe({
         next: () => applyStatus(),
         error: (error) => {
-          console.error('Failed to unmark invoice as paid:', error);
+          logger.error('Failed to unmark invoice as paid:', error);
           alert("Erreur lors de l'annulation du paiement");
         },
       });
@@ -817,7 +818,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
     this.invoiceService.markInvoiceAsPaid(invoiceId).subscribe({
       next: () => this.loadDashboardData(),
       error: (error) => {
-        console.error('Failed to mark invoice as paid:', error);
+        logger.error('Failed to mark invoice as paid:', error);
         alert("Erreur lors du marquage de la facture comme payée");
       },
     });
@@ -879,7 +880,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
             this.closeAvailabilityModal();
           },
           error: (error) => {
-            console.error('Failed to update availability:', error);
+            logger.error('Failed to update availability:', error);
             const userFriendlyMessage = this.getUserFriendlyErrorMessage(error);
             alert(userFriendlyMessage);
           },
@@ -904,7 +905,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
           this.closeAvailabilityModal();
         },
         error: (error) => {
-          console.error('Failed to create availability:', error);
+          logger.error('Failed to create availability:', error);
           const userFriendlyMessage = this.getUserFriendlyErrorMessage(error);
           alert(userFriendlyMessage);
         },
@@ -937,7 +938,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
           this.loadAvailabilities();
         },
         error: (error) => {
-          console.error('Failed to delete availability:', error);
+          logger.error('Failed to delete availability:', error);
           const userFriendlyMessage = this.getUserFriendlyErrorMessage(error);
           alert(userFriendlyMessage);
         },
@@ -1084,7 +1085,7 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.completedUnbilledCours.set(courses);
       },
       error: (error) => {
-        console.error('Failed to load completed unbilled courses:', error);
+        logger.error('Failed to load completed unbilled courses:', error);
         this.completedUnbilledCours.set([]);
       },
     });

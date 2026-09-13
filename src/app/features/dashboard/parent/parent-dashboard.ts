@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/utils/logger';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -361,7 +362,7 @@ export class ParentDashboard implements OnInit {
       },
       error: (error) => {
         if (!environment.production) {
-          console.error('Erreur lors de la réservation:', error);
+          logger.error('Erreur lors de la réservation:', error);
         }
         alert('Erreur lors de la création de la réservation');
       },
@@ -403,7 +404,7 @@ export class ParentDashboard implements OnInit {
         },
         error: (error: Error) => {
           // Fallback to partial data if API fails
-          console.error(
+          logger.error(
             'Failed to load full booking details, showing partial data:',
             error,
           );
@@ -433,7 +434,7 @@ export class ParentDashboard implements OnInit {
         },
         error: (error) => {
           if (!environment.production) {
-            console.error(
+            logger.error(
               "Erreur lors de l'annulation de la réservation:",
               error,
             );
@@ -452,7 +453,7 @@ export class ParentDashboard implements OnInit {
         },
         error: (error) => {
           if (!environment.production) {
-            console.error('Erreur lors de la validation:', error);
+            logger.error('Erreur lors de la validation:', error);
           }
         },
       });
@@ -467,7 +468,7 @@ export class ParentDashboard implements OnInit {
         },
         error: (error) => {
           if (!environment.production) {
-            console.error('Erreur lors de la finalisation:', error);
+            logger.error('Erreur lors de la finalisation:', error);
           }
         },
       });
@@ -483,7 +484,7 @@ export class ParentDashboard implements OnInit {
           },
           error: (error) => {
             if (!environment.production) {
-              console.error("Erreur lors de l'annulation:", error);
+              logger.error("Erreur lors de l'annulation:", error);
             }
           },
         });
@@ -493,7 +494,7 @@ export class ParentDashboard implements OnInit {
   sendInvoice(invoiceId: number): void {
     this.invoiceService.sendInvoiceByEmail(invoiceId).subscribe({
       next: () => {
-        console.log('Invoice sent successfully');
+        logger.log('Invoice sent successfully');
         this.loadInvoicesData();
       },
       error: () => {
@@ -512,12 +513,12 @@ export class ParentDashboard implements OnInit {
     if (confirm('Confirmer le paiement de cette facture ?')) {
       this.invoiceService.markInvoiceAsPaid(invoiceId).subscribe({
         next: () => {
-          console.log('Invoice marked as paid successfully');
+          logger.log('Invoice marked as paid successfully');
           this.loadInvoicesData();
           // TODO: Afficher une notification de succès
         },
         error: (error) => {
-          console.error('Failed to mark invoice as paid:', error);
+          logger.error('Failed to mark invoice as paid:', error);
           // TODO: Afficher une notification d'erreur
         },
       });
@@ -575,7 +576,7 @@ export class ParentDashboard implements OnInit {
       },
       error: (error) => {
         if (!environment.production) {
-          console.error(
+          logger.error(
             'Erreur lors du chargement des données utilisateur:',
             error,
           );
@@ -609,7 +610,7 @@ export class ParentDashboard implements OnInit {
         this._children.set(childrenWithTeacher);
       },
       error: (error) => {
-        console.error('Failed to load bookings:', error);
+        logger.error('Failed to load bookings:', error);
         this._bookings.set([]);
       },
     });
@@ -633,7 +634,7 @@ export class ParentDashboard implements OnInit {
         this._availableSlots.set(Array.from(slotsMap.values()));
       },
       error: (error) => {
-        console.error('Failed to load available slots:', error);
+        logger.error('Failed to load available slots:', error);
         this._availableSlots.set([]);
       },
     });

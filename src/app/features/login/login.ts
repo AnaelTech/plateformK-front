@@ -1,3 +1,4 @@
+import { logger } from '../../shared/utils/logger';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
 import {
@@ -72,7 +73,7 @@ export class Login {
 
     this.authService.login({ email, password }).subscribe({
       next: () => {
-        //console.log('Connexion réussie ! Token reçu.');
+        //logger.log('Connexion réussie ! Token reçu.');
 
         const user = this.userService.currentUser();
 
@@ -82,7 +83,7 @@ export class Login {
       },
       error: (err) => {
         this.isLoading.set(false);
-        console.error('Erreur de connexion', err);
+        logger.error('Erreur de connexion', err);
 
         // Gestion des erreurs HTTP
         if (err.status === 401) {

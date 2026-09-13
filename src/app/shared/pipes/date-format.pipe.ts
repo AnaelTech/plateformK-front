@@ -1,3 +1,4 @@
+import { logger } from '../../shared/utils/logger';
 import { Pipe, PipeTransform } from '@angular/core';
 
 type FormatType = 'date' | 'datetime' | 'time' | 'sessionDate';
@@ -37,7 +38,7 @@ export class DateFormatPipe implements PipeTransform {
     const d = typeof value === 'string' ? new Date(value) : value;
 
     if (isNaN(d.getTime())) {
-      console.warn('DateFormatPipe: Invalid date', value);
+      logger.warn('DateFormatPipe: Invalid date', value);
       return '';
     }
 

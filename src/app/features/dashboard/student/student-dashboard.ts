@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/utils/logger';
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -166,7 +167,7 @@ export class StudentDashboard implements OnInit {
           this.loading.set(false);
         },
         error: (error) => {
-          console.error('Erreur lors du chargement des données', error);
+          logger.error('Erreur lors du chargement des données', error);
           this.loading.set(false);
         },
       });
@@ -203,7 +204,7 @@ export class StudentDashboard implements OnInit {
         this.showBookingDetails.set(true);
       },
       error: (error: Error) => {
-        console.error('Failed to load booking details:', error);
+        logger.error('Failed to load booking details:', error);
       }
     });
   }

@@ -1,3 +1,4 @@
+import { logger } from '../../shared/utils/logger';
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap, catchError, of, forkJoin, map, switchMap } from 'rxjs';
@@ -224,7 +225,7 @@ export class UserService {
 
   refreshCurrentUser(): void {
     this.getCurrentUser().subscribe({
-      error: (e) => console.error('[UserService] Failed to refresh user', e),
+      error: (e) => logger.error('[UserService] Failed to refresh user', e),
     });
   }
 

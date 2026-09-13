@@ -1,3 +1,4 @@
+import { logger } from '../../shared/utils/logger';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -76,7 +77,7 @@ export class InvoiceService {
         globalThis.URL.revokeObjectURL(url);
       },
       error: (error) => {
-        console.error('Failed to download invoice:', error);
+        logger.error('Failed to download invoice:', error);
       },
     });
   }

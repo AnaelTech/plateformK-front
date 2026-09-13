@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/utils/logger';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -40,7 +41,7 @@ export class NotificationPanel {
   onMarkAsRead(notificationId: number): void {
     this.notificationApi.markAsRead(notificationId).subscribe({
       error: (err) =>
-        console.error('Failed to mark notification as read:', err),
+        logger.error('Failed to mark notification as read:', err),
     });
   }
 
@@ -50,7 +51,7 @@ export class NotificationPanel {
   onDelete(notificationId: number): void {
     if (confirm('Are you sure you want to delete this notification?')) {
       this.notificationApi.deleteNotification(notificationId).subscribe({
-        error: (err) => console.error('Failed to delete notification:', err),
+        error: (err) => logger.error('Failed to delete notification:', err),
       });
     }
   }
@@ -60,7 +61,7 @@ export class NotificationPanel {
    */
   onMarkAllAsRead(): void {
     this.notificationApi.markAllAsRead().subscribe({
-      error: (err) => console.error('Failed to mark all as read:', err),
+      error: (err) => logger.error('Failed to mark all as read:', err),
     });
   }
 

@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/utils/logger';
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
@@ -16,7 +17,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   const logError = (...args: unknown[]): void => {
     if (!environment.production) {
-      console.error(...args);
+      logger.error(...args);
     }
   };
 

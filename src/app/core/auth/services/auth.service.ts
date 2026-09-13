@@ -1,3 +1,4 @@
+import { logger } from '../../../shared/utils/logger';
 // src/app/core/auth/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -114,7 +115,7 @@ export class AuthService {
       const padded = base64 + '='.repeat(padding);
       return JSON.parse(atob(padded));
     } catch (e) {
-      console.error('Failed to decode token', e);
+      logger.error('Failed to decode token', e);
       return null;
     }
   }
