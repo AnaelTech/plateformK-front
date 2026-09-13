@@ -92,6 +92,30 @@ docker compose up
 `nginx.conf` définit les en-têtes de sécurité (CSP, Permissions-Policy) et le fallback SPA.
 Le TLS doit être terminé par le reverse proxy en amont.
 
+## Haute disponibilité (HA)
+
+Les deux applications sont **sans état** et prêtes pour un déploiement multi-instances derrière
+un répartiteur de charge :
+
+- **Frontend** : assets statiques servis par nginx, aucune session ni état local.
+- **Backend** : authentification JWT sans session serveur ; rate-limiting et tâches planifiées
+  (`ShedLock`) partagés via Valkey / MySQL ; aucun stockage fichier local (les PDF de factures
+  sont générés et streamés en mémoire).
+
+Pour passer de mono-instance à HA :
+
+1. Plusieurs réplicas backend + front derrière un load balancer TLS avec healthchecks.
+2. MySQL et Valkey partagés entre les instances.
+3. **Notifications temps réel** : activer le broker STOMP externe côté backend
+   (`app.websocket.distributed-broker.enabled=true` + hôte/port/identifiants du relay), sinon les
+   messages publiés sur un nœud ne sont pas distribués aux autres.
+4. Aucune session collante (sticky session) n'est requise pour le HTTP ; avec le broker externe,
+   le client WebSocket peut se reconnecter à n'importe quel nœud.
+5. Pas de volume partagé nécessaire (absence d'état sur disque).
+
+**Décision actuelle** : déploiement mono-instance assumé (une panne entraîne une
+indisponibilité). Le code est prêt pour l'extension en HA sans modification.
+
 ## Structure
 
 ```
