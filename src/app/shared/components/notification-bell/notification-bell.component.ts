@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, effect } from '@angular/core';
 
 import { NotificationApiService } from '../../services/notification-api.service';
 import { WebSocketNotificationService } from '../../services/websocket-notification.service';
@@ -15,6 +15,7 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
   imports: [NotificationPanelComponent],
   templateUrl: './notification-bell.component.html',
   styleUrls: ['./notification-bell.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationBellComponent {
   private readonly notificationApi = inject(NotificationApiService);
