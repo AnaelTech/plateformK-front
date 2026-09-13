@@ -1,4 +1,4 @@
-import { Component, signal, output, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, output, effect } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -13,6 +13,7 @@ export interface FeedbackModalData {
   imports: [FormsModule],
   templateUrl: './feedback-modal.component.html',
   styleUrls: ['./feedback-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedbackModalComponent {
   notionsCovered = signal('');
