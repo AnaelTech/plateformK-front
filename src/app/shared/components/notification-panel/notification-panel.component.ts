@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Output,
   EventEmitter,
@@ -19,6 +20,7 @@ import { NotificationItemComponent } from '../notification-item/notification-ite
   imports: [NotificationItemComponent],
   templateUrl: './notification-panel.component.html',
   styleUrls: ['./notification-panel.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationPanelComponent {
   @Output() buttonClose = new EventEmitter<void>();
