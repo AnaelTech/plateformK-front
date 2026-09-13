@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { NotificationService } from '../../services/notification.service';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -15,6 +15,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
   imports: [],
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('toastAnimation', [
       transition(':enter', [
