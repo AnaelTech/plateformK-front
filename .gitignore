@@ -41,14 +41,13 @@ testem.log
 .DS_Store
 Thumbs.db
 
-environments
-
-proxy.conf.json
-
 # Playwright
 /playwright-report/
 /test-results/
 /playwright/.auth/
+
+/test-results
+audit-report.json
 
 # Environment files
 .env

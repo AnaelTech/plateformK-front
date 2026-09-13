@@ -1,16 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
     <title>Klassio</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.png" />
-    <!-- Polyfill for sockjs-client -->
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>
-      eruda.init();
+      // Polyfill `global` requis par sockjs-client (équivalent navigateur de globalThis).
       window.global = window;
+    </script>
+    <!-- Applique le mode sombre enregistré avant le rendu (évite le flash) -->
+    <script>
+      try {
+        var klassioTheme = localStorage.getItem('klassio-theme');
+        var klassioDark =
+          klassioTheme === 'dark' ||
+          (klassioTheme === null &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', klassioDark);
+        document.documentElement.style.colorScheme = klassioDark
+          ? 'dark'
+          : 'light';
+      } catch (e) {}
     </script>
   </head>
   <body>

@@ -1,18 +1,29 @@
-FROM node:22-alpine
-
+# =========================================================
+# Stage 1 : Build Angular (production)
+# =========================================================
+FROM node:22-alpine AS build
 WORKDIR /app
 
-# Copier les fichiers de dépendances
 COPY package*.json ./
+RUN npm ci --legacy-peer-deps
 
-# Installer les dépendances
-RUN npm install --legacy-peer-deps
-
-# Copier le code source
 COPY . .
+RUN npm run build
 
-# Exposer le port
-EXPOSE 4200
+# =========================================================
+# Stage 2 : Nginx servant les fichiers statiques
+# =========================================================
+FROM nginx:alpine
 
-# Commande par défaut
-CMD ["npm", "start"]
+# Configuration nginx (routing SPA, cache, gzip, security headers)
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Build Angular production
+COPY --from=build /app/dist/plateform-k/browser /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q -O /dev/null http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
