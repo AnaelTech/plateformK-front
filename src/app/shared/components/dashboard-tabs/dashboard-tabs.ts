@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 
 import { TabItem } from '../../models/TabItem';
 
@@ -7,6 +7,7 @@ import { TabItem } from '../../models/TabItem';
   standalone: true,
   imports: [],
   templateUrl: './dashboard-tabs.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardTabsComponent {
   // Inputs
