@@ -15,6 +15,7 @@
     "e2e:debug": "npx playwright test --debug",
     "e2e:report": "npx playwright show-report",
     "e2e:install": "npx playwright install --with-deps",
+    "e2e:noauth": "playwright test --project=chromium-no-auth",
     "lint": "ng lint"
   },
   "private": true,
