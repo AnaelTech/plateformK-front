@@ -2,6 +2,7 @@
  * Notification Types - Must match backend enum
  */
 export enum NotificationType {
+  BOOKING_CREATED = 'BOOKING_CREATED',
   BOOKING_CONFIRMED = 'BOOKING_CONFIRMED',
   BOOKING_CANCELLED = 'BOOKING_CANCELLED',
   BOOKING_COMPLETED = 'BOOKING_COMPLETED',
@@ -11,7 +12,6 @@ export enum NotificationType {
   INVOICE_OVERDUE = 'INVOICE_OVERDUE',
   INVOICE_PAID = 'INVOICE_PAID',
   COURS_REMINDER = 'COURS_REMINDER',
-  COURS_COMPLETED = 'COURS_COMPLETED',
   GENERAL = 'GENERAL'
 }
 
@@ -91,6 +91,8 @@ export interface NotificationPage {
  */
 export function getNotificationIcon(type: NotificationType): string {
   switch (type) {
+    case NotificationType.BOOKING_CREATED:
+      return 'calendar';
     case NotificationType.BOOKING_CONFIRMED:
       return 'check-circle';
     case NotificationType.BOOKING_CANCELLED:
@@ -109,8 +111,6 @@ export function getNotificationIcon(type: NotificationType): string {
       return 'dollar-sign';
     case NotificationType.COURS_REMINDER:
       return 'bell';
-    case NotificationType.COURS_COMPLETED:
-      return 'check';
     case NotificationType.GENERAL:
       return 'info';
     default:
@@ -123,17 +123,17 @@ export function getNotificationIcon(type: NotificationType): string {
  */
 export function getNotificationColor(type: NotificationType): string {
   switch (type) {
+    case NotificationType.BOOKING_CREATED:
+    case NotificationType.NEW_AVAILABILITY:
+    case NotificationType.INVOICE_CREATED:
+      return 'text-blue-600';
     case NotificationType.BOOKING_CONFIRMED:
     case NotificationType.BOOKING_COMPLETED:
     case NotificationType.INVOICE_PAID:
-    case NotificationType.COURS_COMPLETED:
       return 'text-green-600';
     case NotificationType.BOOKING_CANCELLED:
     case NotificationType.INVOICE_OVERDUE:
       return 'text-red-600';
-    case NotificationType.NEW_AVAILABILITY:
-    case NotificationType.INVOICE_CREATED:
-      return 'text-blue-600';
     case NotificationType.INVOICE_DUE_SOON:
     case NotificationType.COURS_REMINDER:
       return 'text-yellow-600';
