@@ -60,7 +60,8 @@ export class NotificationItemComponent {
     // Navigate if action URL exists
     if (this.notification.actionUrl) {
       this.navigate.emit();
-      this.router.navigate([this.notification.actionUrl]);
+      // Use navigateByUrl to correctly handle full paths like '/dashboard/booking/123'
+      this.router.navigateByUrl(this.notification.actionUrl);
     }
   }
 

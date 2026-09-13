@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -15,7 +15,7 @@ import { PasswordResetService } from '../../shared/services/password-reset.servi
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './components/reset-password.component.html',
 })
 export class ResetPasswordComponent implements OnInit {
@@ -56,10 +56,10 @@ export class ResetPasswordComponent implements OnInit {
 
   private validateToken(token: string): void {
     this.passwordResetService.validateToken(token).subscribe({
-      next: (response) => {
+      next: (isValid) => {
         this.isValidatingToken.set(false);
-        this.isTokenValid.set(response.valid);
-        if (!response.valid) {
+        this.isTokenValid.set(isValid);
+        if (!isValid) {
           this.errorMessage.set('Ce lien a expiré ou est invalide');
         }
       },

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -15,7 +15,7 @@ import { TypeUser } from '../../shared/models/User';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './components/login.component.html', // ou './login.component.html'
 })
 export class LoginComponent {
@@ -80,9 +80,9 @@ export class LoginComponent {
         let redirectPath = '/dashboard';
 
         if (user?.typeUser === TypeUser.PARENT) {
-          redirectPath = '/dashboard/parent';
+          redirectPath = '/parent-dashboard';
         } else if (user?.typeUser === TypeUser.ELEVE) {
-          redirectPath = '/dashboard/eleve';
+          redirectPath = '/student-dashboard';
         }
 
         this.router.navigate([redirectPath]);

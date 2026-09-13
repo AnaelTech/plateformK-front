@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NotificationService } from '../../services/notification.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -12,7 +12,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.scss'],
   animations: [

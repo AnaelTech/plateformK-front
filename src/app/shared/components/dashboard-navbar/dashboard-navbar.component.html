@@ -1,4 +1,4 @@
-<nav class="bg-linear-to-r from-purple-600 to-pink-600 shadow-lg">
+<nav class="bg-linear-to-r from-blue-600 to-blue-600 shadow-lg">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       <div class="flex items-center gap-3">
@@ -18,7 +18,7 @@
         </div>
         <div class="text-white">
           <h1 class="text-xl font-bold">KLASSIO</h1>
-          <p class="text-xs text-purple-100">{{ title() }}</p>
+          <p class="text-xs text-blue-100">{{ title() }}</p>
         </div>
       </div>
 
@@ -37,7 +37,7 @@
             aria-haspopup="true"
             [attr.aria-expanded]="showDropdown()"
             aria-controls="user-dropdown-menu"
-            class="flex items-center gap-3 pl-4 border-l border-purple-400 cursor-pointer w-full bg-transparent border-0"
+            class="flex items-center gap-3 pl-4 border-l border-blue-400 cursor-pointer w-full bg-transparent border-0"
             (click)="toggleDropdown()"
             (keydown.enter)="toggleDropdown()"
             (keydown.space)="$event.preventDefault(); toggleDropdown()"
@@ -45,7 +45,7 @@
           >
             <div class="text-right">
               <p class="text-white font-semibold text-sm">{{ fullName() }}</p>
-              <p class="text-purple-100 text-xs">
+              <p class="text-blue-100 text-xs">
                 {{ getDashboardSubtitle() }}
               </p>
             </div>
@@ -53,7 +53,7 @@
               class="w-10 h-10 bg-white rounded-full flex items-center justify-center"
               aria-hidden="true"
             >
-              <span class="text-purple-600 font-bold">{{ initials() }}</span>
+              <span class="text-blue-600 font-bold">{{ initials() }}</span>
             </div>
           </button>
 

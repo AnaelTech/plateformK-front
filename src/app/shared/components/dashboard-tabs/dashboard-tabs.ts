@@ -1,18 +1,18 @@
 import { Component, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TabItem } from '../../models/TabItem';
 
 @Component({
   selector: 'app-dashboard-tabs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './dashboard-tabs.component.html',
 })
 export class DashboardTabsComponent {
   // Inputs
   tabs = input.required<TabItem[]>();
   activeTab = input.required<string>();
-  color = input<string>('purple'); // Couleur du thème: 'purple', 'indigo', 'blue', etc.
+  color = input<string>('blue'); // Couleur du thème: 'blue', 'indigo', etc.
 
   // Outputs
   tabChange = output<string>();

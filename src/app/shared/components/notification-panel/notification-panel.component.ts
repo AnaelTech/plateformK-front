@@ -5,7 +5,7 @@ import {
   inject,
   computed,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NotificationApiService } from '../../services/notification-api.service';
 import { NotificationItemComponent } from '../notification-item/notification-item.component';
 
@@ -16,7 +16,7 @@ import { NotificationItemComponent } from '../notification-item/notification-ite
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
-  imports: [CommonModule, NotificationItemComponent],
+  imports: [NotificationItemComponent],
   templateUrl: './notification-panel.component.html',
   styleUrls: ['./notification-panel.component.css'],
 })

@@ -35,7 +35,7 @@
         <textarea
           id="notionsCovered"
           name="notionsCovered"
-          [(ngModel)]="notionsCoveredValue"
+          [ngModel]="notionsCovered()"
           (ngModelChange)="notionsCovered.set($event)"
           placeholder="Ex: Théorème de Pythagore, équations du second degré..."
           rows="3"
@@ -55,7 +55,7 @@
         <textarea
           id="teacherFeedback"
           name="teacherFeedback"
-          [(ngModel)]="teacherFeedbackValue"
+          [ngModel]="teacherFeedback()"
           (ngModelChange)="teacherFeedback.set($event)"
           placeholder="Votre appréciation sur la séance, le comportement de l'élève, les progrès réalisés..."
           rows="5"

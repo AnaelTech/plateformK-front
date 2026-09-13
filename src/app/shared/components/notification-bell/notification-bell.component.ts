@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { NotificationApiService } from '../../services/notification-api.service';
 import { WebSocketNotificationService } from '../../services/websocket-notification.service';
 import { NotificationPanelComponent } from '../notification-panel/notification-panel.component';
@@ -12,7 +12,7 @@ import { NotificationPanelComponent } from '../notification-panel/notification-p
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
-  imports: [CommonModule, NotificationPanelComponent],
+  imports: [NotificationPanelComponent],
   templateUrl: './notification-bell.component.html',
   styleUrls: ['./notification-bell.component.css'],
 })

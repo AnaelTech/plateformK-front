@@ -6,13 +6,13 @@ import {
   computed,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AvailabilitySlot } from '../../models/Availability';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css',
 })
@@ -85,7 +85,12 @@ export class CalendarComponent {
     });
   }
 
-  getDateAriaLabel(dateInfo: { dateString: string; isToday: boolean; isSelected: boolean; isCurrentMonth: boolean }): string {
+  getDateAriaLabel(dateInfo: {
+    dateString: string;
+    isToday: boolean;
+    isSelected: boolean;
+    isCurrentMonth: boolean;
+  }): string {
     const date = new Date(dateInfo.dateString);
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',

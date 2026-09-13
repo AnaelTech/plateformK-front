@@ -1,0 +1,127 @@
+<div
+  class="modal-overlay"
+  (click)="onClose()"
+  tabindex="0"
+  (keyup.enter)="onClose()"
+  (keyup.space)="onClose()"
+>
+  <div
+    class="modal-content"
+    (click)="$event.stopPropagation()"
+    tabindex="0"
+    (keyup.enter)="$event.stopPropagation()"
+    (keyup.space)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2>Détails du cours</h2>
+      <button class="close-btn" (click)="onClose()" aria-label="Fermer">
+        ×
+      </button>
+    </div>
+
+    <div class="modal-body">
+      @if (booking()) {
+        <!-- Course Information -->
+        <div class="section">
+          <h3 class="section-title">📚 Informations du cours</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Matière</span>
+              <span class="value">{{ booking()!.coursMatiere }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Titre</span>
+              <span class="value">{{ booking()!.coursTitre }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Date</span>
+              <span class="value">{{ formatDate(booking()!.coursDate) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Durée</span>
+              <span class="value">{{ booking()!.coursDureeMinutes }} min</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Tarif</span>
+              <span class="value">{{ booking()!.coursTarif }}€</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Statut</span>
+              <span
+                class="status-badge"
+                [class]="'status-' + booking()!.status.toLowerCase()"
+              >
+                {{ getStatusLabel(booking()!.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Participants -->
+        <div class="section">
+          <h3 class="section-title">👥 Participants</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Élève</span>
+              <span class="value">{{ booking()!.eleveName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Parent</span>
+              <span class="value">{{ booking()!.parentName }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes from parent -->
+        @if (booking()!.notes) {
+          <div class="section">
+            <h3 class="section-title">📝 Notes du parent</h3>
+            <div class="notes-box">
+              {{ booking()!.notes }}
+            </div>
+          </div>
+        }
+
+        <!-- Teacher feedback (only if completed) -->
+        @if (booking()!.status === 'COMPLETED') {
+          @if (booking()!.notionsCovered || booking()!.teacherFeedback) {
+            <div class="section feedback-section">
+              <h3 class="section-title">✅ Bilan du professeur</h3>
+
+              @if (booking()!.notionsCovered) {
+                <div class="feedback-item">
+                  <h4 class="feedback-label">Notions abordées</h4>
+                  <div class="feedback-box notions">
+                    {{ booking()!.notionsCovered }}
+                  </div>
+                </div>
+              }
+
+              @if (booking()!.teacherFeedback) {
+                <div class="feedback-item">
+                  <h4 class="feedback-label">Appréciation</h4>
+                  <div class="feedback-box appreciation">
+                    {{ booking()!.teacherFeedback }}
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="section">
+              <div class="empty-feedback">
+                <span class="empty-icon">ℹ️</span>
+                <p>
+                  Le professeur n'a pas encore ajouté de commentaire pour ce cours.
+                </p>
+              </div>
+            </div>
+          }
+        }
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-primary" (click)="onClose()">Fermer</button>
+    </div>
+  </div>
+</div>

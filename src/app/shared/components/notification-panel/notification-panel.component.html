@@ -13,9 +13,9 @@
             type="button"
             (click)="onMarkAllAsRead()"
             class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            title="Mark all as read"
+            title="Tout marquer comme lu"
           >
-            Mark all as read
+            Tout marquer comme lu
           </button>
         }
 
@@ -24,7 +24,7 @@
           type="button"
           (click)="onClose()"
           class="text-gray-400 hover:text-gray-600"
-          title="Close"
+          title="Fermer"
         >
           <svg
             class="w-5 h-5"
@@ -46,9 +46,7 @@
     <!-- Unread Count Badge -->
     @if (unreadCount() > 0) {
       <p class="mt-1 text-sm text-gray-600">
-        You have {{ unreadCount() }} unread notification{{
-          unreadCount() > 1 ? "s" : ""
-        }}
+        Vous avez {{ unreadCount() }} notification{{ unreadCount() > 1 ? "s" : "" }} non lue{{ unreadCount() > 1 ? "s" : "" }}
       </p>
     }
   </div>
@@ -86,7 +84,7 @@
           (click)="onClose()"
           class="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium"
         >
-          Close
+          Fermer
         </button>
       </div>
     }
@@ -107,8 +105,8 @@
             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
           />
         </svg>
-        <p class="text-sm font-medium text-gray-900 mb-1">No notifications</p>
-        <p class="text-xs text-gray-500">You're all caught up!</p>
+        <p class="text-sm font-medium text-gray-900 mb-1">Aucune notification</p>
+        <p class="text-xs text-gray-500">Vous \u00eates \u00e0 jour !</p>
       </div>
     }
 
@@ -125,16 +123,20 @@
     }
   </div>
 
-  <!-- Footer (Optional - View All Link) -->
+  <!-- Footer (Optional - Mark All as Read shortcut) -->
   @if (hasNotifications() && !loading()) {
     <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
-      <a
-        href="/notifications"
-        class="block text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
-        (click)="onClose()"
-      >
-        View all notifications
-      </a>
+      @if (unreadCount() > 0) {
+        <button
+          type="button"
+          (click)="onMarkAllAsRead()"
+          class="block w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+        >
+          Tout marquer comme lu
+        </button>
+      } @else {
+        <p class="text-center text-sm text-gray-500">Toutes les notifications sont lues</p>
+      }
     </div>
   }
 </div>

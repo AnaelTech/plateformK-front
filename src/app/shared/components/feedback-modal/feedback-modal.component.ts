@@ -1,5 +1,5 @@
-import { Component, signal, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, output, effect } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 
 export interface FeedbackModalData {
@@ -10,14 +10,11 @@ export interface FeedbackModalData {
 @Component({
   selector: 'app-feedback-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './feedback-modal.component.html',
   styleUrls: ['./feedback-modal.component.css'],
 })
 export class FeedbackModalComponent {
-  notionsCoveredValue = '';
-  teacherFeedbackValue = '';
-
   notionsCovered = signal('');
   teacherFeedback = signal('');
   errorMessage = signal('');
@@ -28,9 +25,9 @@ export class FeedbackModalComponent {
   isValid = signal(false);
 
   constructor() {
-    setInterval(() => {
+    effect(() => {
       this.isValid.set(this.teacherFeedback().trim().length > 0);
-    }, 100);
+    });
   }
 
   onSubmit(): void {

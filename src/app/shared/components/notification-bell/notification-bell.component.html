@@ -3,7 +3,7 @@
   <button
     type="button"
     (click)="togglePanel()"
-    class="relative p-2 text-white hover:text-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-lg transition-colors duration-200"
+    class="relative p-2 text-white hover:text-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-lg transition-colors duration-200"
     [attr.aria-label]="
       'Notifications' + (hasUnread() ? ' (' + unreadCount() + ' unread)' : '')
     "
@@ -37,7 +37,7 @@
   <!-- Notification Panel -->
   @if (isPanelOpen()) {
     <div class="absolute right-0 mt-2 z-50">
-      <app-notification-panel (close)="closePanel()" />
+      <app-notification-panel (buttonClose)="closePanel()" />
     </div>
   }
 

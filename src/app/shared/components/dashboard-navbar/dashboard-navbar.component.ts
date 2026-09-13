@@ -4,13 +4,13 @@ import {
   signal,
   computed,
   input,
-  Output,
-  EventEmitter,
+  output,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { User } from '../../models/User';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
+import { getInitials } from '../../utils/string.utils';
 
 export enum DashboardType {
   PARENT = 'PARENT',
@@ -21,7 +21,7 @@ export enum DashboardType {
 @Component({
   selector: 'app-dashboard-navbar',
   standalone: true,
-  imports: [CommonModule, NotificationBellComponent],
+  imports: [NotificationBellComponent],
   templateUrl: './dashboard-navbar.component.html',
 })
 export class DashboardNavbarComponent {
@@ -35,9 +35,9 @@ export class DashboardNavbarComponent {
   readonly showNotifications = input<boolean>(true);
   readonly notificationCount = input<number>(0);
 
-  // Outputs - Utilisez @Output avec EventEmitter (approche classique)
-  @Output() settings = new EventEmitter<void>();
-  @Output() logout = new EventEmitter<void>();
+  // Outputs
+  readonly settings = output<void>();
+  readonly logout = output<void>();
 
   // State
   readonly showDropdown = signal<boolean>(false);
@@ -45,7 +45,7 @@ export class DashboardNavbarComponent {
   // Computed
   readonly initials = computed(() => {
     const user = this.user();
-    return user ? this.getInitials(user.firstName, user.lastName) : 'NA';
+    return user ? getInitials(`${user.firstName} ${user.lastName}`) : 'NA';
   });
 
   readonly fullName = computed(() => {
@@ -82,12 +82,6 @@ export class DashboardNavbarComponent {
 
   onProfilClick(): void {
     this.router.navigate(['/profile']);
-  }
-
-  getInitials(firstName: string, lastName: string): string {
-    return `${firstName?.charAt(0) || ''}${
-      lastName?.charAt(0) || ''
-    }`.toUpperCase();
   }
 
   getDashboardSubtitle(): string {
