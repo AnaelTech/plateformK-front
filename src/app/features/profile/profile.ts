@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 
 import {
   ReactiveFormsModule,
@@ -67,11 +67,11 @@ export class Profile implements OnInit {
   });
 
   // Computed
-  readonly emailChanged = computed(() => {
+  emailChanged(): boolean {
     const profile = this.profile();
     const formEmail = this.profileForm.get('email')?.value;
-    return profile && formEmail && profile.email !== formEmail;
-  });
+    return !!(profile && formEmail && profile.email !== formEmail);
+  }
 
   ngOnInit(): void {
     this.loadProfile();
