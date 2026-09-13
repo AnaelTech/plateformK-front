@@ -9,6 +9,7 @@ import { EmailValidationService } from '../../shared/services/email-validation.s
 import { NotificationService } from '../../shared/services/notification.service';
 import { UserService } from '../../shared/services/user.service';
 import { TypeUser, User } from '../../shared/models/User';
+import { resetSpies } from '../../testing/spies';
 
 describe('Profile', () => {
   let fixture: ComponentFixture<Profile>;
@@ -50,19 +51,13 @@ describe('Profile', () => {
 
   beforeEach(async () => {
     currentUser.set({ ...mockUser, typeUser: TypeUser.PARENT });
-    for (const spy of [
-      profileServiceMock.getProfile,
-      profileServiceMock.updateProfile,
-      profileServiceMock.changePassword,
-      emailValidationServiceMock.sendValidationCode,
-      emailValidationServiceMock.validateCode,
-      notificationServiceMock.success,
-      notificationServiceMock.error,
-      userServiceMock.refreshCurrentUser,
-      routerMock.navigate,
-    ]) {
-      spy.calls.reset();
-    }
+    resetSpies(
+      profileServiceMock,
+      emailValidationServiceMock,
+      notificationServiceMock,
+      userServiceMock,
+      routerMock,
+    );
     profileServiceMock.getProfile.and.returnValue(of(mockUser));
     await TestBed.configureTestingModule({
       providers: [

@@ -8,6 +8,7 @@ import { WebSocketNotificationService } from '../../shared/services/websocket-no
 import { UserService } from '../../shared/services/user.service';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { TypeUser, User } from '../../shared/models/User';
+import { resetSpies } from '../../testing/spies';
 
 describe('Settings', () => {
   let fixture: ComponentFixture<Settings>;
@@ -47,6 +48,13 @@ describe('Settings', () => {
   const routerMock = { navigate: jasmine.createSpy('navigate') };
 
   beforeEach(async () => {
+    resetSpies(
+      settingsServiceMock,
+      websocketServiceMock,
+      userServiceMock,
+      authServiceMock,
+      routerMock,
+    );
     currentUser.set(null);
     darkMode.set(false);
     browserNotifications.set(false);

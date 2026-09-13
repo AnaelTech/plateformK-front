@@ -10,6 +10,7 @@ import { BookingService } from '../../../shared/services/booking.service';
 import { NotificationApiService } from '../../../shared/services/notification-api.service';
 import { WebSocketNotificationService } from '../../../shared/services/websocket-notification.service';
 import { User } from '../../../shared/models/User';
+import { resetSpies } from '../../../testing/spies';
 
 describe('StudentDashboard', () => {
   let fixture: ComponentFixture<StudentDashboard>;
@@ -47,6 +48,14 @@ describe('StudentDashboard', () => {
   const routerMock = { navigate: jasmine.createSpy('navigate') };
 
   beforeEach(async () => {
+    resetSpies(
+      userServiceMock,
+      bookingServiceMock,
+      authServiceMock,
+      notificationApiMock,
+      websocketServiceMock,
+      routerMock,
+    );
     currentUser.set(null);
     latestNotification.set(null);
     await TestBed.configureTestingModule({
