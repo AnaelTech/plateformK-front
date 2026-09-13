@@ -421,12 +421,12 @@ export class TeacherDashboard implements OnInit {
   private loadStats(): Observable<unknown> {
     return forkJoin({
       bookingStats: this.bookingService.getBookingStats(),
-      studentsCount: this.userService.getAllUsers(TypeUser.ELEVE),
+      studentsCount: this.userService.getUsersCount(TypeUser.ELEVE),
     }).pipe(
       map(({ bookingStats, studentsCount }) => {
         // Calculate stats from booking data
         this.stats.set({
-          totalStudents: studentsCount?.length || 0,
+          totalStudents: studentsCount || 0,
           monthlyRevenue: 0, // Will be calculated after bookings are loaded
           pendingBookings: bookingStats?.pendingBookings || 0,
           completedBookings: bookingStats?.completedBookings || 0,

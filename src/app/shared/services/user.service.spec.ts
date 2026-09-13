@@ -191,6 +191,52 @@ describe('UserService', () => {
     }));
   });
 
+  describe('getUsersCount', () => {
+    it('should fetch the user count for a type', fakeAsync(() => {
+      let count: number | undefined;
+      service.getUsersCount(TypeUser.ELEVE).subscribe((value) => (count = value));
+
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/v1/users/count?type=ELEVE',
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush({ typeUser: TypeUser.ELEVE, count: 7 });
+      tick();
+
+      expect(count).toBe(7);
+    }));
+  });
+
+  describe('getUserNamesByIds', () => {
+    it('should fetch names in a single batched request', fakeAsync(() => {
+      let names: Map<number, string> | undefined;
+      service
+        .getUserNamesByIds([1, 2, 1])
+        .subscribe((value) => (names = value));
+
+      const req = httpMock.expectOne(
+        (r) => r.url === 'http://localhost:8080/api/v1/users/names',
+      );
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('ids')).toBe('1,2');
+      req.flush([
+        { id: 1, firstName: 'John', lastName: 'Doe' },
+        { id: 2, firstName: 'Marie', lastName: 'Dupont' },
+      ]);
+      tick();
+
+      expect(names?.get(1)).toBe('John Doe');
+      expect(names?.get(2)).toBe('Marie Dupont');
+    }));
+
+    it('should return an empty map without ids', () => {
+      let names: Map<number, string> | undefined;
+      service.getUserNamesByIds([]).subscribe((value) => (names = value));
+
+      expect(names?.size).toBe(0);
+    });
+  });
+
   describe('getUserById', () => {
     it('should return cached user if available', fakeAsync(() => {
       // First load users

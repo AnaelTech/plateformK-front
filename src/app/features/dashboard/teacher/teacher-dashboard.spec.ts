@@ -28,6 +28,7 @@ describe('TeacherDashboard', () => {
     getCurrentUser: jasmine.createSpy('getCurrentUser').and.returnValue(EMPTY),
     clearCache: jasmine.createSpy('clearCache'),
     getAllUsers: jasmine.createSpy('getAllUsers').and.returnValue(EMPTY),
+    getUsersCount: jasmine.createSpy('getUsersCount').and.returnValue(EMPTY),
     getParentsByStudentId: jasmine
       .createSpy('getParentsByStudentId')
       .and.returnValue(EMPTY),

@@ -1,7 +1,7 @@
 import { logger } from '../../shared/utils/logger';
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, of, forkJoin, map, switchMap } from 'rxjs';
+import { Observable, tap, catchError, of, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Page } from '../models/Page';
 import { User, UserRequest, TypeUser } from '../models/User';
@@ -163,9 +163,8 @@ export class UserService {
   }
 
   /**
-   * Récupère les noms complets des utilisateurs dont les ids sont fournis.
-   * Les ids en cache (users ou currentUser) sont réutilisés ; les échecs individuels
-   * sont ignorés afin de ne pas bloquer l'affichage des autres noms.
+   * Récupère les noms complets des utilisateurs dont les ids sont fournis, en une
+   * seule requête (endpoint batch `/users/names`).
    */
   getUserNamesByIds(ids: number[]): Observable<Map<number, string>> {
     const uniqueIds = [...new Set(ids)].filter((id) => id != null);
@@ -173,23 +172,32 @@ export class UserService {
       return of(new Map());
     }
 
-    return forkJoin(
-      uniqueIds.map((id) =>
-        this.getUserById(id).pipe(
-          catchError(() => of(null)),
-        ),
-      ),
-    ).pipe(
-      map((users) => {
-        const names = new Map<number, string>();
-        users.forEach((user) => {
-          if (user) {
+    const params = new HttpParams().set('ids', uniqueIds.join(','));
+
+    return this.http
+      .get<{ id: number; firstName: string; lastName: string }[]>(`${this.apiUrl}/names`, {
+        params,
+      })
+      .pipe(
+        map((users) => {
+          const names = new Map<number, string>();
+          users.forEach((user) => {
             names.set(user.id, `${user.firstName} ${user.lastName}`);
-          }
-        });
-        return names;
-      }),
-    );
+          });
+          return names;
+        }),
+        catchError(() => of(new Map<number, string>())),
+      );
+  }
+
+  /**
+   * Récupère le nombre d'utilisateurs d'un type donné (endpoint `/users/count`).
+   */
+  getUsersCount(type: TypeUser): Observable<number> {
+    const params = new HttpParams().set('type', type);
+    return this.http
+      .get<{ typeUser: TypeUser; count: number }>(`${this.apiUrl}/count`, { params })
+      .pipe(map((response) => response.count));
   }
 
   /**
