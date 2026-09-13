@@ -13,6 +13,7 @@ import { InvitationService } from '../../../shared/services/invitation.service';
 import { NotificationApiService } from '../../../shared/services/notification-api.service';
 import { WebSocketNotificationService } from '../../../shared/services/websocket-notification.service';
 import { User } from '../../../shared/models/User';
+import { NotificationType } from '../../../shared/models/notification.model';
 import { resetSpies } from '../../../testing/spies';
 
 describe('TeacherDashboard', () => {
@@ -172,5 +173,27 @@ describe('TeacherDashboard', () => {
     component.onSettings();
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/settings']);
+  });
+
+  it('should refresh dashboard data on a booking notification', () => {
+    userServiceMock.getAllUsers.calls.reset();
+    coursServiceMock.getCompletedUnbilledCours.calls.reset();
+
+    latestNotification.set({ type: NotificationType.BOOKING_CREATED });
+
+    fixture.detectChanges();
+
+    expect(userServiceMock.getAllUsers).toHaveBeenCalled();
+    expect(coursServiceMock.getCompletedUnbilledCours).toHaveBeenCalled();
+  });
+
+  it('should refresh invoices on an invoice notification', () => {
+    invoiceServiceMock.getMyInvoices.calls.reset();
+
+    latestNotification.set({ type: NotificationType.INVOICE_PAID });
+
+    fixture.detectChanges();
+
+    expect(invoiceServiceMock.getMyInvoices).toHaveBeenCalled();
   });
 });

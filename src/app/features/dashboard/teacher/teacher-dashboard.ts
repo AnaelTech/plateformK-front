@@ -1,9 +1,9 @@
 import { logger } from '../../../shared/utils/logger';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, inject, signal, computed, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, computed, untracked, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, map, catchError, of, Observable, interval, Subscription } from 'rxjs';
+import { forkJoin, map, catchError, of, Observable } from 'rxjs';
 import { UserService } from '../../../shared/services/user.service';
 import { BookingService } from '../../../shared/services/booking.service';
 import {
@@ -14,6 +14,8 @@ import {
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { InvitationService } from '../../../shared/services/invitation.service';
 import { CoursService } from '../../../shared/services/cours.service';
+import { WebSocketNotificationService } from '../../../shared/services/websocket-notification.service';
+import { NotificationType } from '../../../shared/models/notification.model';
 import { TypeUser, User } from '../../../shared/models/User';
 
 type ExtendedUser = User & {
@@ -78,7 +80,7 @@ export enum Tab {
   templateUrl: './components/teacher-dashboard.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TeacherDashboard implements OnInit, OnDestroy {
+export class TeacherDashboard implements OnInit {
   private readonly userService = inject(UserService);
   private readonly bookingService = inject(BookingService);
   private readonly invoiceService = inject(InvoiceService);
@@ -88,6 +90,37 @@ export class TeacherDashboard implements OnInit, OnDestroy {
   private readonly datePipe = inject(DateFormatPipe);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly websocketService = inject(WebSocketNotificationService);
+
+  constructor() {
+    // Mise à jour temps réel sans recharger la page, déclenchée par les
+    // notifications WebSocket (réservations, factures).
+    effect(() => {
+      const notification = this.websocketService.latestNotification();
+      if (!notification) return;
+
+      untracked(() => {
+        if (
+          notification.type === NotificationType.BOOKING_CREATED ||
+          notification.type === NotificationType.BOOKING_CONFIRMED ||
+          notification.type === NotificationType.BOOKING_CANCELLED ||
+          notification.type === NotificationType.BOOKING_COMPLETED
+        ) {
+          this.loadDashboardData();
+          this.loadCompletedUnbilledCours();
+          this.loadAvailabilities();
+        }
+
+        if (
+          notification.type === NotificationType.INVOICE_CREATED ||
+          notification.type === NotificationType.INVOICE_PAID ||
+          notification.type === NotificationType.INVOICE_OVERDUE
+        ) {
+          this.loadInvoices().subscribe();
+        }
+      });
+    });
+  }
 
   private readonly _bookings = signal<BookingDisplay[]>([]);
 
@@ -135,8 +168,6 @@ export class TeacherDashboard implements OnInit, OnDestroy {
       icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
     },
   ];
-
-  private availabilityRefreshSubscription: Subscription | undefined;
 
   // Loading and error states
   loading = signal(false);
@@ -314,19 +345,6 @@ export class TeacherDashboard implements OnInit, OnDestroy {
         this.activeTab.set(tabId);
       }
     });
-
-    // Rafraîchir les disponibilités toutes les 30 secondes
-    this.availabilityRefreshSubscription = interval(30000).subscribe(() => {
-      if (this.currentUser()) {
-        this.loadAvailabilities();
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.availabilityRefreshSubscription) {
-      this.availabilityRefreshSubscription.unsubscribe();
-    }
   }
 
   private loadCurrentUser(): void {
