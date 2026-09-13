@@ -1,8 +1,11 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, of, forkJoin, map } from 'rxjs';
+import { Observable, tap, catchError, of, forkJoin, map, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, UserRequest } from '../models/User';
+import { Page } from '../models/Page';
+import { User, UserRequest, TypeUser } from '../models/User';
+
+const MAX_USER_PAGES = 500;
 
 @Injectable({
   providedIn: 'root',
@@ -77,6 +80,43 @@ export class UserService {
           throw error;
         }),
       );
+  }
+
+  /**
+   * Récupère l'intégralité des utilisateurs en enchaînant les pages.
+   *
+   * L'API plafonne la taille de page (100) : demander une taille supérieure
+   * ne renvoie que la première page. Cette méthode boucle sur `hasNext` afin
+   * d'éviter toute troncature silencieuse (listes élèves/parents, statistiques).
+   *
+   * @param type filtre optionnel sur le type d'utilisateur
+   * @returns la liste complète des utilisateurs (filtrée le cas échéant)
+   */
+  getAllUsers(type?: TypeUser, pageSize = 100): Observable<User[]> {
+    const fetchPage = (page: number, acc: User[]): Observable<User[]> =>
+      this.http
+        .get<Page<User>>(this.apiUrl, {
+          params: new HttpParams()
+            .set('page', page.toString())
+            .set('size', pageSize.toString())
+            .set('sortBy', 'id')
+            .set('direction', 'ASC'),
+        })
+        .pipe(
+          switchMap((response) => {
+            const users = response?.data ?? [];
+            const all = [...acc, ...users];
+            const hasMore =
+              response?.pagination?.hasNext === true &&
+              users.length > 0 &&
+              page < MAX_USER_PAGES;
+            return hasMore ? fetchPage(page + 1, all) : of(all);
+          }),
+        );
+
+    return fetchPage(0, []).pipe(
+      map((users) => (type ? users.filter((u) => u.typeUser === type) : users)),
+    );
   }
 
   getUserById(id: number): Observable<User> {

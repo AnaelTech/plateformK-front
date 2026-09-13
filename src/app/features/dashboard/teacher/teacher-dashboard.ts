@@ -401,14 +401,12 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   private loadStats(): Observable<unknown> {
     return forkJoin({
       bookingStats: this.bookingService.getBookingStats(),
-      studentsCount: this.userService.getUsers(0, 1000),
+      studentsCount: this.userService.getAllUsers(TypeUser.ELEVE),
     }).pipe(
       map(({ bookingStats, studentsCount }) => {
         // Calculate stats from booking data
         this.stats.set({
-          totalStudents:
-            studentsCount?.data.filter((u: unknown) => (u as User).typeUser === 'ELEVE')
-              .length || 0,
+          totalStudents: studentsCount?.length || 0,
           monthlyRevenue: 0, // Will be calculated after bookings are loaded
           pendingBookings: bookingStats?.pendingBookings || 0,
           completedBookings: bookingStats?.completedBookings || 0,
@@ -430,10 +428,8 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadParents(): Observable<unknown[]> {
-    return this.userService.getUsers(0, 1000).pipe(
-      map((response) => {
-        const parents =
-          response?.data.filter((u: unknown) => (u as User).typeUser === 'PARENT') || [];
+    return this.userService.getAllUsers(TypeUser.PARENT).pipe(
+      map((parents) => {
         this.parents.set(parents);
         return parents;
       }),
@@ -446,20 +442,17 @@ export class TeacherDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadStudents(): Observable<unknown[]> {
-    return this.userService.getUsers(0, 100).pipe(
-      map((response) => {
-        const eleves =
-          response?.data
-            .filter((u: unknown) => (u as User).typeUser === 'ELEVE')
-            .map((eleve: unknown) => ({
-              ...(eleve as User),
-              name: `${(eleve as User).firstName} ${(eleve as User).lastName}`,
-              level: this.getStudentLevel(eleve as User),
-              parent: '',
-              nextSession: null,
-            })) || [];
-        this.students.set(eleves);
-        return eleves;
+    return this.userService.getAllUsers(TypeUser.ELEVE).pipe(
+      map((eleves) => {
+        const students = eleves.map((eleve) => ({
+          ...eleve,
+          name: `${eleve.firstName} ${eleve.lastName}`,
+          level: this.getStudentLevel(eleve),
+          parent: '',
+          nextSession: null,
+        }));
+        this.students.set(students);
+        return students;
       }),
       catchError((error) => {
         console.error('Failed to load students:', error);
