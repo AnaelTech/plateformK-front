@@ -15,6 +15,9 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
+      "no-console": "error",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@angular-eslint/prefer-on-push-component-change-detection": "error",
       "@angular-eslint/directive-selector": [
         "error",
         {
@@ -31,6 +34,12 @@ module.exports = defineConfig([
           style: "kebab-case",
         },
       ],
+    },
+  },
+  {
+    files: ["**/*.spec.ts", "src/app/shared/utils/logger.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   {
