@@ -2,137 +2,146 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { environment } from '../../../../environments/environment';
 
 /**
- * HTTP Error Interceptor
+ * Intercepteur d'erreurs HTTP global.
  *
- * Handles all HTTP errors globally and provides consistent error handling.
- * Displays user-friendly messages via notification service.
+ * Affiche un message utilisateur (français) via NotificationService et rejette
+ * l'erreur d'origine (`HttpErrorResponse`) afin que les composants puissent lire
+ * `err.status` et `err.error.message`. Les logs console sont désactivés en production.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const notificationService: NotificationService = inject(NotificationService);
 
+  const logError = (...args: unknown[]): void => {
+    if (!environment.production) {
+      console.error(...args);
+    }
+  };
+
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      let errorMessage = 'An unexpected error occurred';
-
       if (error.error instanceof ErrorEvent) {
-        // Client-side or network error
-        errorMessage = `Network Error: ${error.error.message}`;
-        console.error('Client-side error:', error.error.message);
-      } else if (error.error instanceof SyntaxError) {
-        // JSON parsing error - likely server returned HTML or malformed JSON
-        errorMessage = 'Server Error: Invalid response format received';
-        console.error('JSON Parse Error:', error.error.message, 'Response:', error.error);
-        notificationService.error(errorMessage, 5000);
+        // Erreur réseau / côté client
+        logError('Erreur client :', error.error.message);
+        notificationService.error(
+          'Erreur réseau : impossible de contacter le serveur.',
+          5000,
+        );
       } else {
-        // Backend error
         switch (error.status) {
           case 400:
-            errorMessage =
-              error.error?.message || 'Bad Request: Invalid data submitted';
-            console.error('Bad Request (400):', error.error);
+            notificationService.error(
+              error.error?.message || 'Requête invalide : données incorrectes.',
+            );
+            logError('Requête invalide (400) :', error.error);
             break;
 
           case 401:
-            // Handled by authInterceptor (token refresh)
-            // Only show notification if refresh fails
-            if (req.url.includes('/auth/refresh-token')) {
-              errorMessage = 'Session expired. Please log in again.';
-              console.error('Authentication failed (401)');
-              notificationService.error(errorMessage, 5000);
+            // Géré par authInterceptor (refresh). Notifier uniquement si le refresh échoue.
+            if (req.url.includes('/auth/refresh')) {
+              logError('Authentification échouée (401)');
+              notificationService.error(
+                'Session expirée. Veuillez vous reconnecter.',
+                5000,
+              );
             }
             break;
 
           case 403:
-            errorMessage =
-              'Access Denied: You do not have permission to perform this action';
-            console.error('Forbidden (403):', error.url);
-            notificationService.error(errorMessage, 5000);
+            notificationService.error(
+              "Accès refusé : vous n'avez pas la permission d'effectuer cette action.",
+              5000,
+            );
+            logError('Accès refusé (403) :', error.url);
             break;
 
           case 404:
-            errorMessage = error.error?.message || 'Resource not found';
-            console.error('Not Found (404):', error.url);
-            notificationService.error(errorMessage);
+            notificationService.error(
+              error.error?.message || 'Ressource introuvable.',
+            );
+            logError('Ressource introuvable (404) :', error.url);
             break;
 
           case 409:
-            errorMessage =
-              error.error?.message || 'Conflict: Resource already exists';
-            console.error('Conflict (409):', error.error);
-            notificationService.warning(errorMessage);
+            notificationService.warning(
+              error.error?.message || 'Conflit : la ressource existe déjà.',
+            );
+            logError('Conflit (409) :', error.error);
             break;
 
           case 422:
-            errorMessage =
-              error.error?.message ||
-              'Validation Error: Please check your input';
-            console.error('Unprocessable Entity (422):', error.error);
-            notificationService.warning(errorMessage);
+            notificationService.warning(
+              error.error?.message || 'Erreur de validation : vérifiez vos saisies.',
+            );
+            logError('Erreur de validation (422) :', error.error);
             break;
 
           case 429: {
-            errorMessage =
+            let message =
               error.error?.message ||
-              'Too many requests. Please try again later.';
+              'Trop de requêtes. Veuillez réessayer plus tard.';
             const retryAfter = error.headers.get('Retry-After');
             if (retryAfter) {
-              errorMessage += ` Retry after ${retryAfter} seconds.`;
+              message += ` Réessayez dans ${retryAfter} secondes.`;
             }
-            console.warn('Rate Limit (429):', errorMessage);
-            notificationService.warning(errorMessage, 5000);
+            notificationService.warning(message, 5000);
+            logError('Limite de requêtes (429) :', message);
             break;
           }
 
           case 500:
-            errorMessage = 'Server Error: Something went wrong on our end';
-            console.error('Internal Server Error (500):', error.error);
-            notificationService.error(errorMessage, 5000);
+            notificationService.error(
+              'Erreur serveur : une erreur interne est survenue.',
+              5000,
+            );
+            logError('Erreur serveur (500) :', error.error);
             break;
 
           case 502:
-            errorMessage = 'Bad Gateway: The server is temporarily unavailable';
-            console.error('Bad Gateway (502)');
-            notificationService.error(errorMessage, 5000);
+            notificationService.error(
+              'Passerelle invalide : le serveur est temporairement indisponible.',
+              5000,
+            );
+            logError('Bad Gateway (502)');
             break;
 
           case 503:
-            errorMessage =
-              'Service Unavailable: The server is under maintenance';
-            console.error('Service Unavailable (503)');
-            notificationService.error(errorMessage, 5000);
+            notificationService.error(
+              'Service indisponible : le serveur est en maintenance.',
+              5000,
+            );
+            logError('Service indisponible (503)');
             break;
 
           case 504:
-            errorMessage =
-              'Gateway Timeout: The request took too long to process';
-            console.error('Gateway Timeout (504)');
-            notificationService.error(errorMessage, 5000);
+            notificationService.error(
+              'Délai dépassé : la requête a pris trop de temps.',
+              5000,
+            );
+            logError('Gateway Timeout (504)');
             break;
 
           case 0:
-            errorMessage =
-              'Network Error: Cannot connect to server. Please check your internet connection.';
-            console.error('Network Error (0): Server unreachable');
-            notificationService.error(errorMessage, 5000);
+            notificationService.error(
+              'Erreur réseau : impossible de joindre le serveur. Vérifiez votre connexion.',
+              5000,
+            );
+            logError('Erreur réseau (0) : serveur injoignable');
             break;
 
           default:
-            errorMessage =
+            notificationService.error(
               error.error?.message ||
-              `Unexpected error occurred (${error.status})`;
-            console.error(`HTTP Error (${error.status}):`, error.error);
-            notificationService.error(errorMessage);
+                `Erreur inattendue (${error.status}).`,
+            );
+            logError(`Erreur HTTP (${error.status}) :`, error.error);
         }
       }
 
-      // Return error observable for component-level handling
-      return throwError(() => ({
-        message: errorMessage,
-        status: error.status,
-        originalError: error,
-      }));
+      // Rejeter l'erreur d'origine pour que les composants gardent `status` et `error`.
+      return throwError(() => error);
     }),
   );
 };

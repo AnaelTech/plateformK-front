@@ -1,5 +1,6 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpTestingController } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService, RegisterRequest } from './auth.service';
 import { UserService } from '../../../shared/services/user.service';
@@ -51,6 +52,8 @@ describe('AuthService', () => {
     TestBed.configureTestingModule({
       imports: [],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         AuthService,
         { provide: Router, useValue: routerSpy },
         { provide: UserService, useValue: userServiceSpy }
@@ -162,9 +165,10 @@ describe('AuthService', () => {
     it('should throw error when no refresh token available', () => {
       localStorage.removeItem('refresh_token');
 
-      expect(() => service.refreshToken()).toThrowError(
-        'No refresh token available'
-      );
+      let error: Error | undefined;
+      service.refreshToken().subscribe({ error: (e) => (error = e) });
+
+      expect(error?.message).toBe('No refresh token available');
     });
   });
 

@@ -7,80 +7,64 @@ import {
   HttpEvent,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import {
-  catchError,
-  switchMap,
-  filter,
-  take,
-  throwError,
-  Observable,
-} from 'rxjs';
+import { catchError, switchMap, filter, take, throwError, Observable } from 'rxjs';
 import { AuthService } from '../../auth/services/auth.service';
 
+/** Endpoints d'authentification qui ne doivent pas déclencher de refresh. */
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout'];
+
 /**
- * Intercepteur HTTP pour gérer le refresh automatique du token JWT
+ * Intercepteur HTTP pour gérer le refresh automatique du token JWT.
  *
- * Fonctionnement:
- * 1. Ajoute le token JWT à chaque requête sortante
- * 2. Intercepte les erreurs 401 (Unauthorized)
- * 3. Tente de rafraîchir le token automatiquement
- * 4. Rejoue la requête initiale avec le nouveau token
- * 5. Si le refresh échoue, redirige vers le login
+ * 1. Ajoute le token JWT à chaque requête sortante (hors endpoints d'auth).
+ * 2. Intercepte les erreurs 401 et tente de rafraîchir le token une seule fois.
+ * 3. Rejoue la requête initiale avec le nouveau token.
+ * 4. En cas d'échec du refresh, termine les requêtes en attente et redirige vers le login.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
-  // Ne pas ajouter le token aux requêtes d'authentification
-  if (
-    req.url.includes('/auth/login') ||
-    req.url.includes('/auth/register') ||
-    req.url.includes('/auth/refresh')
-  ) {
+  // Ne pas gérer le token/refresh pour les endpoints d'authentification
+  // (login, register, refresh, logout) afin d'éviter toute boucle.
+  if (AUTH_ENDPOINTS.some((endpoint) => req.url.includes(endpoint))) {
     return next(req);
   }
 
-  // Ajouter le token JWT à la requête
   const token = authService.getToken();
   if (token && !authService.isTokenExpired(token)) {
     req = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
+      setHeaders: { Authorization: `Bearer ${token}` },
     });
   }
 
-  // Gérer les erreurs et le refresh automatique
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Si erreur 401 et que le token n'est pas déjà en cours de rafraîchissement
-      if (error.status === 401 && !authService.getIsRefreshing()) {
-        return handleTokenRefresh(authService, req, next);
+      if (error.status !== 401) {
+        return throwError(() => error);
       }
 
-      // Si déjà en cours de rafraîchissement, attendre le nouveau token
-      if (error.status === 401 && authService.getIsRefreshing()) {
+      // Un refresh est déjà en cours : attendre le nouveau token.
+      if (authService.getIsRefreshing()) {
         return authService.getRefreshTokenSubject().pipe(
-          filter((token) => token !== null),
+          filter((newToken): newToken is string => newToken !== null),
           take(1),
-          switchMap((token) => {
-            return next(
+          switchMap((newToken) =>
+            next(
               req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${token}`,
-                },
+                setHeaders: { Authorization: `Bearer ${newToken}` },
               }),
-            );
-          }),
+            ),
+          ),
         );
       }
 
-      return throwError(() => error);
+      return handleTokenRefresh(authService, req, next);
     }),
   );
 };
 
 /**
- * Gère le rafraîchissement du token JWT
+ * Gère le rafraîchissement du token JWT.
  */
 function handleTokenRefresh(
   authService: AuthService,
@@ -95,17 +79,18 @@ function handleTokenRefresh(
       authService.setIsRefreshing(false);
       authService.getRefreshTokenSubject().next(response.accessToken);
 
-      // Rejouer la requête initiale avec le nouveau token
       return next(
         req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${response.accessToken}`,
-          },
+          setHeaders: { Authorization: `Bearer ${response.accessToken}` },
         }),
       );
     }),
     catchError((error) => {
       authService.setIsRefreshing(false);
+      // Termine les requêtes en attente (sinon elles restent suspendues),
+      // puis recrée un subject sain pour les prochaines tentatives.
+      authService.getRefreshTokenSubject().error(error);
+      authService.resetRefreshTokenSubject();
       authService.logout('/login');
       return throwError(() => error);
     }),
