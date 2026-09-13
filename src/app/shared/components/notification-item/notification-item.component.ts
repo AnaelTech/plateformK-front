@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   Input,
   Output,
@@ -26,6 +27,7 @@ import {
   imports: [CommonModule],
   templateUrl: './notification-item.component.html',
   styleUrls: ['./notification-item.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationItemComponent {
   @Input({ required: true }) notification!: Notification;
