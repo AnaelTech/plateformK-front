@@ -237,11 +237,11 @@ export class BookingService {
     );
   }
 
-  confirmBooking(id: number, request: { statut: BookingStatus }): Observable<Booking> {
+  confirmBooking(id: number): Observable<Booking> {
     this._loading.set(true);
     this._error.set(null);
 
-    return this.http.put<Booking>(`${this.apiUrl}/${id}/confirm`, request).pipe(
+    return this.http.put<Booking>(`${this.apiUrl}/${id}/confirm`, {}).pipe(
       tap((confirmedBooking) => {
         this._bookings.update((bookings) =>
           bookings.map((booking) =>

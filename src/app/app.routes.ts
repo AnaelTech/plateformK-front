@@ -50,22 +50,6 @@ export const routes: Routes = [
     canActivate: [roleGuard(['ELEVE'])],
   },
   {
-    path: 'dashboard/parent',
-    loadComponent: () =>
-      import('./features/dashboard/parent/parent-dashboard').then(
-        (m) => m.ParentDashboardComponent,
-      ),
-    canActivate: [roleGuard(['PARENT'])],
-  },
-  {
-    path: 'dashboard/eleve',
-    loadComponent: () =>
-      import('./features/dashboard/student/student-dashboard').then(
-        (m) => m.StudentDashboardComponent,
-      ),
-    canActivate: [roleGuard(['ELEVE'])],
-  },
-  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./features/forgot-password/forgot-password').then(
@@ -83,6 +67,12 @@ export const routes: Routes = [
     path: 'profile',
     loadComponent: () =>
       import('./features/profile/profile').then((m) => m.ProfileComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings',
+    loadComponent: () =>
+      import('./features/settings/settings').then((m) => m.SettingsComponent),
     canActivate: [authGuard],
   },
   {

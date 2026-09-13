@@ -1,8 +1,11 @@
-import { Injectable, inject, signal, effect } from '@angular/core';
+import { Injectable, inject, signal, effect, NgZone } from '@angular/core';
 import { Client, IMessage, StompSubscription, Frame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { UserService } from './user.service';
+import { SettingsService } from './settings.service';
+import { User } from '../models/User';
 import { environment } from '../../../environments/environment';
 import { Notification as AppNotification } from '../models/notification.model';
 
@@ -16,6 +19,9 @@ import { Notification as AppNotification } from '../models/notification.model';
 export class WebSocketNotificationService {
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
+  private readonly settings = inject(SettingsService);
+  private readonly router = inject(Router);
+  private readonly ngZone = inject(NgZone);
 
   private stompClient: Client | null = null;
   private subscription: StompSubscription | null = null;
@@ -42,14 +48,15 @@ export class WebSocketNotificationService {
   })();
 
   constructor() {
-    // Auto-connect when user is authenticated
+    // Auto-connect when user is authenticated and real-time notifications are enabled
     effect(() => {
       const user = this.userService.currentUser();
       const isLoggedIn = this.authService.isLoggedIn();
+      const realtimeEnabled = this.settings.realtimeNotifications();
 
-      if (user && isLoggedIn && !this._connected()) {
+      if (user && isLoggedIn && realtimeEnabled && !this._connected()) {
         this.connect();
-      } else if (!isLoggedIn && this._connected()) {
+      } else if ((!isLoggedIn || !realtimeEnabled) && this._connected()) {
         this.disconnect();
       }
     });
@@ -81,7 +88,7 @@ export class WebSocketNotificationService {
 
     // Create STOMP client
     this.stompClient = new Client({
-      webSocketFactory: () => socket as WebSocket,
+      webSocketFactory: () => socket as unknown as WebSocket,
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
@@ -91,7 +98,7 @@ export class WebSocketNotificationService {
       reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
-      onConnect: () => this.onConnect(user.id),
+      onConnect: () => this.onConnect(user),
       onDisconnect: () => this.onDisconnect(),
       onStompError: (frame) => this.onError(frame),
       onWebSocketError: () => this.onWebSocketError(),
@@ -104,15 +111,17 @@ export class WebSocketNotificationService {
   /**
    * Handle successful connection
    */
-  private onConnect(userId: number): void {
+  private onConnect(user: User): void {
     //console.log('[WebSocket] Connected successfully');
     this._connected.set(true);
     this._error.set(null);
     this.reconnectAttempts = 0;
 
-    // Subscribe to user-specific notification queue
-    const destination = `/user/${userId}/queue/notifications`;
-    console.log('[WebSocket] Subscribing to', destination);
+    // Subscribe to user-specific notification queue.
+    // Le backend envoie via convertAndSendToUser(email, ...) : le principal STOMP
+    // est l'email (WebSocketConfig), donc la destination doit utiliser l'email.
+    const destination = `/user/${user.email}/queue/notifications`;
+    //console.log('[WebSocket] Subscribing to', destination);
 
     // Use setTimeout to ensure STOMP client is fully ready
     setTimeout(() => {
@@ -208,14 +217,31 @@ export class WebSocketNotificationService {
 
   /**
    * Show browser notification (requires user permission)
+   * Clicking on it navigates to the notification's actionUrl
    */
   private showBrowserNotification(notification: AppNotification): void {
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(notification.title, {
+      const browserNotification = new Notification(notification.title, {
         body: notification.message,
-        icon: '/assets/logo.png', // Update with your app icon
+        icon: '/assets/logo.png',
         tag: notification.id.toString(),
       });
+
+      // Navigate to actionUrl when the browser notification is clicked
+      if (notification.actionUrl) {
+        browserNotification.onclick = () => {
+          // Focus the window/tab
+          window.focus();
+
+          // Navigate within Angular's zone to trigger change detection
+          this.ngZone.run(() => {
+            this.router.navigateByUrl(notification.actionUrl!);
+          });
+
+          // Close the browser notification
+          browserNotification.close();
+        };
+      }
     }
   }
 

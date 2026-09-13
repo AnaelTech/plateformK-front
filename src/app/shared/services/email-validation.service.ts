@@ -1,10 +1,9 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError } from 'rxjs';
+import { Observable, tap, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   EmailValidationConfirmRequest,
-  EmailValidationStatus,
 } from '../models/email-validation.model';
 
 /**
@@ -75,11 +74,14 @@ export class EmailValidationService {
   }
 
   /**
-   * Vérifie le statut de validation de l'email.
+   * Vérifie si l'email de l'utilisateur connecté est validé.
+   * Le backend retourne HTTP 200 si validé, HTTP 400 sinon (sans body).
+   * Cette méthode retourne un Observable<boolean>.
    */
-  getValidationStatus(): Observable<EmailValidationStatus> {
-    return this.http.get<EmailValidationStatus>(
-      `${this.apiUrl}/validation-status`,
+  getValidationStatus(): Observable<boolean> {
+    return this.http.get<void>(`${this.apiUrl}/validation-status`).pipe(
+      map(() => true),
+      catchError(() => of(false)),
     );
   }
 

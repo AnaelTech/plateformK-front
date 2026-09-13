@@ -1,7 +1,8 @@
 export enum TypeUser {
   PARENT = 'PARENT',
   ELEVE = 'ELEVE',
-  PROFESSEUR = 'PROFESSEUR'
+  PROFESSEUR = 'PROFESSEUR',
+  ADMIN = 'ADMIN'
 }
 
 export interface User {

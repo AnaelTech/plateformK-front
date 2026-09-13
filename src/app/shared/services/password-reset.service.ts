@@ -1,11 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError } from 'rxjs';
+import { Observable, tap, catchError, map, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   PasswordResetRequest,
   PasswordResetConfirmRequest,
-  TokenValidationResponse,
 } from '../models/password-reset.model';
 
 /**
@@ -57,23 +56,26 @@ export class PasswordResetService {
 
   /**
    * Valide un token de réinitialisation.
+   * Le backend retourne HTTP 200 si valide, HTTP 400 sinon (sans body).
+   * Cette méthode retourne un Observable<boolean>.
    */
-  validateToken(token: string): Observable<TokenValidationResponse> {
+  validateToken(token: string): Observable<boolean> {
     this._loading.set(true);
     this._error.set(null);
 
     return this.http
-      .get<TokenValidationResponse>(`${this.apiUrl}/validate-token`, {
+      .get<void>(`${this.apiUrl}/validate-token`, {
         params: { token },
       })
       .pipe(
-        tap(() => {
+        map(() => {
           this._loading.set(false);
+          return true;
         }),
-        catchError((error) => {
+        catchError(() => {
           this._loading.set(false);
-          this._error.set(error.error?.message || 'Token invalide ou expiré');
-          throw error;
+          this._error.set('Token invalide ou expiré');
+          return of(false);
         }),
       );
   }

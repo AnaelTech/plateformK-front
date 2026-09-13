@@ -13,18 +13,14 @@ export interface Invoice {
   description?: string;
   notes?: string;
   studentName?: string;
+  eleveName?: string;          // Nom de l'élève (toujours présent, quel que soit le type)
+  teacherName?: string;        // Nom du professeur émetteur
 
-  // Nouveaux champs pour gérer les types de factures et le paiement
+  // Champs pour gérer les types de factures et le paiement
   invoiceType: 'CLIENT_INVOICE' | 'TEACHER_INVOICE';
   paidAt?: string;
   isPaid: boolean;
   isOverdue: boolean;
-  teacher?: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
 }
 
 export interface CompletedUnbilledCours {
@@ -66,6 +62,22 @@ export class InvoiceService {
   getInvoicePdf(invoiceId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${invoiceId}/pdf`, {
       responseType: 'blob',
+    });
+  }
+
+  downloadInvoicePdf(invoiceId: number): void {
+    this.getInvoicePdf(invoiceId).subscribe({
+      next: (blob) => {
+        const url = globalThis.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `invoice-${invoiceId}.pdf`;
+        link.click();
+        globalThis.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Failed to download invoice:', error);
+      },
     });
   }
 

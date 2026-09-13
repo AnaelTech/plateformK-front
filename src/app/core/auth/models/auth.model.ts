@@ -11,6 +11,15 @@ export interface AuthResponse {
 }
 
 /**
+ * Réponse d'inscription du backend
+ */
+export interface RegisterResponse {
+  id: number;
+  email: string;
+  message: string;
+}
+
+/**
  * Requête de login
  */
 export interface LoginRequest {

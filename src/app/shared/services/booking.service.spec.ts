@@ -320,7 +320,7 @@ describe('BookingService', () => {
         status: BookingStatus.CONFIRMED,
       };
 
-      service.confirmBooking(1, { statut: BookingStatus.CONFIRMED }).subscribe((booking) => {
+      service.confirmBooking(1).subscribe((booking) => {
         expect(booking.status).toBe(BookingStatus.CONFIRMED);
       });
 

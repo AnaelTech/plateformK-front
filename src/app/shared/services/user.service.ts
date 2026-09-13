@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, forkJoin, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, UserRequest } from '../models/User';
 
@@ -146,6 +146,36 @@ export class UserService {
   }
 
   /**
+   * Récupère les noms complets des utilisateurs dont les ids sont fournis.
+   * Les ids en cache (users ou currentUser) sont réutilisés ; les échecs individuels
+   * sont ignorés afin de ne pas bloquer l'affichage des autres noms.
+   */
+  getUserNamesByIds(ids: number[]): Observable<Map<number, string>> {
+    const uniqueIds = [...new Set(ids)].filter((id) => id != null);
+    if (uniqueIds.length === 0) {
+      return of(new Map());
+    }
+
+    return forkJoin(
+      uniqueIds.map((id) =>
+        this.getUserById(id).pipe(
+          catchError(() => of(null)),
+        ),
+      ),
+    ).pipe(
+      map((users) => {
+        const names = new Map<number, string>();
+        users.forEach((user) => {
+          if (user) {
+            names.set(user.id, `${user.firstName} ${user.lastName}`);
+          }
+        });
+        return names;
+      }),
+    );
+  }
+
+  /**
    * Récupère les enfants d'un parent.
    */
   getChildrenByParentId(parentId: number): Observable<User[]> {
@@ -177,7 +207,9 @@ export class UserService {
   }
 
   refreshCurrentUser(): void {
-    this.getCurrentUser().subscribe();
+    this.getCurrentUser().subscribe({
+      error: (e) => console.error('[UserService] Failed to refresh user', e),
+    });
   }
 
   /**

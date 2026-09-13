@@ -57,7 +57,7 @@ export class NotificationApiService {
       .pipe(
         tap({
           next: (response) => {
-            this._notifications.set(response.content);
+            this._notifications.set(response.data);
             this._loading.set(false);
           },
           error: (error) => {
@@ -130,7 +130,7 @@ export class NotificationApiService {
       .pipe(
         tap({
           next: (response) => {
-            this._notifications.set(response.content);
+            this._notifications.set(response.data);
             this._loading.set(false);
           },
           error: (error) => {
@@ -213,14 +213,17 @@ export class NotificationApiService {
       .delete<void>(`${this.apiUrl}/${id}`)
       .pipe(
         tap(() => {
+          // Check if the notification was unread BEFORE removing from cache
+          const deletedNotification = this._notifications().find((n) => n.id === id);
+          const wasUnread = deletedNotification?.status === NotificationStatus.UNREAD;
+
           // Remove from local cache
           this._notifications.update((notifications) =>
             notifications.filter((n) => n.id !== id)
           );
 
           // Update unread count if the deleted notification was unread
-          const deletedNotification = this._notifications().find((n) => n.id === id);
-          if (deletedNotification?.status === NotificationStatus.UNREAD) {
+          if (wasUnread) {
             this._unreadCount.update((count) => Math.max(0, count - 1));
           }
         })
