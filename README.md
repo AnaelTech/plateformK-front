@@ -5,6 +5,7 @@ Application Angular de gestion d'activité de soutien scolaire (professeurs, par
 ## Stack
 
 - **Angular 21** (standalone components, signals, control flow `@if` / `@for`)
+- **Zoneless** (`provideZonelessChangeDetection`) : plus de `zone.js` à l'exécution
 - **TypeScript 5.9**, ESLint (angular-eslint)
 - **Karma + Jasmine** pour les tests unitaires
 - **Playwright** pour les tests E2E
