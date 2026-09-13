@@ -1,9 +1,10 @@
 import {
+  ChangeDetectionStrategy,
   Component,
-  Input,
   Output,
   EventEmitter,
   computed,
+  input,
   signal,
 } from '@angular/core';
 
@@ -15,16 +16,17 @@ import { AvailabilitySlot } from '../../models/Availability';
   imports: [],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarComponent {
-  @Input() availabilities: AvailabilitySlot[] = [];
-  @Input() selectedDate: string | null = null;
+  readonly availabilities = input<AvailabilitySlot[]>([]);
+  readonly selectedDate = input<string | null>(null);
   @Output() dateSelected = new EventEmitter<string>();
 
-  currentMonth = signal(new Date());
-  weekDays = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  readonly currentMonth = signal(new Date());
+  readonly weekDays = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
-  calendarDates = computed(() => {
+  readonly calendarDates = computed(() => {
     const month = this.currentMonth();
     const year = month.getFullYear();
     const monthIndex = month.getMonth();
@@ -39,7 +41,7 @@ export class CalendarComponent {
 
     while (currentDate <= lastDay || dates.length % 7 !== 0) {
       const dateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-      const dayAvailabilities = this.availabilities.filter(
+      const dayAvailabilities = this.availabilities().filter(
         (a) => a.date === dateString,
       );
 
@@ -49,7 +51,7 @@ export class CalendarComponent {
         day: currentDate.getDate(),
         isCurrentMonth: currentDate.getMonth() === monthIndex,
         isToday: currentDate.toDateString() === new Date().toDateString(),
-        isSelected: dateString === this.selectedDate,
+        isSelected: dateString === this.selectedDate(),
         hasAvailabilities: dayAvailabilities.length > 0,
         availabilities: dayAvailabilities,
       });
