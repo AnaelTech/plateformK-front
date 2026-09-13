@@ -129,6 +129,68 @@ describe('UserService', () => {
     }));
   });
 
+  describe('getAllUsers', () => {
+    it('should fetch every page until hasNext is false', fakeAsync(() => {
+      const firstPage = {
+        data: [mockUsers[0]],
+        pagination: {
+          currentPage: 0,
+          pageSize: 1,
+          totalElements: 2,
+          totalPages: 2,
+          hasNext: true,
+          hasPrevious: false,
+          isFirst: true,
+          isLast: false,
+        },
+      };
+      const secondPage = {
+        data: [mockUsers[2]],
+        pagination: {
+          currentPage: 1,
+          pageSize: 1,
+          totalElements: 2,
+          totalPages: 2,
+          hasNext: false,
+          hasPrevious: true,
+          isFirst: false,
+          isLast: true,
+        },
+      };
+
+      let result: User[] | undefined;
+      service.getAllUsers().subscribe((users) => (result = users));
+
+      const first = httpMock.expectOne(
+        'http://localhost:8080/api/v1/users?page=0&size=100&sortBy=id&direction=ASC',
+      );
+      first.flush(firstPage);
+      tick();
+
+      const second = httpMock.expectOne(
+        'http://localhost:8080/api/v1/users?page=1&size=100&sortBy=id&direction=ASC',
+      );
+      second.flush(secondPage);
+      tick();
+
+      expect(result?.length).toBe(2);
+      expect(result?.map((u) => u.id)).toEqual([1, 3]);
+    }));
+
+    it('should filter by user type', fakeAsync(() => {
+      let result: User[] | undefined;
+      service.getAllUsers(TypeUser.ELEVE).subscribe((users) => (result = users));
+
+      const req = httpMock.expectOne(
+        'http://localhost:8080/api/v1/users?page=0&size=100&sortBy=id&direction=ASC',
+      );
+      req.flush(mockPaginatedResponse);
+      tick();
+
+      expect(result).toEqual([mockUsers[2]]);
+    }));
+  });
+
   describe('getUserById', () => {
     it('should return cached user if available', fakeAsync(() => {
       // First load users
