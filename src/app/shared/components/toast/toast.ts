@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import { NotificationService } from '../../services/notification.service';
+import { NotificationService, type ToastNotification } from '../../services/notification.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 /**
@@ -39,6 +39,14 @@ export class Toast {
    */
   close(id: string): void {
     this.notificationService.remove(id);
+  }
+
+  /**
+   * Execute the toast action and close it.
+   */
+  handleAction(toast: ToastNotification): void {
+    toast.action?.handler();
+    this.close(toast.id);
   }
 
   /**

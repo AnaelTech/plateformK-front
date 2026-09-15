@@ -11,8 +11,18 @@
         <span class="toast-message">{{ toast.message }}</span>
       </div>
       
-      <button 
-        class="toast-close" 
+      @if (toast.action) {
+        <button
+          type="button"
+          class="toast-action"
+          (click)="handleAction(toast)">
+          {{ toast.action.label }}
+        </button>
+      }
+
+      <button
+        type="button"
+        class="toast-close"
         (click)="close(toast.id)"
         aria-label="Close notification">
         ×

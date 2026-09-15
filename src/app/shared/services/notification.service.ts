@@ -2,12 +2,18 @@ import { Injectable, signal } from '@angular/core';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-export interface Toast {
+export interface ToastAction {
+  label: string;
+  handler: () => void;
+}
+
+export interface ToastNotification {
   id: string;
   message: string;
   type: ToastType;
   duration: number;
   timestamp: number;
+  action?: ToastAction;
 }
 
 /**
@@ -24,7 +30,7 @@ export class NotificationService {
   private readonly DEFAULT_DURATION = 3000; // 3 seconds
 
   // Signal for reactive toast list
-  private toastsSignal = signal<Toast[]>([]);
+  private toastsSignal = signal<ToastNotification[]>([]);
 
   // Readonly computed signal for external consumption
   readonly toasts = this.toastsSignal.asReadonly();
@@ -58,6 +64,19 @@ export class NotificationService {
   }
 
   /**
+   * Show a notification with an action button.
+   * Default duration is 0 (does not auto-dismiss) so the user can interact.
+   */
+  prompt(
+    message: string,
+    action: ToastAction,
+    type: ToastType = 'info',
+    duration = 0
+  ): void {
+    this.addToast(message, type, duration, action);
+  }
+
+  /**
    * Remove a specific toast by ID
    */
   remove(id: string): void {
@@ -74,13 +93,19 @@ export class NotificationService {
   /**
    * Add a new toast to the queue
    */
-  private addToast(message: string, type: ToastType, duration: number): void {
-    const toast: Toast = {
+  private addToast(
+    message: string,
+    type: ToastType,
+    duration: number,
+    action?: ToastAction
+  ): void {
+    const toast: ToastNotification = {
       id: this.generateId(),
       message,
       type,
       duration,
       timestamp: Date.now(),
+      action,
     };
 
     // Add toast and limit to MAX_TOASTS

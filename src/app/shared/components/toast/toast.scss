@@ -65,6 +65,28 @@
   font-weight: 500;
 }
 
+.toast-action {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  transition: background 0.2s, opacity 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  &:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}
+
 .toast-close {
   flex-shrink: 0;
   background: none;
