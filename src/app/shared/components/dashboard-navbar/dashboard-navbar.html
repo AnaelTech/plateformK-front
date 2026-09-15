@@ -44,7 +44,7 @@
             (keydown.space)="$event.preventDefault(); toggleDropdown()"
             (keydown.escape)="closeDropdown()"
           >
-            <div class="text-right">
+            <div class="text-right hidden sm:block">
               <p class="text-white font-semibold text-sm">{{ fullName() }}</p>
               <p class="text-blue-100 text-xs">
                 {{ getDashboardSubtitle() }}
